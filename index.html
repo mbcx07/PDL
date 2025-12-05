@@ -351,7 +351,8 @@
   <nav>
     <a onclick="showSection('worker')">Inicio</a>
     <a onclick="showSection('worker')">Aplicar test</a>
-    <a onclick="showAdminAccess()">Administrador</a>
+    <!-- AHORA ENTRA DIRECTO AL ADMIN -->
+    <a onclick="openAdminDirect()">Administrador</a>
   </nav>
 </header>
 
@@ -407,7 +408,8 @@
 
     <div class="btn-row">
       <button class="btn-primary" type="button" onclick="startTest()">Iniciar test PDL</button>
-      <button class="btn-link" type="button" onclick="showAdminAccess()">Acceso administrador</button>
+      <!-- AHORA ENTRA DIRECTO -->
+      <button class="btn-link" type="button" onclick="openAdminDirect()">Acceso administrador</button>
     </div>
     <p class="text-muted">
       La información se almacena localmente y, si configura Firebase, también en Firestore. Puede descargarse en CSV desde el panel de administración.
@@ -454,29 +456,12 @@
     <div id="result-interpretation"></div>
     <div class="btn-row">
       <button class="btn-primary" type="button" onclick="resetForNewTest()">Aplicar a otro trabajador</button>
-      <button class="btn-secondary" type="button" onclick="showAdminAccess()">Ir a administrador</button>
+      <!-- AHORA ENTRA DIRECTO AL ADMIN -->
+      <button class="btn-secondary" type="button" onclick="openAdminDirect()">Ir a administrador</button>
     </div>
   </section>
 
-  <!-- 4. ACCESO ADMIN -->
-  <section id="section-admin-access" class="card hidden">
-    <h2>Acceso administrador</h2>
-    <p class="subtitle">Ingrese la clave para administrar unidades, categorías y resultados.</p>
-    <div class="form-grid">
-      <div>
-        <label for="adminPasswordInput">Clave de administrador</label>
-        <input id="adminPasswordInput" type="password" />
-        <div id="admin-access-error" class="error hidden">Clave incorrecta.</div>
-      </div>
-    </div>
-    <div class="btn-row">
-      <button class="btn-primary" type="button" onclick="tryAdminLogin()">Ingresar</button>
-      <button class="btn-secondary" type="button" onclick="showSection('worker')">Volver al inicio</button>
-    </div>
-    <p class="text-muted">
-      La clave se define en el código JavaScript del archivo.
-    </p>
-  </section>
+  <!-- (Ya no se usa la sección de contraseña, la quitamos) -->
 
   <!-- 5. PANEL ADMIN -->
   <section id="section-admin" class="card hidden">
@@ -582,15 +567,12 @@
   }
 
   /******************** CONFIG APP ********************/
-  const ADMIN_PASSWORD = "admin123"; // <-- cámbiala aquí
-
   const STORAGE_KEYS = {
     unidades: "pdl_unidades",
     categorias: "pdl_categorias",
-    resultados: "pdl_resultados"  // copia local como respaldo
+    resultados: "pdl_resultados"
   };
 
-  // 24 bloques de 4 adjetivos (versión propia inspirada en DISC)
   const TEST_GROUPS = [
     { words: [
       { text: "Gentil / Suave", dim: "S" },
@@ -738,17 +720,13 @@
     ]}
   ];
 
-  // Estado
   let testAnswers = TEST_GROUPS.map(() => ({ most: null, least: null }));
   let currentGroupIndex = 0;
   let currentWorkerData = null;
-
-  // Caché de resultados (para tabla y CSV)
   let resultadosCache = [];
 
-  /******************** UTILIDADES GENERALES ********************/
   function showSection(section) {
-    ["worker", "test", "results", "adminAccess", "admin"].forEach(s => {
+    ["worker", "test", "results", "admin"].forEach(s => {
       const el = document.getElementById("section-" + s);
       if (!el) return;
       if (s === section) el.classList.remove("hidden");
@@ -756,12 +734,10 @@
     });
   }
 
-  function showAdminAccess() {
-    const input = document.getElementById("adminPasswordInput");
-    const err = document.getElementById("admin-access-error");
-    if (input) input.value = "";
-    if (err) err.classList.add("hidden");
-    showSection("adminAccess");
+  function openAdminDirect() {
+    showSection("admin");
+    refreshAdminTables();
+    loadResults();
   }
 
   function calculateAge(dateStr) {
@@ -788,7 +764,6 @@
     try { localStorage.setItem(key, JSON.stringify(value)); } catch {}
   }
 
-  /******************** CONFIG INICIAL ********************/
   function ensureDefaultConfig() {
     let unidades = readLocal(STORAGE_KEYS.unidades, null);
     let categorias = readLocal(STORAGE_KEYS.categorias, null);
@@ -828,7 +803,6 @@
     });
   }
 
-  /******************** FORMULARIO TRABAJADOR ********************/
   document.addEventListener("DOMContentLoaded", function() {
     const fechaNacimientoInput = document.getElementById("fechaNacimiento");
     if (fechaNacimientoInput) {
@@ -894,7 +868,6 @@
     showSection("test");
   }
 
-  /******************** TEST PDL ********************/
   function renderCurrentGroup() {
     const container = document.getElementById("test-group-container");
     if (!container) return;
@@ -1050,7 +1023,6 @@
     showSection("results");
   }
 
-  /******************** CÁLCULO DISC ********************/
   function computeDISCFromAnswers() {
     const mostCounts = { D: 0, I: 0, S: 0, C: 0 };
     const leastCounts = { D: 0, I: 0, S: 0, C: 0 };
@@ -1177,7 +1149,6 @@
     return { title: "Perfil predominante: " + (dimNames[mainDim] || mainDim), mainDesc, details };
   }
 
-  /******************** GUARDADO Y MOSTRADO DE RESULTADOS ********************/
   async function saveResult(scores, mainDim) {
     const existingLocal = readLocal(STORAGE_KEYS.resultados, []);
     const now = new Date();
@@ -1193,11 +1164,9 @@
       perfil: mainDim
     };
 
-    // Guarda local
     existingLocal.push(record);
     writeLocal(STORAGE_KEYS.resultados, existingLocal);
 
-    // Intenta guardar en Firestore, si está configurado
     if (db) {
       try {
         await db.collection("pdl_resultados").add(record);
@@ -1207,7 +1176,7 @@
       }
     }
 
-    await loadResults(); // refresca cache y tabla
+    await loadResults();
   }
 
   function renderResultView(scores, mainDim, interp) {
@@ -1262,20 +1231,6 @@
     showSection("worker");
   }
 
-  /******************** ADMIN: LOGIN Y TABS ********************/
-  function tryAdminLogin() {
-    const input = document.getElementById("adminPasswordInput").value;
-    const errorEl = document.getElementById("admin-access-error");
-    if (input === ADMIN_PASSWORD) {
-      errorEl.classList.add("hidden");
-      showSection("admin");
-      refreshAdminTables();
-      loadResults(); // carga resultados (Firestore + local)
-    } else {
-      errorEl.classList.remove("hidden");
-    }
-  }
-
   function setAdminTab(tabName) {
     document.getElementById("admin-unidades").classList.add("hidden");
     document.getElementById("admin-categorias").classList.add("hidden");
@@ -1302,7 +1257,6 @@
     refreshResultadosTable();
   }
 
-  /******************** ADMIN: UNIDADES ********************/
   function refreshUnidadesTable() {
     const unidades = readLocal(STORAGE_KEYS.unidades, []);
     const tbody = document.getElementById("tablaUnidades");
@@ -1339,7 +1293,6 @@
     }
   }
 
-  /******************** ADMIN: CATEGORÍAS ********************/
   function refreshCategoriasTable() {
     const categorias = readLocal(STORAGE_KEYS.categorias, []);
     const tbody = document.getElementById("tablaCategorias");
@@ -1376,9 +1329,7 @@
     }
   }
 
-  /******************** ADMIN: RESULTADOS & CSV ********************/
   async function loadResults() {
-    // Prioridad: Firestore (si está disponible), luego localStorage
     let fromFirestore = [];
     if (db) {
       try {
@@ -1468,7 +1419,6 @@
     refreshResultadosTable();
   }
 
-  /******************** INICIALIZACIÓN ********************/
   function initPDLApp() {
     ensureDefaultConfig();
     populateWorkerSelects();
@@ -1476,6 +1426,7 @@
     refreshResultadosTable();
     showSection("worker");
   }
+
   document.addEventListener("DOMContentLoaded", initPDLApp);
 </script>
 </body>
