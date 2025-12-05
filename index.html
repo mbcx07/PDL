@@ -351,7 +351,6 @@
   <nav>
     <a onclick="showSection('worker')">Inicio</a>
     <a onclick="showSection('worker')">Aplicar test</a>
-    <!-- AHORA ENTRA DIRECTO AL ADMIN -->
     <a onclick="openAdminDirect()">Administrador</a>
   </nav>
 </header>
@@ -408,11 +407,10 @@
 
     <div class="btn-row">
       <button class="btn-primary" type="button" onclick="startTest()">Iniciar test PDL</button>
-      <!-- AHORA ENTRA DIRECTO -->
       <button class="btn-link" type="button" onclick="openAdminDirect()">Acceso administrador</button>
     </div>
     <p class="text-muted">
-      La información se almacena localmente y, si configura Firebase, también en Firestore. Puede descargarse en CSV desde el panel de administración.
+      La información se almacena localmente y, si la conexión está disponible, también en Firestore. Puede descargarse en CSV desde el panel de administración.
     </p>
   </section>
 
@@ -456,14 +454,11 @@
     <div id="result-interpretation"></div>
     <div class="btn-row">
       <button class="btn-primary" type="button" onclick="resetForNewTest()">Aplicar a otro trabajador</button>
-      <!-- AHORA ENTRA DIRECTO AL ADMIN -->
       <button class="btn-secondary" type="button" onclick="openAdminDirect()">Ir a administrador</button>
     </div>
   </section>
 
-  <!-- (Ya no se usa la sección de contraseña, la quitamos) -->
-
-  <!-- 5. PANEL ADMIN -->
+  <!-- 4. PANEL ADMIN -->
   <section id="section-admin" class="card hidden">
     <h2>Panel de administración</h2>
     <p class="subtitle">
@@ -512,7 +507,7 @@
     <div id="admin-resultados" class="hidden">
       <h3>Resultados registrados</h3>
       <p class="text-muted">
-        Los registros se guardan en este dispositivo y, si configuraste Firebase, también en Firestore.
+        Los registros se guardan en este dispositivo y, si la conexión con Firebase funciona, también en Firestore.
         Puedes descargar el archivo en formato CSV para usarlo en Excel.
       </p>
       <div class="btn-row" style="margin-bottom:0.7rem;">
@@ -539,13 +534,20 @@
   </section>
 </main>
 
-<!-- Firebase compat desde CDN (sin módulos) -->
-<script src="https://www.gstatic.com/firebasejs/12.6.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/12.6.0/firebase-analytics-compat.js"></script>
+<!-- Firebase JS SDK por CDN (API modular) -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
+  import {
+    getFirestore,
+    collection,
+    addDoc,
+    getDocs,
+    query,
+    orderBy
+  } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-analytics.js";
 
-<script>
-  /******************** CONFIGURACIÓN FIREBASE (TU PROYECTO) ********************/
+  /******************** CONFIGURACIÓN FIREBASE ********************/
   const firebaseConfig = {
     apiKey: "AIzaSyDJniFUuRh3mfjP40cAm2gJ2P3TGOyKqog",
     authDomain: "perfil-de-dinamicas-laborales.firebaseapp.com",
@@ -558,12 +560,12 @@
 
   let db = null;
   try {
-    const app = firebase.initializeApp(firebaseConfig);
-    db = firebase.firestore(app);
-    try { firebase.analytics(app); } catch(e) { console.warn("Analytics no disponible:", e); }
-    console.log("Firebase inicializado correctamente.");
+    const app = initializeApp(firebaseConfig);
+    db = getFirestore(app);
+    try { getAnalytics(app); } catch (e) { console.warn("Analytics no disponible:", e); }
+    console.log("Firebase inicializado.");
   } catch (err) {
-    console.warn("Firebase NO inicializado. Se usará solo almacenamiento local.", err);
+    console.warn("Firebase NO inicializado. Solo se usará almacenamiento local.", err);
   }
 
   /******************** CONFIG APP ********************/
@@ -725,6 +727,7 @@
   let currentWorkerData = null;
   let resultadosCache = [];
 
+  /******************** UTILIDADES ********************/
   function showSection(section) {
     ["worker", "test", "results", "admin"].forEach(s => {
       const el = document.getElementById("section-" + s);
@@ -783,7 +786,6 @@
     const categorias = readLocal(STORAGE_KEYS.categorias, []);
     const unidadSelect = document.getElementById("unidad");
     const categoriaSelect = document.getElementById("categoria");
-
     if (!unidadSelect || !categoriaSelect) return;
 
     unidadSelect.innerHTML = '<option value="">Seleccione...</option>';
@@ -803,7 +805,8 @@
     });
   }
 
-  document.addEventListener("DOMContentLoaded", function() {
+  /******************** FORMULARIO TRABAJADOR ********************/
+  function initBirthDateListener() {
     const fechaNacimientoInput = document.getElementById("fechaNacimiento");
     if (fechaNacimientoInput) {
       fechaNacimientoInput.addEventListener("change", function () {
@@ -812,7 +815,7 @@
         if (edadEl) edadEl.value = age !== "" ? age : "";
       });
     }
-  });
+  }
 
   function validateWorkerForm() {
     let valid = true;
@@ -836,10 +839,10 @@
     fields.forEach(f => {
       const errorEl = document.getElementById(f.id + "-error");
       if (!f.value) {
-        errorEl && errorEl.classList.remove("hidden");
+        if (errorEl) errorEl.classList.remove("hidden");
         valid = false;
       } else {
-        errorEl && errorEl.classList.add("hidden");
+        if (errorEl) errorEl.classList.add("hidden");
       }
     });
     if (!valid) return null;
@@ -868,6 +871,7 @@
     showSection("test");
   }
 
+  /******************** TEST PDL ********************/
   function renderCurrentGroup() {
     const container = document.getElementById("test-group-container");
     if (!container) return;
@@ -886,27 +890,32 @@
       const mostChecked = answers.most === idx ? "checked" : "";
       const leastChecked = answers.least === idx ? "checked" : "";
       html += '<div class="table-row">';
-      html += `<div class="table-row-label">${w.text}</div>`;
+      html += '<div class="table-row-label">' + w.text + '</div>';
       html += '<div class="choice-cell">';
-      html += `<input class="choice-radio choice-plus" type="radio" name="most" value="${idx}" ${mostChecked}>`;
+      html += '<input class="choice-radio choice-plus" type="radio" name="most" value="' + idx + '" ' + mostChecked + '>';
       html += '</div>';
       html += '<div class="choice-cell">';
-      html += `<input class="choice-radio choice-minus" type="radio" name="least" value="${idx}" ${leastChecked}>`;
-      html += '</div>`;
-      html += '</div>`;
+      html += '<input class="choice-radio choice-minus" type="radio" name="least" value="' + idx + '" ' + leastChecked + '>';
+      html += '</div>';
+      html += '</div>';
     });
 
     html += '</div>';
     container.innerHTML = html;
-    document.getElementById("test-error").classList.add("hidden");
-    document.getElementById("block-label").textContent =
-      "Bloque " + (currentGroupIndex + 1) + " de " + TEST_GROUPS.length;
+
+    const err = document.getElementById("test-error");
+    if (err) err.classList.add("hidden");
+    const blockLabel = document.getElementById("block-label");
+    if (blockLabel) {
+      blockLabel.textContent = "Bloque " + (currentGroupIndex + 1) + " de " + TEST_GROUPS.length;
+    }
 
     setupChoiceMutualExclusion();
   }
 
   function setupChoiceMutualExclusion() {
     const container = document.getElementById("test-group-container");
+    if (!container) return;
     const plusRadios = container.querySelectorAll(".choice-plus");
     const minusRadios = container.querySelectorAll(".choice-minus");
 
@@ -939,7 +948,8 @@
   function updateNavButtons() {
     const btnPrev = document.getElementById("btn-prev");
     const btnNext = document.getElementById("btn-next");
-    if (!btnPrev || !btnNext) return;
+    const btnFinish = document.getElementById("btn-finish");
+    if (!btnPrev || !btnNext || !btnFinish) return;
 
     if (currentGroupIndex === 0) {
       btnPrev.disabled = true;
@@ -956,6 +966,9 @@
       btnNext.disabled = false;
       btnNext.classList.remove("btn-disabled");
     }
+
+    // El botón "Finalizar" siempre está habilitado visualmente,
+    // pero al hacer clic valida que se hayan contestado todos los bloques.
   }
 
   function captureCurrentGroupSelection() {
@@ -1023,6 +1036,7 @@
     showSection("results");
   }
 
+  /******************** CÁLCULO DISC ********************/
   function computeDISCFromAnswers() {
     const mostCounts = { D: 0, I: 0, S: 0, C: 0 };
     const leastCounts = { D: 0, I: 0, S: 0, C: 0 };
@@ -1149,6 +1163,7 @@
     return { title: "Perfil predominante: " + (dimNames[mainDim] || mainDim), mainDesc, details };
   }
 
+  /******************** GUARDADO RESULTADOS ********************/
   async function saveResult(scores, mainDim) {
     const existingLocal = readLocal(STORAGE_KEYS.resultados, []);
     const now = new Date();
@@ -1169,7 +1184,7 @@
 
     if (db) {
       try {
-        await db.collection("pdl_resultados").add(record);
+        await addDoc(collection(db, "pdl_resultados"), record);
       } catch (err) {
         console.error("Error guardando en Firestore:", err);
         alert("El resultado se guardó localmente, pero hubo un problema con la base de datos en la nube.");
@@ -1185,36 +1200,42 @@
     const scoresDiv = document.getElementById("result-scores");
     const interpDiv = document.getElementById("result-interpretation");
 
-    personalDiv.innerHTML = `
-      <h3>Datos del trabajador</h3>
-      <div class="form-grid" style="margin-top:0.4rem;">
-        <div><strong>Nombre:</strong> ${w.nombre}</div>
-        <div><strong>Matrícula:</strong> ${w.matricula}</div>
-        <div><strong>Unidad:</strong> ${w.unidad}</div>
-        <div><strong>Categoría:</strong> ${w.categoria}</div>
-        <div><strong>Puesto:</strong> ${w.puesto}</div>
-        <div><strong>Edad:</strong> ${w.edad} años</div>
-        <div><strong>Fecha de nacimiento:</strong> ${w.fechaNacimiento}</div>
-        <div><strong>Lugar de nacimiento:</strong> ${w.lugarNacimiento}</div>
-      </div>
-    `;
+    if (personalDiv) {
+      personalDiv.innerHTML = [
+        "<h3>Datos del trabajador</h3>",
+        '<div class="form-grid" style="margin-top:0.4rem;">',
+        "<div><strong>Nombre:</strong> " + w.nombre + "</div>",
+        "<div><strong>Matrícula:</strong> " + w.matricula + "</div>",
+        "<div><strong>Unidad:</strong> " + w.unidad + "</div>",
+        "<div><strong>Categoría:</strong> " + w.categoria + "</div>",
+        "<div><strong>Puesto:</strong> " + w.puesto + "</div>",
+        "<div><strong>Edad:</strong> " + w.edad + " años</div>",
+        "<div><strong>Fecha de nacimiento:</strong> " + w.fechaNacimiento + "</div>",
+        "<div><strong>Lugar de nacimiento:</strong> " + w.lugarNacimiento + "</div>",
+        "</div>"
+      ].join("");
+    }
 
-    scoresDiv.innerHTML = `
-      <h3>Puntajes por dimensión DISC</h3>
-      <div class="form-grid" style="margin-top:0.4rem;">
-        <div><strong>D – Dominancia:</strong> ${scores.D} (Más: ${scores.most.D}, Menos: ${scores.least.D})</div>
-        <div><strong>I – Influencia:</strong> ${scores.I} (Más: ${scores.most.I}, Menos: ${scores.least.I})</div>
-        <div><strong>S – Estabilidad:</strong> ${scores.S} (Más: ${scores.most.S}, Menos: ${scores.least.S})</div>
-        <div><strong>C – Cumplimiento:</strong> ${scores.C} (Más: ${scores.most.C}, Menos: ${scores.least.C})</div>
-      </div>
-    `;
+    if (scoresDiv) {
+      scoresDiv.innerHTML = [
+        "<h3>Puntajes por dimensión DISC</h3>",
+        '<div class="form-grid" style="margin-top:0.4rem;">',
+        "<div><strong>D – Dominancia:</strong> " + scores.D + " (Más: " + scores.most.D + ", Menos: " + scores.least.D + ")</div>",
+        "<div><strong>I – Influencia:</strong> " + scores.I + " (Más: " + scores.most.I + ", Menos: " + scores.least.I + ")</div>",
+        "<div><strong>S – Estabilidad:</strong> " + scores.S + " (Más: " + scores.most.S + ", Menos: " + scores.least.S + ")</div>",
+        "<div><strong>C – Cumplimiento:</strong> " + scores.C + " (Más: " + scores.most.C + ", Menos: " + scores.least.C + ")</div>",
+        "</div>"
+      ].join("");
+    }
 
-    interpDiv.innerHTML = `
-      <h3>Interpretación del perfil</h3>
-      <p><span class="badge">${interp.title}</span></p>
-      <p>${interp.mainDesc}</p>
-      <p class="text-muted">${interp.details}</p>
-    `;
+    if (interpDiv) {
+      interpDiv.innerHTML = [
+        "<h3>Interpretación del perfil</h3>",
+        "<p><span class=\"badge\">" + interp.title + "</span></p>",
+        "<p>" + interp.mainDesc + "</p>",
+        "<p class=\"text-muted\">" + interp.details + "</p>"
+      ].join("");
+    }
   }
 
   function resetForNewTest() {
@@ -1231,23 +1252,33 @@
     showSection("worker");
   }
 
+  /******************** ADMIN: TABS ********************/
   function setAdminTab(tabName) {
-    document.getElementById("admin-unidades").classList.add("hidden");
-    document.getElementById("admin-categorias").classList.add("hidden");
-    document.getElementById("admin-resultados").classList.add("hidden");
-    document.getElementById("tab-unidades").classList.remove("active");
-    document.getElementById("tab-categorias").classList.remove("active");
-    document.getElementById("tab-resultados").classList.remove("active");
+    const adminUnidades = document.getElementById("admin-unidades");
+    const adminCategorias = document.getElementById("admin-categorias");
+    const adminResultados = document.getElementById("admin-resultados");
+    const tabU = document.getElementById("tab-unidades");
+    const tabC = document.getElementById("tab-categorias");
+    const tabR = document.getElementById("tab-resultados");
 
-    if (tabName === "unidades") {
-      document.getElementById("admin-unidades").classList.remove("hidden");
-      document.getElementById("tab-unidades").classList.add("active");
-    } else if (tabName === "categorias") {
-      document.getElementById("admin-categorias").classList.remove("hidden");
-      document.getElementById("tab-categorias").classList.add("active");
-    } else if (tabName === "resultados") {
-      document.getElementById("admin-resultados").classList.remove("hidden");
-      document.getElementById("tab-resultados").classList.add("active");
+    if (adminUnidades && adminCategorias && adminResultados && tabU && tabC && tabR) {
+      adminUnidades.classList.add("hidden");
+      adminCategorias.classList.add("hidden");
+      adminResultados.classList.add("hidden");
+      tabU.classList.remove("active");
+      tabC.classList.remove("active");
+      tabR.classList.remove("active");
+
+      if (tabName === "unidades") {
+        adminUnidades.classList.remove("hidden");
+        tabU.classList.add("active");
+      } else if (tabName === "categorias") {
+        adminCategorias.classList.remove("hidden");
+        tabC.classList.add("active");
+      } else if (tabName === "resultados") {
+        adminResultados.classList.remove("hidden");
+        tabR.classList.add("active");
+      }
     }
   }
 
@@ -1257,6 +1288,7 @@
     refreshResultadosTable();
   }
 
+  /******************** ADMIN: UNIDADES ********************/
   function refreshUnidadesTable() {
     const unidades = readLocal(STORAGE_KEYS.unidades, []);
     const tbody = document.getElementById("tablaUnidades");
@@ -1264,10 +1296,9 @@
     tbody.innerHTML = "";
     unidades.forEach((u, idx) => {
       const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${u}</td>
-        <td><button class="btn-danger" type="button" onclick="deleteUnidad(${idx})">Borrar</button></td>
-      `;
+      tr.innerHTML =
+        "<td>" + u + "</td>" +
+        '<td><button class="btn-danger" type="button" onclick="deleteUnidad(' + idx + ')">Borrar</button></td>';
       tbody.appendChild(tr);
     });
     populateWorkerSelects();
@@ -1275,6 +1306,7 @@
 
   function addUnidad() {
     const input = document.getElementById("nuevaUnidad");
+    if (!input) return;
     const val = input.value.trim();
     if (!val) return;
     const unidades = readLocal(STORAGE_KEYS.unidades, []);
@@ -1293,6 +1325,7 @@
     }
   }
 
+  /******************** ADMIN: CATEGORÍAS ********************/
   function refreshCategoriasTable() {
     const categorias = readLocal(STORAGE_KEYS.categorias, []);
     const tbody = document.getElementById("tablaCategorias");
@@ -1300,10 +1333,9 @@
     tbody.innerHTML = "";
     categorias.forEach((c, idx) => {
       const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${c}</td>
-        <td><button class="btn-danger" type="button" onclick="deleteCategoria(${idx})">Borrar</button></td>
-      `;
+      tr.innerHTML =
+        "<td>" + c + "</td>" +
+        '<td><button class="btn-danger" type="button" onclick="deleteCategoria(' + idx + ')">Borrar</button></td>';
       tbody.appendChild(tr);
     });
     populateWorkerSelects();
@@ -1311,6 +1343,7 @@
 
   function addCategoria() {
     const input = document.getElementById("nuevaCategoria");
+    if (!input) return;
     const val = input.value.trim();
     if (!val) return;
     const categorias = readLocal(STORAGE_KEYS.categorias, []);
@@ -1329,13 +1362,13 @@
     }
   }
 
+  /******************** ADMIN: RESULTADOS & CSV ********************/
   async function loadResults() {
     let fromFirestore = [];
     if (db) {
       try {
-        const snap = await db.collection("pdl_resultados")
-                             .orderBy("fechaEpoch", "desc")
-                             .get();
+        const qRef = query(collection(db, "pdl_resultados"), orderBy("fechaEpoch", "desc"));
+        const snap = await getDocs(qRef);
         fromFirestore = snap.docs.map(d => d.data());
       } catch (err) {
         console.error("Error leyendo Firestore:", err);
@@ -1355,21 +1388,20 @@
     tbody.innerHTML = "";
     resultadosCache.forEach(r => {
       const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${r.fecha}</td>
-        <td>${r.unidad}</td>
-        <td>${r.matricula}</td>
-        <td>${r.nombre}</td>
-        <td>${r.categoria}</td>
-        <td>${r.puesto}</td>
-        <td>${r.edad}</td>
-        <td>${r.lugarNacimiento}</td>
-        <td>${r.scores.D}</td>
-        <td>${r.scores.I}</td>
-        <td>${r.scores.S}</td>
-        <td>${r.scores.C}</td>
-        <td>${r.perfil}</td>
-      `;
+      tr.innerHTML =
+        "<td>" + r.fecha + "</td>" +
+        "<td>" + r.unidad + "</td>" +
+        "<td>" + r.matricula + "</td>" +
+        "<td>" + r.nombre + "</td>" +
+        "<td>" + r.categoria + "</td>" +
+        "<td>" + r.puesto + "</td>" +
+        "<td>" + r.edad + "</td>" +
+        "<td>" + r.lugarNacimiento + "</td>" +
+        "<td>" + r.scores.D + "</td>" +
+        "<td>" + r.scores.I + "</td>" +
+        "<td>" + r.scores.S + "</td>" +
+        "<td>" + r.scores.C + "</td>" +
+        "<td>" + r.perfil + "</td>";
       tbody.appendChild(tr);
     });
   }
@@ -1419,15 +1451,32 @@
     refreshResultadosTable();
   }
 
+  /******************** INICIALIZACIÓN ********************/
   function initPDLApp() {
     ensureDefaultConfig();
     populateWorkerSelects();
+    initBirthDateListener();
     resultadosCache = readLocal(STORAGE_KEYS.resultados, []);
     refreshResultadosTable();
     showSection("worker");
   }
-
   document.addEventListener("DOMContentLoaded", initPDLApp);
+
+  /******************** EXPONER FUNCIONES AL window ********************/
+  window.showSection = showSection;
+  window.openAdminDirect = openAdminDirect;
+  window.startTest = startTest;
+  window.nextGroup = nextGroup;
+  window.prevGroup = prevGroup;
+  window.finishTest = finishTest;
+  window.resetForNewTest = resetForNewTest;
+  window.setAdminTab = setAdminTab;
+  window.addUnidad = addUnidad;
+  window.deleteUnidad = deleteUnidad;
+  window.addCategoria = addCategoria;
+  window.deleteCategoria = deleteCategoria;
+  window.downloadCSV = downloadCSV;
+  window.clearAllResults = clearAllResults;
 </script>
 </body>
 </html>
