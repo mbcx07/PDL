@@ -452,6 +452,7 @@
     <div id="result-personal"></div>
     <div id="result-scores"></div>
     <div id="result-interpretation"></div>
+    <div id="result-training"></div>
     <div class="btn-row">
       <button class="btn-primary" type="button" onclick="resetForNewTest()">Aplicar a otro trabajador</button>
       <button class="btn-secondary" type="button" onclick="openAdminDirect()">Ir a administrador</button>
@@ -521,6 +522,7 @@
             <th>Fecha</th><th>Unidad</th><th>Matrícula</th><th>Nombre</th><th>Categoría</th>
             <th>Puesto</th><th>Edad</th><th>Lugar nac.</th>
             <th>D</th><th>I</th><th>S</th><th>C</th><th>Perfil</th>
+            <th>Interpretación</th><th>Plan de capacitación</th>
           </tr>
           </thead>
           <tbody id="tablaResultados"></tbody>
@@ -948,8 +950,7 @@
   function updateNavButtons() {
     const btnPrev = document.getElementById("btn-prev");
     const btnNext = document.getElementById("btn-next");
-    const btnFinish = document.getElementById("btn-finish");
-    if (!btnPrev || !btnNext || !btnFinish) return;
+    if (!btnPrev || !btnNext) return;
 
     if (currentGroupIndex === 0) {
       btnPrev.disabled = true;
@@ -966,9 +967,6 @@
       btnNext.disabled = false;
       btnNext.classList.remove("btn-disabled");
     }
-
-    // El botón "Finalizar" siempre está habilitado visualmente,
-    // pero al hacer clic valida que se hayan contestado todos los bloques.
   }
 
   function captureCurrentGroupSelection() {
@@ -1023,16 +1021,29 @@
   }
 
   async function finishTest() {
+    // Siempre guarda lo que esté seleccionado en el bloque actual
     if (!captureCurrentGroupSelection()) return;
-    if (!allGroupsAnswered()) {
-      showTestError("Debe completar los 24 bloques antes de finalizar el test.");
-      return;
+
+    // Verifica bloque por bloque y, si falta alguno, te lleva a ese bloque
+    for (let i = 0; i < TEST_GROUPS.length; i++) {
+      const ans = testAnswers[i];
+      if (ans.most === null || ans.least === null) {
+        showTestError("Falta responder el bloque " + (i + 1) + ". Se mostrará para completar.");
+        currentGroupIndex = i;
+        renderCurrentGroup();
+        updateProgressUI();
+        updateNavButtons();
+        return;
+      }
     }
+
     const scores = computeDISCFromAnswers();
     const profile = determineMainProfile(scores);
     const interpretation = interpretProfile(profile, scores);
-    await saveResult(scores, profile);
-    renderResultView(scores, profile, interpretation);
+    const trainingPlan = generateTrainingPlan(profile, scores);
+
+    await saveResult(scores, profile, interpretation, trainingPlan);
+    renderResultView(scores, profile, interpretation, trainingPlan);
     showSection("results");
   }
 
@@ -1072,6 +1083,7 @@
     return maxDim;
   }
 
+  /******************** INTERPRETACIÓN DETALLADA ********************/
   function interpretProfile(mainDim, scores) {
     const dimNames = {
       D: "Dominancia (D)",
@@ -1089,82 +1101,242 @@
         "Las personas con este perfil suelen enfocarse en resultados concretos, retos y logros visibles. " +
         "Tienden a tomar decisiones rápidas, asumir riesgos calculados y sentirse cómodas en contextos de presión o cambio.";
       details =
-        "<strong>Fortalezas habituales:</strong><br>" +
+        "<strong>Fortalezas principales:</strong><br>" +
         "• Capacidad para dirigir y tomar decisiones sin paralizarse.<br>" +
         "• Orientación clara a objetivos y cumplimiento de metas exigentes.<br>" +
-        "• Rapidez para abordar problemas y remover obstáculos.<br><br>" +
-        "<strong>Riesgos o puntos a cuidar:</strong><br>" +
+        "• Rapidez para abordar problemas y remover obstáculos operativos.<br><br>" +
+        "<strong>Posibles áreas de tensión:</strong><br>" +
         "• Puede parecer impaciente o poco sensible ante el ritmo de otras personas.<br>" +
-        "• Tendencia a priorizar el resultado por encima del proceso o la relación.<br>" +
-        "• Puede subestimar detalles o procedimientos cuando los considera burocráticos.<br><br>" +
-        "<strong>Entornos donde suele rendir mejor:</strong><br>" +
-        "• Puestos con responsabilidad clara sobre resultados, toma de decisiones y solución de problemas.<br>" +
-        "• Ambientes donde se valoren la iniciativa, la autonomía y la capacidad de respuesta rápida.";
+        "• Riesgo de priorizar el resultado por encima de la relación y el proceso.<br>" +
+        "• Tendencia a subestimar procedimientos cuando se perciben como burocráticos.<br><br>" +
+        "<strong>Impacto en el entorno laboral:</strong><br>" +
+        "• Suele dinamizar el trabajo cuando hay urgencia o necesidad de cambios rápidos.<br>" +
+        "• Puede entrar en conflicto con estilos más cautelosos, analíticos o orientados a la estabilidad.<br>" +
+        "• Requiere espacios donde se le permita proponer mejoras y asumir responsabilidad.";
     } else if (mainDim === "I") {
       mainDesc =
         "El resultado sugiere un estilo predominante de Influencia. " +
         "Las personas con este perfil se caracterizan por su orientación a las relaciones, la comunicación y la persuasión. " +
-        "Tienden a generar ambientes cordiales, motivar a otros y construir redes de apoyo.";
+        "Buscan generar ambientes cordiales y suelen aportar energía y optimismo al equipo.";
       details =
-        "<strong>Fortalezas habituales:</strong><br>" +
-        "• Habilidad para establecer confianza y cercanía con diferentes personas.<br>" +
-        "• Facilidad para comunicar ideas, motivar y generar compromiso en el equipo.<br>" +
-        "• Capacidad para adaptarse socialmente a distintos contextos y perfiles.<br><br>" +
-        "<strong>Riesgos o puntos a cuidar:</strong><br>" +
-        "• Puede perder interés en tareas muy rutinarias o solitarias.<br>" +
-        "• Tendencia a ser optimista y subestimar tiempos, detalles o riesgos.<br>" +
-        "• Puede evitar confrontaciones necesarias para mantener la armonía del grupo.<br><br>" +
-        "<strong>Entornos donde suele rendir mejor:</strong><br>" +
-        "• Funciones que incluyan atención a usuarios, trabajo en equipo, docencia, coordinación o liderazgo participativo.<br>" +
-        "• Espacios donde se valore la comunicación abierta y el intercambio de ideas.";
+        "<strong>Fortalezas principales:</strong><br>" +
+        "• Habilidad para establecer confianza y cercanía con diferentes personas usuarias y colegas.<br>" +
+        "• Facilidad para comunicar ideas y motivar al equipo durante procesos de cambio.<br>" +
+        "• Capacidad para adaptarse socialmente a distintos contextos y perfiles de personas.<br><br>" +
+        "<strong>Posibles áreas de tensión:</strong><br>" +
+        "• Puede dispersarse si las tareas son muy rutinarias o poco interactivas.<br>" +
+        "• Riesgo de subestimar tiempos o detalles técnicos por exceso de optimismo.<br>" +
+        "• Tendencia a evitar confrontaciones directas para no afectar la armonía del grupo.<br><br>" +
+        "<strong>Impacto en el entorno laboral:</strong><br>" +
+        "• Favorece la integración de equipos multidisciplinarios y el clima organizacional positivo.<br>" +
+        "• Es útil en roles de orientación, capacitación, coordinación o atención a usuarios.<br>" +
+        "• Requiere lineamientos claros para equilibrar la parte relacional con el cumplimiento de objetivos.";
     } else if (mainDim === "S") {
       mainDesc =
         "El resultado sugiere un estilo predominante de Estabilidad. " +
-        "Las personas con este perfil suelen ser constantes, pacientes y confiables. " +
-        "Prefieren entornos predecibles, colaborativos y con ritmos de trabajo sostenidos.";
+        "Las personas con este perfil tienden a ser pacientes, constantes y confiables, valorando entornos predecibles y colaborativos. " +
+        "Suelen enfocarse en la continuidad, el acompañamiento y el apoyo al equipo.";
       details =
-        "<strong>Fortalezas habituales:</strong><br>" +
-        "• Perseverancia y consistencia en el seguimiento de tareas y procesos.<br>" +
-        "• Disposición para apoyar a otras personas y mantener la armonía del equipo.<br>" +
-        "• Capacidad para trabajar bajo metodologías estables y cumplir compromisos a largo plazo.<br><br>" +
-        "<strong>Riesgos o puntos a cuidar:</strong><br>" +
-        "• Puede mostrar resistencia ante cambios bruscos o decisiones apresuradas.<br>" +
-        "• Tendencia a posponer conversaciones difíciles para evitar conflictos.<br>" +
-        "• Puede sentirse saturado si no se le da tiempo suficiente para adaptarse a nuevas formas de trabajo.<br><br>" +
-        "<strong>Entornos donde suele rendir mejor:</strong><br>" +
-        "• Áreas donde se requiera continuidad, atención cuidadosa y soporte al equipo o a las personas usuarias.<br>" +
-        "• Equipos con estructura clara, roles definidos y cambios planificados.";
+        "<strong>Fortalezas principales:</strong><br>" +
+        "• Perseverancia y consistencia en el seguimiento de tareas y procedimientos establecidos.<br>" +
+        "• Disposición para escuchar, contener y apoyar a compañeros y personas usuarias.<br>" +
+        "• Capacidad para mantener la calma en situaciones de tensión, aportando equilibrio al equipo.<br><br>" +
+        "<strong>Posibles áreas de tensión:</strong><br>" +
+        "• Puede mostrar resistencia ante cambios bruscos o decisiones muy aceleradas.<br>" +
+        "• Tendencia a postergar conversaciones difíciles o confrontaciones necesarias.<br>" +
+        "• Puede sentirse saturado si no se le da tiempo para adaptarse a nuevas demandas.<br><br>" +
+        "<strong>Impacto en el entorno laboral:</strong><br>" +
+        "• Contribuye a que los procesos se sostengan en el tiempo y se mantenga la calidad diaria del servicio.<br>" +
+        "• Funciona bien en equipos donde se valora la cooperación y el apoyo mutuo.<br>" +
+        "• Requiere comunicación clara ante los cambios, explicando el sentido y los beneficios.";
     } else if (mainDim === "C") {
       mainDesc =
         "El resultado sugiere un estilo predominante de Cumplimiento. " +
-        "Las personas con este perfil se orientan al detalle, la calidad y la observancia de normas o lineamientos. " +
-        "Suelen analizar la información con cuidado antes de actuar y buscan minimizar errores.";
+        "Las personas con este perfil se orientan al detalle, la precisión y la observancia de normas, protocolos y lineamientos técnicos. " +
+        "Suelen analizar la información con profundidad antes de actuar.";
       details =
-        "<strong>Fortalezas habituales:</strong><br>" +
-        "• Alta precisión en tareas que requieren revisión cuidadosa de información o datos.<br>" +
-        "• Respeto por los procedimientos, la evidencia y los estándares de calidad.<br>" +
-        "• Capacidad para detectar inconsistencias, riesgos o fallas en procesos.<br><br>" +
-        "<strong>Riesgos o puntos a cuidar:</strong><br>" +
-        "• Puede detenerse demasiado tiempo en el análisis antes de tomar decisiones.<br>" +
-        "• Tendencia a ser autocrítico o exigente con el propio desempeño y el de otras personas.<br>" +
-        "• Puede percibirse como rígido cuando defiende normas o procedimientos técnicos.<br><br>" +
-        "<strong>Entornos donde suele rendir mejor:</strong><br>" +
-        "• Actividades que implican revisión, control de calidad, auditoría, análisis de información o cumplimiento normativo.<br>" +
-        "• Puestos donde se valoren la exactitud, la documentación y la trazabilidad de los procesos.";
+        "<strong>Fortalezas principales:</strong><br>" +
+        "• Alta precisión en tareas que implican registros, análisis de datos o control de calidad.<br>" +
+        "• Respeto por los procedimientos y las normativas institucionales.<br>" +
+        "• Capacidad para detectar inconsistencias, áreas de riesgo o desvíos en los procesos.<br><br>" +
+        "<strong>Posibles áreas de tensión:</strong><br>" +
+        "• Puede dedicar demasiado tiempo al análisis antes de tomar decisiones.<br>" +
+        "• Riesgo de ser autocrítico o exigente en exceso consigo mismo y con otras personas.<br>" +
+        "• Puede percibirse como rígido cuando defiende criterios técnicos o normativos.<br><br>" +
+        "<strong>Impacto en el entorno laboral:</strong><br>" +
+        "• Resulta clave para asegurar calidad, trazabilidad y cumplimiento normativo en el servicio.<br>" +
+        "• Aporta una mirada estructurada que complementa a perfiles más impulsivos o relacionales.<br>" +
+        "• Requiere espacios para argumentar y consensuar los criterios técnicos que sustenta.";
     } else {
       mainDesc =
         "El perfil muestra una combinación equilibrada de las dimensiones DISC, sin un rasgo claramente predominante. " +
-        "Esto puede asociarse con flexibilidad y capacidad de adaptación a diferentes contextos laborales.";
+        "Esto suele asociarse con flexibilidad y capacidad para ajustarse a diferentes demandas del entorno laboral.";
       details =
-        "En estos casos es útil revisar con más detalle los puntajes individuales (D, I, S, C) y el contexto de trabajo de la persona, " +
-        "para identificar en qué situaciones utiliza más cada estilo y qué ajustes pueden favorecer su desempeño.";
+        "<strong>Implicaciones generales:</strong><br>" +
+        "• Posible capacidad de adaptarse según la situación, el tipo de usuario o las características del equipo.<br>" +
+        "• Puede alternar entre tareas de análisis, interacción social, ejecución constante o toma de decisiones.<br>" +
+        "• Es conveniente revisar el contexto de trabajo actual para identificar qué dimensión utiliza más y en qué momentos.<br><br>" +
+        "Esta combinación puede ser muy útil en entornos cambiantes, siempre que cuente con lineamientos claros y espacios de acompañamiento.";
     }
 
-    return { title: "Perfil predominante: " + (dimNames[mainDim] || mainDim), mainDesc, details };
+    return {
+      title: "Perfil predominante: " + (dimNames[mainDim] || mainDim),
+      mainDesc,
+      details
+    };
+  }
+
+  /******************** PLAN DE CAPACITACIÓN DETALLADO ********************/
+  function generateTrainingPlan(mainDim, scores) {
+    let plan = "";
+
+    if (mainDim === "D") {
+      plan =
+        "<strong>Objetivo general de capacitación:</strong><br>" +
+        "Canalizar la orientación a resultados hacia un liderazgo efectivo, considerando el impacto en el equipo, " +
+        "el cuidado de la comunicación y el respeto a los procesos institucionales.<br><br>" +
+
+        "<strong>Líneas de desarrollo recomendadas:</strong><br>" +
+        "1) <u>Liderazgo colaborativo y gestión de equipos</u><br>" +
+        "• Estrategias para integrar diferentes estilos de personalidad en el equipo.<br>" +
+        "• Técnicas para delegar de manera clara, estableciendo metas y criterios de seguimiento.<br>" +
+        "• Manejo de la autoridad sin caer en imposición o confrontación innecesaria.<br><br>" +
+        "2) <u>Comunicación asertiva en contextos de presión</u><br>" +
+        "• Herramientas para expresar desacuerdos sin descalificar ni invalidar.<br>" +
+        "• Técnicas de escucha activa para incorporar la visión de otras personas en la toma de decisiones.<br>" +
+        "• Estrategias para dar retroalimentación constructiva al equipo.<br><br>" +
+        "3) <u>Gestión de riesgos y toma de decisiones basadas en datos</u><br>" +
+        "• Análisis de información cuantitativa y cualitativa antes de tomar decisiones críticas.<br>" +
+        "• Identificación de riesgos clínicos, operativos o administrativos y priorización de acciones.<br>" +
+        "• Uso de indicadores para evaluar el impacto de las decisiones en la calidad del servicio.<br><br>" +
+
+        "<strong>Modalidades sugeridas:</strong><br>" +
+        "• Talleres prácticos de liderazgo y simulación de casos complejos.<br>" +
+        "• Acompañamiento o mentoría con jefaturas que modelen liderazgo firme pero empático.<br>" +
+        "• Revisión periódica de indicadores y planes de mejora elaborados por la propia persona.<br><br>" +
+
+        "<strong>Indicadores de avance:</strong><br>" +
+        "• Reducción de conflictos generados por la forma de comunicar decisiones.<br>" +
+        "• Mayor participación del equipo en la definición de metas y en la propuesta de mejoras.<br>" +
+        "• Cumplimiento de objetivos sin deterioro significativo del clima laboral.";
+    } else if (mainDim === "I") {
+      plan =
+        "<strong>Objetivo general de capacitación:</strong><br>" +
+        "Fortalecer el uso de las habilidades interpersonales para favorecer la coordinación, la orientación a usuarios " +
+        "y el trabajo en equipo, incorporando también disciplina en la gestión del tiempo y el seguimiento de tareas.<br><br>" +
+
+        "<strong>Líneas de desarrollo recomendadas:</strong><br>" +
+        "1) <u>Comunicación efectiva y manejo de grupos</u><br>" +
+        "• Técnicas para conducir reuniones productivas, con acuerdos claros y tiempos definidos.<br>" +
+        "• Herramientas para facilitar espacios de diálogo y resolución de problemas en equipo.<br>" +
+        "• Estrategias para adaptar el mensaje según el perfil de la audiencia (usuarios, colegas, directivos).<br><br>" +
+        "2) <u>Gestión del tiempo y priorización</u><br>" +
+        "• Diseño de agendas diarias y semanales con seguimiento de compromisos.<br>" +
+        "• Identificación de tareas críticas versus actividades de menor impacto.<br>" +
+        "• Uso de listas, recordatorios y tableros para evitar la dispersión en múltiples actividades.<br><br>" +
+        "3) <u>Manejo de límites y confrontación constructiva</u><br>" +
+        "• Estrategias para abordar conversaciones difíciles sin perder la relación de confianza.<br>" +
+        "• Habilidades para poner límites claros a conductas que afectan el trabajo del equipo.<br>" +
+        "• Técnicas de negociación colaborativa ante diferencias de criterio.<br><br>" +
+
+        "<strong>Modalidades sugeridas:</strong><br>" +
+        "• Talleres vivenciales de comunicación y trabajo en equipo.<br>" +
+        "• Espacios de co-visión o supervisión grupal donde se analicen casos reales de interacción.<br>" +
+        "• Uso de herramientas digitales simples para organizar tareas y proyectos compartidos.<br><br>" +
+
+        "<strong>Indicadores de avance:</strong><br>" +
+        "• Mayor puntualidad y cumplimiento de acuerdos definidos en reuniones.<br>" +
+        "• Disminución de tareas postergadas por falta de seguimiento.<br>" +
+        "• Capacidad para sostener conversaciones difíciles con respeto y claridad.";
+    } else if (mainDim === "S") {
+      plan =
+        "<strong>Objetivo general de capacitación:</strong><br>" +
+        "Potenciar la estabilidad y la constancia como base para la calidad del servicio, incorporando herramientas " +
+        "para gestionar el cambio, expresar necesidades y participar activamente en la mejora de procesos.<br><br>" +
+
+        "<strong>Líneas de desarrollo recomendadas:</strong><br>" +
+        "1) <u>Manejo del cambio y resiliencia</u><br>" +
+        "• Comprender las fases emocionales del cambio en el ámbito laboral.<br>" +
+        "• Estrategias para adaptarse a nuevas formas de trabajo manteniendo la estabilidad personal.<br>" +
+        "• Identificación de recursos de apoyo (jefaturas, pares, protocolos) ante cambios importantes.<br><br>" +
+        "2) <u>Comunicación asertiva y expresión de necesidades</u><br>" +
+        "• Técnicas para expresar desacuerdos sin evitar el conflicto ni generar tensión innecesaria.<br>" +
+        "• Herramientas para pedir apoyo, aclarar expectativas y negociar cargas de trabajo.<br>" +
+        "• Desarrollo de frases modelo para hacer solicitudes y dar retroalimentación respetuosa.<br><br>" +
+        "3) <u>Participación en mejora de procesos</u><br>" +
+        "• Identificación de oportunidades de mejora en el día a día del servicio.<br>" +
+        "• Uso de formatos simples para proponer cambios y documentar sugerencias.<br>" +
+        "• Trabajo en pequeños grupos para revisar procedimientos y proponer ajustes realistas.<br><br>" +
+
+        "<strong>Modalidades sugeridas:</strong><br>" +
+        "• Talleres sobre afrontamiento del estrés y manejo del cambio.<br>" +
+        "• Espacios de reflexión guiada sobre experiencias de trabajo en equipo.<br>" +
+        "• Participación en comités o grupos de mejora continua con acompañamiento inicial.<br><br>" +
+
+        "<strong>Indicadores de avance:</strong><br>" +
+        "• Mayor participación en reuniones donde se toman decisiones.<br>" +
+        "• Incremento de propuestas concretas para optimizar la operación del servicio.<br>" +
+        "• Disminución de la sensación de saturación o desbordamiento ante cambios.";
+    } else if (mainDim === "C") {
+      plan =
+        "<strong>Objetivo general de capacitación:</strong><br>" +
+        "Aprovechar la orientación al detalle y al cumplimiento de normas para fortalecer la calidad del servicio, " +
+        "equilibrándolo con habilidades de comunicación, flexibilidad y priorización.<br><br>" +
+
+        "<strong>Líneas de desarrollo recomendadas:</strong><br>" +
+        "1) <u>Priorización y manejo de la carga de trabajo</u><br>" +
+        "• Técnicas para distinguir lo urgente de lo importante sin perder la calidad.<br>" +
+        "• Estrategias para evitar la sobrecarga por perfeccionismo excesivo.<br>" +
+        "• Uso de herramientas de planificación que incluyan márgenes de flexibilidad.<br><br>" +
+        "2) <u>Comunicación y trabajo interdisciplinario</u><br>" +
+        "• Desarrollo de habilidades para explicar criterios técnicos en lenguaje accesible.<br>" +
+        "• Entrenamiento en escucha empática hacia perfiles más orientados a personas o resultados rápidos.<br>" +
+        "• Estrategias para negociar ajustes en procedimientos sin comprometer la seguridad ni la normatividad.<br><br>" +
+        "3) <u>Manejo de la autocrítica y del error</u><br>" +
+        "• Herramientas para transformar el error en una oportunidad de aprendizaje estructurado.<br>" +
+        "• Técnicas para modular la autoexigencia y prevenir desgaste emocional.<br>" +
+        "• Espacios para revisar casos críticos con enfoque en lecciones aprendidas, no en culpables.<br><br>" +
+
+        "<strong>Modalidades sugeridas:</strong><br>" +
+        "• Talleres sobre gestión de la calidad y mejora continua con enfoque práctico.<br>" +
+        "• Grupos de análisis de casos donde se revisen procedimientos y desviaciones.<br>" +
+        "• Acompañamiento en la implementación de pequeños ajustes que permitan mayor flexibilidad controlada.<br><br>" +
+
+        "<strong>Indicadores de avance:</strong><br>" +
+        "• Capacidad para priorizar tareas sin perder los estándares mínimos requeridos.<br>" +
+        "• Mayor apertura al intercambio de puntos de vista con otros perfiles DISC.<br>" +
+        "• Disminución de la frustración ante errores inevitables y mejor aprovechamiento de la retroalimentación.";
+    } else {
+      plan =
+        "<strong>Objetivo general de capacitación:</strong><br>" +
+        "Aprovechar la flexibilidad del perfil combinado, orientando el desarrollo hacia la claridad de rol, " +
+        "la toma de decisiones y la integración equilibrada de tareas técnicas y relacionales.<br><br>" +
+
+        "<strong>Líneas de desarrollo recomendadas:</strong><br>" +
+        "1) <u>Claridad de rol y responsabilidades</u><br>" +
+        "• Definición conjunta de expectativas, productos esperados y límites de actuación.<br>" +
+        "• Herramientas para organizar el trabajo cuando hay múltiples demandas.<br><br>" +
+        "2) <u>Fortalecimiento de la toma de decisiones</u><br>" +
+        "• Análisis de casos donde sea necesario decidir bajo presión o con información incompleta.<br>" +
+        "• Estrategias para construir criterios personales de priorización y acción.<br><br>" +
+        "3) <u>Integración de fortalezas múltiples</u><br>" +
+        "• Identificación de en qué contextos conviene activar más la Dominancia, Influencia, Estabilidad o Cumplimiento.<br>" +
+        "• Diseño de un plan personal donde se señale cómo utilizar cada dimensión en el trabajo cotidiano.<br><br>" +
+
+        "<strong>Modalidades sugeridas:</strong><br>" +
+        "• Sesiones de coaching o tutoría centradas en definición de objetivos profesionales.<br>" +
+        "• Talleres breves sobre toma de decisiones y gestión de prioridades.<br><br>" +
+
+        "<strong>Indicadores de avance:</strong><br>" +
+        "• Mayor claridad al describir su rol y sus límites en el equipo.<br>" +
+        "• Sensación de control y propósito frente a las demandas del servicio.";
+    }
+
+    return plan;
   }
 
   /******************** GUARDADO RESULTADOS ********************/
-  async function saveResult(scores, mainDim) {
+  async function saveResult(scores, mainDim, interpretation, trainingPlan) {
     const existingLocal = readLocal(STORAGE_KEYS.resultados, []);
     const now = new Date();
     const fecha = now.toISOString().slice(0, 10) + " " + now.toTimeString().slice(0, 8);
@@ -1176,7 +1348,11 @@
       fechaEpoch,
       ...w,
       scores: { D: scores.D, I: scores.I, S: scores.S, C: scores.C },
-      perfil: mainDim
+      perfil: mainDim,
+      interpTitle: interpretation.title,
+      interpMain: interpretation.mainDesc,
+      interpDetails: interpretation.details,
+      trainingPlan: trainingPlan
     };
 
     existingLocal.push(record);
@@ -1194,11 +1370,12 @@
     await loadResults();
   }
 
-  function renderResultView(scores, mainDim, interp) {
+  function renderResultView(scores, mainDim, interp, trainingPlan) {
     const w = currentWorkerData;
     const personalDiv = document.getElementById("result-personal");
     const scoresDiv = document.getElementById("result-scores");
     const interpDiv = document.getElementById("result-interpretation");
+    const trainingDiv = document.getElementById("result-training");
 
     if (personalDiv) {
       personalDiv.innerHTML = [
@@ -1230,10 +1407,17 @@
 
     if (interpDiv) {
       interpDiv.innerHTML = [
-        "<h3>Interpretación del perfil</h3>",
+        "<h3>Análisis interpretativo del perfil</h3>",
         "<p><span class=\"badge\">" + interp.title + "</span></p>",
         "<p>" + interp.mainDesc + "</p>",
         "<p class=\"text-muted\">" + interp.details + "</p>"
+      ].join("");
+    }
+
+    if (trainingDiv) {
+      trainingDiv.innerHTML = [
+        "<h3>Sugerencias de desarrollo y capacitación</h3>",
+        "<p class=\"text-muted\">" + trainingPlan + "</p>"
       ].join("");
     }
   }
@@ -1388,20 +1572,24 @@
     tbody.innerHTML = "";
     resultadosCache.forEach(r => {
       const tr = document.createElement("tr");
+      const interpResumen = r.interpMain ? (r.interpMain.slice(0, 80) + (r.interpMain.length > 80 ? "..." : "")) : "";
+      const planResumen = r.trainingPlan ? (r.trainingPlan.slice(0, 80) + (r.trainingPlan.length > 80 ? "..." : "")) : "";
       tr.innerHTML =
-        "<td>" + r.fecha + "</td>" +
-        "<td>" + r.unidad + "</td>" +
-        "<td>" + r.matricula + "</td>" +
-        "<td>" + r.nombre + "</td>" +
-        "<td>" + r.categoria + "</td>" +
-        "<td>" + r.puesto + "</td>" +
-        "<td>" + r.edad + "</td>" +
-        "<td>" + r.lugarNacimiento + "</td>" +
-        "<td>" + r.scores.D + "</td>" +
-        "<td>" + r.scores.I + "</td>" +
-        "<td>" + r.scores.S + "</td>" +
-        "<td>" + r.scores.C + "</td>" +
-        "<td>" + r.perfil + "</td>";
+        "<td>" + (r.fecha || "") + "</td>" +
+        "<td>" + (r.unidad || "") + "</td>" +
+        "<td>" + (r.matricula || "") + "</td>" +
+        "<td>" + (r.nombre || "") + "</td>" +
+        "<td>" + (r.categoria || "") + "</td>" +
+        "<td>" + (r.puesto || "") + "</td>" +
+        "<td>" + (r.edad || "") + "</td>" +
+        "<td>" + (r.lugarNacimiento || "") + "</td>" +
+        "<td>" + (r.scores ? r.scores.D : "") + "</td>" +
+        "<td>" + (r.scores ? r.scores.I : "") + "</td>" +
+        "<td>" + (r.scores ? r.scores.S : "") + "</td>" +
+        "<td>" + (r.scores ? r.scores.C : "") + "</td>" +
+        "<td>" + (r.perfil || "") + "</td>" +
+        "<td>" + interpResumen + "</td>" +
+        "<td>" + planResumen + "</td>";
       tbody.appendChild(tr);
     });
   }
@@ -1415,17 +1603,21 @@
     const sep = ",";
     const header = [
       "Fecha","Unidad","Matricula","Nombre","Categoria","Puesto",
-      "Edad","LugarNacimiento","D","I","S","C","Perfil"
+      "Edad","LugarNacimiento","D","I","S","C","Perfil",
+      "InterpretacionTitulo","InterpretacionPrincipal","InterpretacionDetalle","PlanCapacitacion"
     ];
     const lines = [header.join(sep)];
     data.forEach(r => {
       const row = [
-        r.fecha,r.unidad,r.matricula,r.nombre,r.categoria,r.puesto,
-        r.edad,r.lugarNacimiento,r.scores.D,r.scores.I,r.scores.S,r.scores.C,r.perfil
+        r.fecha || "", r.unidad || "", r.matricula || "", r.nombre || "", r.categoria || "", r.puesto || "",
+        r.edad || "", r.lugarNacimiento || "",
+        r.scores ? r.scores.D : "", r.scores ? r.scores.I : "", r.scores ? r.scores.S : "", r.scores ? r.scores.C : "",
+        r.perfil || "",
+        r.interpTitle || "", r.interpMain || "", r.interpDetails || "", r.trainingPlan || ""
       ];
       const escaped = row.map(v => {
         const value = v != null ? String(v) : "";
-        if (value.includes('"') || value.includes(",") || value.includes("\n")) {
+        if (value.includes('"') || value.includes(",") || value.includes("\n") || value.includes("\r")) {
           return '"' + value.replace(/"/g, '""') + '"';
         }
         return value;
