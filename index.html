@@ -6,8 +6,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     :root {
-      --imss-green-main: #006657;  /* IMSS Bienestar */
-      --imss-green-dark: #134E39;  /* IMSS institucional */
+      --imss-green-main: #006657;
+      --imss-green-dark: #134E39;
       --imss-green-soft: #e6f2ef;
       --accent-gold: #BC955C;
       --bg: #f5f7f6;
@@ -50,9 +50,8 @@
       color: var(--imss-green-main);
       cursor: pointer;
     }
-    header nav a:hover {
-      text-decoration: underline;
-    }
+    header nav a:hover { text-decoration: underline; }
+
     main {
       max-width: 1100px;
       margin: 1.5rem auto 2.5rem;
@@ -149,6 +148,12 @@
       color: var(--imss-green-main);
       padding-left: 0;
     }
+    .btn-disabled {
+      background: #cfd4d1 !important;
+      color: #888 !important;
+      cursor: default !important;
+      opacity: 0.7;
+    }
     .error {
       color: var(--danger);
       font-size: 0.8rem;
@@ -158,9 +163,7 @@
       font-size: 0.8rem;
       color: var(--muted);
     }
-    .hidden {
-      display: none !important;
-    }
+    .hidden { display: none !important; }
 
     /* Encabezado de bloque del test */
     .block-header {
@@ -199,7 +202,7 @@
       text-align: right;
     }
 
-    /* Tabla estilo ejemplo */
+    /* Tabla estilo test */
     .test-title {
       font-size: 1.1rem;
       font-weight: 700;
@@ -238,15 +241,10 @@
     .table-row:nth-child(even) {
       background: #fafcfb;
     }
-    .table-row-label {
-      font-weight: 500;
-    }
-    .choice-cell {
-      display: flex;
-      justify-content: center;
-    }
+    .table-row-label { font-weight: 500; }
+    .choice-cell { display: flex; justify-content: center; }
 
-    /* Radios personalizados tipo check */
+    /* Radios tipo check */
     .choice-radio {
       appearance: none;
       -webkit-appearance: none;
@@ -290,6 +288,7 @@
       gap: 0.5rem;
       flex-wrap: wrap;
     }
+
     @media (max-width: 650px) {
       .table-header, .table-row {
         grid-template-columns: minmax(0, 1.6fr) repeat(2, 70px);
@@ -313,9 +312,7 @@
       font-weight: 600;
       color: var(--imss-green-dark);
     }
-    tbody tr:nth-child(even) {
-      background: #fafcfb;
-    }
+    tbody tr:nth-child(even) { background: #fafcfb; }
     .admin-tabs {
       display: flex;
       flex-wrap: wrap;
@@ -442,9 +439,9 @@
         Debe seleccionar una opción en ambas columnas para continuar.
       </div>
       <div class="btn-row" style="margin-top:0;">
-        <button class="btn-secondary" type="button" onclick="prevGroup()">Anterior</button>
-        <button class="btn-primary" type="button" onclick="nextGroup()">Siguiente</button>
-        <button class="btn-success" type="button" onclick="finishTest()">Finalizar test</button>
+        <button id="btn-prev" class="btn-secondary" type="button" onclick="prevGroup()">Anterior</button>
+        <button id="btn-next" class="btn-primary" type="button" onclick="nextGroup()">Siguiente</button>
+        <button id="btn-finish" class="btn-success" type="button" onclick="finishTest()">Finalizar test</button>
       </div>
     </div>
   </section>
@@ -566,7 +563,7 @@
     resultados: "pdl_resultados"
   };
 
-  // 24 bloques de 4 adjetivos (versión propia inspirada en DISC/Cleaver)
+  // 24 bloques de 4 adjetivos (versión propia inspirada en DISC)
   const TEST_GROUPS = [
     { words: [
       { text: "Gentil / Suave", dim: "S" },
@@ -668,7 +665,7 @@
       { text: "Independiente", dim: "D" },
       { text: "Inspirador", dim: "I" },
       { text: "Comprensivo", dim: "S" },
-      { text: "Disciplanado", dim: "C" }
+      { text: "Disciplinado", dim: "C" }
     ]},
     { words: [
       { text: "Franco", dim: "D" },
@@ -756,12 +753,10 @@
   }
 
   function writeLocal(key, value) {
-    try {
-      localStorage.setItem(key, JSON.stringify(value));
-    } catch {}
+    try { localStorage.setItem(key, JSON.stringify(value)); } catch {}
   }
 
-  /******************** CONFIG INICIAL (UNIDADES / CATEGORÍAS) ********************/
+  /******************** CONFIG INICIAL ********************/
   function ensureDefaultConfig() {
     let unidades = readLocal(STORAGE_KEYS.unidades, null);
     let categorias = readLocal(STORAGE_KEYS.categorias, null);
@@ -854,6 +849,7 @@
     testAnswers = TEST_GROUPS.map(() => ({ most: null, least: null }));
     renderCurrentGroup();
     updateProgressUI();
+    updateNavButtons();
     showSection("test");
   }
 
@@ -882,7 +878,7 @@
       html += '<div class="choice-cell">';
       html += `<input class="choice-radio choice-minus" type="radio" name="least" value="${idx}" ${leastChecked}>`;
       html += '</div>';
-      html += '</div>';
+      html += '</div>`;
     });
 
     html += '</div>';
@@ -890,12 +886,61 @@
     document.getElementById("test-error").classList.add("hidden");
     document.getElementById("block-label").textContent =
       "Bloque " + (currentGroupIndex + 1) + " de " + TEST_GROUPS.length;
+
+    // Evitar que la misma palabra sea MÁS y MENOS a la vez (a nivel de interfaz)
+    setupChoiceMutualExclusion();
+  }
+
+  function setupChoiceMutualExclusion() {
+    const container = document.getElementById("test-group-container");
+    const plusRadios = container.querySelectorAll(".choice-plus");
+    const minusRadios = container.querySelectorAll(".choice-minus");
+
+    plusRadios.forEach(r => {
+      r.addEventListener("change", function() {
+        if (!this.checked) return;
+        const val = this.value;
+        const sameMinus = container.querySelector('.choice-minus[value="' + val + '"]');
+        if (sameMinus && sameMinus.checked) sameMinus.checked = false;
+      });
+    });
+    minusRadios.forEach(r => {
+      r.addEventListener("change", function() {
+        if (!this.checked) return;
+        const val = this.value;
+        const samePlus = container.querySelector('.choice-plus[value="' + val + '"]');
+        if (samePlus && samePlus.checked) samePlus.checked = false;
+      });
+    });
   }
 
   function updateProgressUI() {
     const progress = (currentGroupIndex / TEST_GROUPS.length) * 100;
     document.getElementById("progress-bar").style.width = progress + "%";
     document.getElementById("progress-percent").textContent = Math.round(progress) + "%";
+  }
+
+  function updateNavButtons() {
+    const btnPrev = document.getElementById("btn-prev");
+    const btnNext = document.getElementById("btn-next");
+
+    // Prev deshabilitado en el primer bloque
+    if (currentGroupIndex === 0) {
+      btnPrev.disabled = true;
+      btnPrev.classList.add("btn-disabled");
+    } else {
+      btnPrev.disabled = false;
+      btnPrev.classList.remove("btn-disabled");
+    }
+
+    // Next deshabilitado/ gris en el último bloque
+    if (currentGroupIndex === TEST_GROUPS.length - 1) {
+      btnNext.disabled = true;
+      btnNext.classList.add("btn-disabled");
+    } else {
+      btnNext.disabled = false;
+      btnNext.classList.remove("btn-disabled");
+    }
   }
 
   function captureCurrentGroupSelection() {
@@ -907,7 +952,7 @@
     leastRadios.forEach(r => { if (r.checked) least = parseInt(r.value, 10); });
 
     if (most === null || least === null) {
-      showTestError("Debe elegir una palabra como MÁS (+) y otra como MENOS (-).");
+      showTestError("Debe elegir una palabra como MÁS (+) y otra como MENOS (-) en este bloque.");
       return false;
     }
     if (most === least) {
@@ -930,6 +975,7 @@
       currentGroupIndex++;
       renderCurrentGroup();
       updateProgressUI();
+      updateNavButtons();
     }
   }
 
@@ -939,6 +985,7 @@
       currentGroupIndex--;
       renderCurrentGroup();
       updateProgressUI();
+      updateNavButtons();
     }
   }
 
@@ -1003,18 +1050,88 @@
       S: "Estabilidad (S)",
       C: "Cumplimiento (C)"
     };
-    const baseText = {
-      D: "Tiende a orientarse a los resultados, los retos y la toma de decisiones directas.",
-      I: "Tiende a orientarse a las personas, la comunicación y la persuasión.",
-      S: "Tiende a la estabilidad, el apoyo y la cooperación en equipo.",
-      C: "Tiende al detalle, la calidad y el cumplimiento de normas y procedimientos."
-    };
-    return {
-      title: "Perfil predominante: " + (dimNames[mainDim] || mainDim),
-      mainDesc: baseText[mainDim] || "",
-      details: "El perfil predominante indica la tendencia principal del estilo de respuesta laboral. " +
-        "Las demás dimensiones también están presentes y se reflejan en los puntajes DISC."
-    };
+
+    let mainDesc = "";
+    let details = "";
+
+    if (mainDim === "D") {
+      mainDesc =
+        "El resultado sugiere un estilo predominante de Dominancia. " +
+        "Las personas con este perfil suelen enfocarse en resultados concretos, retos y logros visibles. " +
+        "Tienden a tomar decisiones rápidas, asumir riesgos calculados y sentirse cómodas en contextos de presión o cambio.";
+      details =
+        "<strong>Fortalezas habituales:</strong><br>" +
+        "• Capacidad para dirigir y tomar decisiones sin paralizarse.<br>" +
+        "• Orientación clara a objetivos y cumplimiento de metas exigentes.<br>" +
+        "• Rapidez para abordar problemas y remover obstáculos.<br><br>" +
+        "<strong>Riesgos o puntos a cuidar:</strong><br>" +
+        "• Puede parecer impaciente o poco sensible ante el ritmo de otras personas.<br>" +
+        "• Tendencia a priorizar el resultado por encima del proceso o la relación.<br>" +
+        "• Puede subestimar detalles o procedimientos cuando los considera burocráticos.<br><br>" +
+        "<strong>Entornos donde suele rendir mejor:</strong><br>" +
+        "• Puestos con responsabilidad clara sobre resultados, toma de decisiones y solución de problemas.<br>" +
+        "• Ambientes donde se valoren la iniciativa, la autonomía y la capacidad de respuesta rápida.";
+    } else if (mainDim === "I") {
+      mainDesc =
+        "El resultado sugiere un estilo predominante de Influencia. " +
+        "Las personas con este perfil se caracterizan por su orientación a las relaciones, la comunicación y la persuasión. " +
+        "Tienden a generar ambientes cordiales, motivar a otros y construir redes de apoyo.";
+      details =
+        "<strong>Fortalezas habituales:</strong><br>" +
+        "• Habilidad para establecer confianza y cercanía con diferentes personas.<br>" +
+        "• Facilidad para comunicar ideas, motivar y generar compromiso en el equipo.<br>" +
+        "• Capacidad para adaptarse socialmente a distintos contextos y perfiles.<br><br>" +
+        "<strong>Riesgos o puntos a cuidar:</strong><br>" +
+        "• Puede perder interés en tareas muy rutinarias o solitarias.<br>" +
+        "• Tendencia a ser optimista y subestimar tiempos, detalles o riesgos.<br>" +
+        "• Puede evitar confrontaciones necesarias para mantener la armonía del grupo.<br><br>" +
+        "<strong>Entornos donde suele rendir mejor:</strong><br>" +
+        "• Funciones que incluyan atención a usuarios, trabajo en equipo, docencia, coordinación o liderazgo participativo.<br>" +
+        "• Espacios donde se valore la comunicación abierta y el intercambio de ideas.";
+    } else if (mainDim === "S") {
+      mainDesc =
+        "El resultado sugiere un estilo predominante de Estabilidad. " +
+        "Las personas con este perfil suelen ser constantes, pacientes y confiables. " +
+        "Prefieren entornos predecibles, colaborativos y con ritmos de trabajo sostenidos.";
+      details =
+        "<strong>Fortalezas habituales:</strong><br>" +
+        "• Perseverancia y consistencia en el seguimiento de tareas y procesos.<br>" +
+        "• Disposición para apoyar a otras personas y mantener la armonía del equipo.<br>" +
+        "• Capacidad para trabajar bajo metodologías estables y cumplir compromisos a largo plazo.<br><br>" +
+        "<strong>Riesgos o puntos a cuidar:</strong><br>" +
+        "• Puede mostrar resistencia ante cambios bruscos o decisiones apresuradas.<br>" +
+        "• Tendencia a posponer conversaciones difíciles para evitar conflictos.<br>" +
+        "• Puede sentirse saturado si no se le da tiempo suficiente para adaptarse a nuevas formas de trabajo.<br><br>" +
+        "<strong>Entornos donde suele rendir mejor:</strong><br>" +
+        "• Áreas donde se requiera continuidad, atención cuidadosa y soporte al equipo o a las personas usuarias.<br>" +
+        "• Equipos con estructura clara, roles definidos y cambios planificados.";
+    } else if (mainDim === "C") {
+      mainDesc =
+        "El resultado sugiere un estilo predominante de Cumplimiento. " +
+        "Las personas con este perfil se orientan al detalle, la calidad y la observancia de normas o lineamientos. " +
+        "Suelen analizar la información con cuidado antes de actuar y buscan minimizar errores.";
+      details =
+        "<strong>Fortalezas habituales:</strong><br>" +
+        "• Alta precisión en tareas que requieren revisión cuidadosa de información o datos.<br>" +
+        "• Respeto por los procedimientos, la evidencia y los estándares de calidad.<br>" +
+        "• Capacidad para detectar inconsistencias, riesgos o fallas en procesos.<br><br>" +
+        "<strong>Riesgos o puntos a cuidar:</strong><br>" +
+        "• Puede detenerse demasiado tiempo en el análisis antes de tomar decisiones.<br>" +
+        "• Tendencia a ser autocrítico o exigente con el propio desempeño y el de otras personas.<br>" +
+        "• Puede percibirse como rígido cuando defiende normas o procedimientos técnicos.<br><br>" +
+        "<strong>Entornos donde suele rendir mejor:</strong><br>" +
+        "• Actividades que implican revisión, control de calidad, auditoría, análisis de información o cumplimiento normativo.<br>" +
+        "• Puestos donde se valoren la exactitud, la documentación y la trazabilidad de los procesos.";
+    } else {
+      mainDesc =
+        "El perfil muestra una combinación equilibrada de las dimensiones DISC, sin un rasgo claramente predominante. " +
+        "Esto puede asociarse con flexibilidad y capacidad de adaptación a diferentes contextos laborales.";
+      details =
+        "En estos casos es útil revisar con más detalle los puntajes individuales (D, I, S, C) y el contexto de trabajo de la persona, " +
+        "para identificar en qué situaciones utiliza más cada estilo y qué ajustes pueden favorecer su desempeño.";
+    }
+
+    return { title: "Perfil predominante: " + (dimNames[mainDim] || mainDim), mainDesc, details };
   }
 
   /******************** GUARDADO Y MOSTRADO DE RESULTADOS ********************/
