@@ -1,0 +1,1403 @@
+
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Perfil de Dinámicas Laborales (PDL)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    :root {
+      --primary: #005baa;
+      --primary-light: #e6f0fa;
+      --accent: #f7a600;
+      --bg: #f5f7fa;
+      --text: #222;
+      --danger: #c62828;
+      --success: #2e7d32;
+      --card-radius: 8px;
+      --shadow: 0 2px 6px rgba(0,0,0,0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    header {
+      background: white;
+      box-shadow: var(--shadow);
+      padding: 0.75rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    header h1 {
+      font-size: 1.1rem;
+      margin: 0;
+      color: var(--primary);
+      font-weight: 700;
+    }
+
+    header nav a {
+      margin-left: 1rem;
+      font-size: 0.9rem;
+      text-decoration: none;
+      color: var(--primary);
+      cursor: pointer;
+    }
+
+    header nav a:hover {
+      text-decoration: underline;
+    }
+
+    main {
+      max-width: 1100px;
+      margin: 1.5rem auto 2.5rem;
+      padding: 0 1rem;
+    }
+
+    .card {
+      background: white;
+      border-radius: var(--card-radius);
+      box-shadow: var(--shadow);
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1.25rem;
+    }
+
+    h2 {
+      margin-top: 0;
+      font-size: 1.3rem;
+      color: var(--primary);
+    }
+
+    h3 {
+      margin-top: 1.2rem;
+      font-size: 1.05rem;
+    }
+
+    .subtitle {
+      font-size: 0.9rem;
+      color: #555;
+      margin-bottom: 0.75rem;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 0.75rem 1rem;
+    }
+
+    label {
+      display: block;
+      font-size: 0.82rem;
+      margin-bottom: 0.2rem;
+      font-weight: 600;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 0.45rem 0.55rem;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      font-size: 0.9rem;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      outline: 2px solid var(--primary-light);
+      border-color: var(--primary);
+    }
+
+    .btn-row {
+      margin-top: 1rem;
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    button {
+      border-radius: 4px;
+      border: none;
+      padding: 0.45rem 0.9rem;
+      font-size: 0.9rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+    }
+
+    .btn-secondary {
+      background: #e0e0e0;
+      color: #333;
+    }
+
+    .btn-danger {
+      background: var(--danger);
+      color: white;
+    }
+
+    .btn-success {
+      background: var(--success);
+      color: white;
+    }
+
+    .btn-link {
+      background: transparent;
+      color: var(--primary);
+      padding-left: 0;
+    }
+
+    .pill {
+      display: inline-block;
+      padding: 0.2rem 0.55rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      background: var(--primary-light);
+      color: var(--primary);
+      margin-left: 0.4rem;
+    }
+
+    .error {
+      color: var(--danger);
+      font-size: 0.8rem;
+      margin-top: 0.3rem;
+    }
+
+    .success {
+      color: var(--success);
+      font-size: 0.8rem;
+      margin-top: 0.3rem;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .test-group-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.9rem;
+      margin-bottom: 0.8rem;
+    }
+
+    .group-words {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 0.5rem 0.75rem;
+      margin-bottom: 0.8rem;
+    }
+
+    .word-card {
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      padding: 0.45rem 0.55rem;
+      font-size: 0.88rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+    }
+
+    .word-label {
+      font-weight: 600;
+    }
+
+    .word-controls {
+      display: flex;
+      gap: 0.4rem;
+      font-size: 0.78rem;
+    }
+
+    .word-controls label {
+      font-weight: normal;
+    }
+
+    .test-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 0.5rem;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .progress-bar-container {
+      background: #eee;
+      border-radius: 999px;
+      height: 6px;
+      overflow: hidden;
+      flex: 1;
+      min-width: 150px;
+    }
+
+    .progress-bar {
+      height: 100%;
+      background: var(--primary);
+      width: 0%;
+      transition: width 0.2s;
+    }
+
+    .scores-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 0.6rem;
+      margin: 0.6rem 0 0.5rem;
+    }
+
+    .score-card {
+      border-radius: 6px;
+      background: var(--primary-light);
+      padding: 0.5rem 0.6rem;
+      font-size: 0.85rem;
+    }
+
+    .score-card span {
+      font-weight: 700;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 0.15rem 0.5rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      background: var(--accent);
+      color: #222;
+      font-weight: 600;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.82rem;
+    }
+
+    th, td {
+      border: 1px solid #ddd;
+      padding: 0.4rem 0.45rem;
+      text-align: left;
+    }
+
+    th {
+      background: #f0f2f6;
+      font-weight: 600;
+    }
+
+    tbody tr:nth-child(even) {
+      background: #fafafa;
+    }
+
+    .admin-tabs {
+      display: flex;
+      gap: 0.25rem;
+      margin-bottom: 0.7rem;
+      flex-wrap: wrap;
+    }
+
+    .admin-tabs button {
+      font-size: 0.8rem;
+      padding: 0.35rem 0.7rem;
+    }
+
+    .admin-tabs button.active {
+      background: var(--primary);
+      color: white;
+    }
+
+    .inline-form {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-bottom: 0.7rem;
+      align-items: center;
+    }
+
+    .inline-form input {
+      max-width: 260px;
+    }
+
+    .text-muted {
+      font-size: 0.78rem;
+      color: #666;
+    }
+
+    @media (max-width: 600px) {
+      header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.35rem;
+      }
+      header nav a {
+        margin-left: 0;
+        margin-right: 0.75rem;
+      }
+    }
+  </style>
+</head>
+<body>
+<header>
+  <h1>Perfil de Dinámicas Laborales (PDL)</h1>
+  <nav>
+    <a onclick="showSection('worker')">Inicio</a>
+    <a onclick="showSection('worker')">Aplicar test</a>
+    <a onclick="showAdminAccess()">Administrador</a>
+  </nav>
+</header>
+
+<main>
+  <!-- SECCIÓN 1: CARÁTULA / DATOS DEL TRABAJADOR -->
+  <section id="section-worker" class="card">
+    <h2>Datos del trabajador <span class="pill">Paso 1 de 3</span></h2>
+    <p class="subtitle">
+      Complete los siguientes datos antes de iniciar el <strong>Test PDL – Perfil de Dinámicas Laborales</strong>.
+    </p>
+
+    <div class="form-grid">
+      <div>
+        <label for="unidad">Unidad *</label>
+        <select id="unidad">
+          <!-- opciones cargadas dinámicamente -->
+        </select>
+        <div id="unidad-error" class="error hidden">Seleccione una unidad.</div>
+      </div>
+      <div>
+        <label for="matricula">Matrícula *</label>
+        <input type="text" id="matricula" />
+        <div id="matricula-error" class="error hidden">Capture la matrícula.</div>
+      </div>
+      <div>
+        <label for="nombre">Nombre completo *</label>
+        <input type="text" id="nombre" />
+        <div id="nombre-error" class="error hidden">Capture el nombre completo.</div>
+      </div>
+      <div>
+        <label for="categoria">Categoría *</label>
+        <select id="categoria">
+          <!-- opciones cargadas dinámicamente -->
+        </select>
+        <div id="categoria-error" class="error hidden">Seleccione una categoría.</div>
+      </div>
+      <div>
+        <label for="puesto">Puesto que desempeña en el servicio *</label>
+        <input type="text" id="puesto" />
+        <div id="puesto-error" class="error hidden">Capture el puesto.</div>
+      </div>
+      <div>
+        <label for="fechaNacimiento">Fecha de nacimiento *</label>
+        <input type="date" id="fechaNacimiento" />
+        <div id="fechaNacimiento-error" class="error hidden">Capture la fecha de nacimiento.</div>
+      </div>
+      <div>
+        <label for="edad">Edad (años)</label>
+        <input type="text" id="edad" readonly />
+      </div>
+      <div>
+        <label for="lugarNacimiento">Lugar de nacimiento *</label>
+        <input type="text" id="lugarNacimiento" />
+        <div id="lugarNacimiento-error" class="error hidden">Capture el lugar de nacimiento.</div>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-primary" onclick="startTest()">Iniciar test PDL</button>
+      <button class="btn-link" type="button" onclick="showAdminAccess()">Acceso administrador</button>
+    </div>
+    <p class="text-muted">
+      Los datos se almacenan localmente para fines de registro y pueden descargarse en formato CSV desde el panel de administrador.
+    </p>
+  </section>
+
+  <!-- SECCIÓN 2: TEST PDL -->
+  <section id="section-test" class="card hidden">
+    <h2>Test PDL – Perfil de Dinámicas Laborales <span class="pill">Paso 2 de 3</span></h2>
+    <p class="subtitle">
+      En cada grupo hay <strong>cuatro palabras</strong>. Seleccione:
+      <br />
+      • La palabra que <strong>más</strong> lo describe.  
+      • La palabra que <strong>menos</strong> lo describe.
+      <br />
+      No puede elegir la misma palabra como "Más" y "Menos" dentro del mismo grupo.
+    </p>
+
+    <div id="test-group-container">
+      <!-- Grupo dinámico -->
+    </div>
+
+    <div class="test-nav">
+      <div>
+        <button class="btn-secondary" onclick="prevGroup()">⟵ Anterior</button>
+        <button class="btn-primary" onclick="nextGroup()">Siguiente ⟶</button>
+      </div>
+      <div style="display:flex;align-items:center;gap:0.6rem;min-width:220px;">
+        <span id="group-indicator" style="font-size:0.85rem;"></span>
+        <div class="progress-bar-container">
+          <div id="progress-bar" class="progress-bar"></div>
+        </div>
+      </div>
+      <div>
+        <button class="btn-success" onclick="finishTest()">Finalizar test</button>
+      </div>
+    </div>
+    <div id="test-error" class="error hidden" style="margin-top:0.4rem;"></div>
+  </section>
+
+  <!-- SECCIÓN 3: RESULTADOS INDIVIDUALES -->
+  <section id="section-results" class="card hidden">
+    <h2>Resultados del PDL <span class="pill">Paso 3 de 3</span></h2>
+    <div id="result-personal"></div>
+    <div id="result-scores"></div>
+    <div id="result-interpretation"></div>
+    <div class="btn-row">
+      <button class="btn-primary" onclick="resetForNewTest()">Aplicar a otro trabajador</button>
+      <button class="btn-secondary" onclick="showAdminAccess()">Ir a administrador</button>
+    </div>
+  </section>
+
+  <!-- SECCIÓN 4: ACCESO ADMINISTRADOR -->
+  <section id="section-admin-access" class="card hidden">
+    <h2>Acceso administrador</h2>
+    <p class="subtitle">Ingrese la clave de administrador para gestionar unidades, categorías y resultados.</p>
+    <div class="form-grid">
+      <div>
+        <label for="adminPasswordInput">Clave de administrador</label>
+        <input type="password" id="adminPasswordInput" />
+        <div id="admin-access-error" class="error hidden">Clave incorrecta.</div>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn-primary" onclick="tryAdminLogin()">Ingresar</button>
+      <button class="btn-secondary" onclick="showSection('worker')">Volver al inicio</button>
+    </div>
+    <p class="text-muted">
+      La clave se define en el código JavaScript del archivo <code>index.html</code>.
+    </p>
+  </section>
+
+  <!-- SECCIÓN 5: PANEL ADMINISTRADOR -->
+  <section id="section-admin" class="card hidden">
+    <h2>Panel de administración</h2>
+    <p class="subtitle">
+      Desde aquí puede administrar <strong>unidades</strong>, <strong>categorías</strong> y revisar/descargar resultados del PDL.
+    </p>
+
+    <div class="admin-tabs">
+      <button id="tab-unidades" class="btn-secondary active" onclick="setAdminTab('unidades')">Unidades</button>
+      <button id="tab-categorias" class="btn-secondary" onclick="setAdminTab('categorias')">Categorías</button>
+      <button id="tab-resultados" class="btn-secondary" onclick="setAdminTab('resultados')">Resultados</button>
+    </div>
+
+    <!-- TAB UNIDADES -->
+    <div id="admin-unidades">
+      <h3>Gestión de unidades</h3>
+      <div class="inline-form">
+        <input type="text" id="nuevaUnidad" placeholder="Nombre de nueva unidad" />
+        <button class="btn-primary" onclick="addUnidad()">Agregar</button>
+      </div>
+      <p class="text-muted">Estas unidades aparecen en el desplegable de la carátula del trabajador.</p>
+      <table>
+        <thead>
+          <tr>
+            <th>Unidad</th>
+            <th style="width:80px;">Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="tablaUnidades"></tbody>
+      </table>
+    </div>
+
+    <!-- TAB CATEGORÍAS -->
+    <div id="admin-categorias" class="hidden">
+      <h3>Gestión de categorías</h3>
+      <div class="inline-form">
+        <input type="text" id="nuevaCategoria" placeholder="Nombre de nueva categoría" />
+        <button class="btn-primary" onclick="addCategoria()">Agregar</button>
+      </div>
+      <p class="text-muted">Estas categorías aparecen en el desplegable de la carátula del trabajador.</p>
+      <table>
+        <thead>
+          <tr>
+            <th>Categoría</th>
+            <th style="width:80px;">Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="tablaCategorias"></tbody>
+      </table>
+    </div>
+
+    <!-- TAB RESULTADOS -->
+    <div id="admin-resultados" class="hidden">
+      <h3>Resultados registrados</h3>
+      <p class="text-muted">
+        Aquí se muestran los trabajadores que han completado el test PDL.  
+        Puede descargar la información en CSV para utilizarla en Excel.
+      </p>
+      <div class="btn-row" style="margin-bottom:0.6rem;">
+        <button class="btn-success" onclick="downloadCSV()">Descargar CSV</button>
+        <button class="btn-secondary" onclick="clearAllResults()">Borrar todos los resultados</button>
+      </div>
+      <div style="max-height:360px;overflow:auto;border:1px solid #ddd;border-radius:6px;">
+        <table>
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Unidad</th>
+              <th>Matrícula</th>
+              <th>Nombre</th>
+              <th>Categoría</th>
+              <th>Puesto</th>
+              <th>Edad</th>
+              <th>Lugar nac.</th>
+              <th>D</th>
+              <th>I</th>
+              <th>S</th>
+              <th>C</th>
+              <th>Perfil</th>
+            </tr>
+          </thead>
+          <tbody id="tablaResultados"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="btn-row" style="margin-top:1rem;">
+      <button class="btn-secondary" onclick="showSection('worker')">Volver al inicio</button>
+      <button class="btn-link" type="button" onclick="logoutAdmin()">Cerrar sesión administrador</button>
+    </div>
+  </section>
+</main>
+
+<script>
+  /************************************************************
+   * CONFIGURACIÓN BÁSICA
+   ************************************************************/
+  const ADMIN_PASSWORD = "admin123"; // <-- Cambie esta clave según sus necesidades
+
+  const STORAGE_KEYS = {
+    unidades: "pdl_unidades",
+    categorias: "pdl_categorias",
+    resultados: "pdl_resultados"
+  };
+
+  // Estructura base del test PDL (grupos / palabras / dimensión asociada)
+  // Cada palabra tiene una etiqueta DISC: D (Dominancia), I (Influencia), S (Estabilidad), C (Cumplimiento)
+  const TEST_GROUPS = [
+    {
+      words: [
+        { text: "Enérgico", dim: "D" },
+        { text: "Sociable", dim: "I" },
+        { text: "Paciente", dim: "S" },
+        { text: "Preciso", dim: "C" }
+      ]
+    },
+    {
+      words: [
+        { text: "Decidido", dim: "D" },
+        { text: "Entusiasta", dim: "I" },
+        { text: "Sereno", dim: "S" },
+        { text: "Analítico", dim: "C" }
+      ]
+    },
+    {
+      words: [
+        { text: "Competitivo", dim: "D" },
+        { text: "Comunicativo", dim: "I" },
+        { text: "Colaborador", dim: "S" },
+        { text: "Organizado", dim: "C" }
+      ]
+    },
+    {
+      words: [
+        { text: "Directo", dim: "D" },
+        { text: "Optimista", dim: "I" },
+        { text: "Constante", dim: "S" },
+        { text: "Cuidadoso", dim: "C" }
+      ]
+    },
+    {
+      words: [
+        { text: "Audaz", dim: "D" },
+        { text: "Persuasivo", dim: "I" },
+        { text: "Apacible", dim: "S" },
+        { text: "Metódico", dim: "C" }
+      ]
+    },
+    {
+      words: [
+        { text: "Competente", dim: "D" },
+        { text: "Alegre", dim: "I" },
+        { text: "Leal", dim: "S" },
+        { text: "Exacto", dim: "C" }
+      ]
+    },
+    {
+      words: [
+        { text: "Firme", dim: "D" },
+        { text: "Animado", dim: "I" },
+        { text: "Equilibrado", dim: "S" },
+        { text: "Crítico", dim: "C" }
+      ]
+    },
+    {
+      words: [
+        { text: "Resolutivo", dim: "D" },
+        { text: "Espontáneo", dim: "I" },
+        { text: "Considerado", dim: "S" },
+        { text: "Minucioso", dim: "C" }
+      ]
+    },
+    {
+      words: [
+        { text: "Exigente", dim: "D" },
+        { text: "Carismático", dim: "I" },
+        { text: "Paciente con otros", dim: "S" },
+        { text: "Objetivo", dim: "C" }
+      ]
+    },
+    {
+      words: [
+        { text: "Dominante", dim: "D" },
+        { text: "Amigable", dim: "I" },
+        { text: "Tolerante", dim: "S" },
+        { text: "Riguroso", dim: "C" }
+      ]
+    },
+    {
+      words: [
+        { text: "Arriesgado", dim: "D" },
+        { text: "Expresivo", dim: "I" },
+        { text: "Calmado", dim: "S" },
+        { text: "Detallista", dim: "C" }
+      ]
+    },
+    {
+      words: [
+        { text: "Orientado a resultados", dim: "D" },
+        { text: "Orientado a personas", dim: "I" },
+        { text: "Estable", dim: "S" },
+        { text: "Orientado a normas", dim: "C" }
+      ]
+    }
+  ];
+
+  // Respuestas del test; para cada grupo almacenamos índice de palabra más y menos
+  let testAnswers = TEST_GROUPS.map(() => ({ most: null, least: null }));
+  let currentGroupIndex = 0;
+  let currentWorkerData = null;
+  let adminLoggedIn = false;
+
+  /************************************************************
+   * UTILIDADES GENERALES
+   ************************************************************/
+  function showSection(section) {
+    document.getElementById("section-worker").classList.add("hidden");
+    document.getElementById("section-test").classList.add("hidden");
+    document.getElementById("section-results").classList.add("hidden");
+    document.getElementById("section-admin-access").classList.add("hidden");
+    document.getElementById("section-admin").classList.add("hidden");
+
+    if (section === "worker") {
+      document.getElementById("section-worker").classList.remove("hidden");
+    } else if (section === "test") {
+      document.getElementById("section-test").classList.remove("hidden");
+    } else if (section === "results") {
+      document.getElementById("section-results").classList.remove("hidden");
+    } else if (section === "adminAccess") {
+      document.getElementById("section-admin-access").classList.remove("hidden");
+    } else if (section === "admin") {
+      document.getElementById("section-admin").classList.remove("hidden");
+    }
+  }
+
+  function showAdminAccess() {
+    document.getElementById("adminPasswordInput").value = "";
+    document.getElementById("admin-access-error").classList.add("hidden");
+    showSection("adminAccess");
+  }
+
+  function calculateAge(dateStr) {
+    if (!dateStr) return "";
+    const today = new Date();
+    const birth = new Date(dateStr);
+    let age = today.getFullYear() - birth.getFullYear();
+    const m = today.getMonth() - birth.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
+      age--;
+    }
+    return age;
+  }
+
+  function readLocal(key, defaultValue) {
+    try {
+      const raw = localStorage.getItem(key);
+      if (!raw) return defaultValue;
+      return JSON.parse(raw);
+    } catch (e) {
+      console.error("Error leyendo localStorage", key, e);
+      return defaultValue;
+    }
+  }
+
+  function writeLocal(key, value) {
+    try {
+      localStorage.setItem(key, JSON.stringify(value));
+    } catch (e) {
+      console.error("Error escribiendo localStorage", key, e);
+    }
+  }
+
+  /************************************************************
+   * INICIALIZACIÓN DE UNIDADES Y CATEGORÍAS
+   ************************************************************/
+  function ensureDefaultConfig() {
+    let unidades = readLocal(STORAGE_KEYS.unidades, null);
+    let categorias = readLocal(STORAGE_KEYS.categorias, null);
+
+    if (!Array.isArray(unidades)) {
+      unidades = ["Unidad 1", "Unidad 2", "Unidad 3"];
+      writeLocal(STORAGE_KEYS.unidades, unidades);
+    }
+    if (!Array.isArray(categorias)) {
+      categorias = ["Categoría A", "Categoría B", "Categoría C"];
+      writeLocal(STORAGE_KEYS.categorias, categorias);
+    }
+  }
+
+  function populateWorkerSelects() {
+    const unidades = readLocal(STORAGE_KEYS.unidades, []);
+    const categorias = readLocal(STORAGE_KEYS.categorias, []);
+
+    const unidadSelect = document.getElementById("unidad");
+    const categoriaSelect = document.getElementById("categoria");
+
+    unidadSelect.innerHTML = '<option value="">Seleccione...</option>';
+    categoriaSelect.innerHTML = '<option value="">Seleccione...</option>';
+
+    unidades.forEach(u => {
+      const opt = document.createElement("option");
+      opt.value = u;
+      opt.textContent = u;
+      unidadSelect.appendChild(opt);
+    });
+
+    categorias.forEach(c => {
+      const opt = document.createElement("option");
+      opt.value = c;
+      opt.textContent = c;
+      categoriaSelect.appendChild(opt);
+    });
+  }
+
+  /************************************************************
+   * MANEJO DE DATOS DEL TRABAJADOR
+   ************************************************************/
+  document.getElementById("fechaNacimiento").addEventListener("change", function () {
+    const age = calculateAge(this.value);
+    document.getElementById("edad").value = age !== "" ? age : "";
+  });
+
+  function validateWorkerForm() {
+    let valid = true;
+    const unidad = document.getElementById("unidad").value.trim();
+    const matricula = document.getElementById("matricula").value.trim();
+    const nombre = document.getElementById("nombre").value.trim();
+    const categoria = document.getElementById("categoria").value.trim();
+    const puesto = document.getElementById("puesto").value.trim();
+    const fechaNacimiento = document.getElementById("fechaNacimiento").value;
+    const lugarNacimiento = document.getElementById("lugarNacimiento").value.trim();
+
+    const fields = [
+      { id: "unidad", value: unidad },
+      { id: "matricula", value: matricula },
+      { id: "nombre", value: nombre },
+      { id: "categoria", value: categoria },
+      { id: "puesto", value: puesto },
+      { id: "fechaNacimiento", value: fechaNacimiento },
+      { id: "lugarNacimiento", value: lugarNacimiento }
+    ];
+
+    fields.forEach(f => {
+      const errorEl = document.getElementById(f.id + "-error");
+      if (!f.value) {
+        errorEl && errorEl.classList.remove("hidden");
+        valid = false;
+      } else {
+        errorEl && errorEl.classList.add("hidden");
+      }
+    });
+
+    if (!valid) return null;
+
+    const edad = calculateAge(fechaNacimiento);
+
+    return {
+      unidad,
+      matricula,
+      nombre,
+      categoria,
+      puesto,
+      fechaNacimiento,
+      edad,
+      lugarNacimiento
+    };
+  }
+
+  function startTest() {
+    const workerData = validateWorkerForm();
+    if (!workerData) return;
+
+    currentWorkerData = workerData;
+    currentGroupIndex = 0;
+    testAnswers = TEST_GROUPS.map(() => ({ most: null, least: null }));
+    renderCurrentGroup();
+    showSection("test");
+  }
+
+  /************************************************************
+   * RENDERIZADO Y NAVEGACIÓN DEL TEST
+   ************************************************************/
+  function renderCurrentGroup() {
+    const container = document.getElementById("test-group-container");
+    const group = TEST_GROUPS[currentGroupIndex];
+    const answers = testAnswers[currentGroupIndex];
+
+    let html = "";
+    html += '<div class="test-group-header">';
+    html += `<div><strong>Grupo ${currentGroupIndex + 1}</strong> de ${TEST_GROUPS.length}</div>`;
+    html += '<div style="font-size:0.8rem;color:#555;">Elija una palabra como "Más" y otra como "Menos"</div>';
+    html += "</div>";
+
+    html += '<div class="group-words">';
+    group.words.forEach((w, idx) => {
+      const mostChecked = answers.most === idx ? "checked" : "";
+      const leastChecked = answers.least === idx ? "checked" : "";
+      html += `<div class="word-card">
+        <div class="word-label">${w.text}</div>
+        <div class="word-controls">
+          <label>
+            <input type="radio" name="most" value="${idx}" ${mostChecked} />
+            Más
+          </label>
+          <label>
+            <input type="radio" name="least" value="${idx}" ${leastChecked} />
+            Menos
+          </label>
+        </div>
+      </div>`;
+    });
+    html += "</div>";
+
+    container.innerHTML = html;
+
+    document.getElementById("group-indicator").textContent =
+      `Grupo ${currentGroupIndex + 1} de ${TEST_GROUPS.length}`;
+
+    const progress = ((currentGroupIndex) / TEST_GROUPS.length) * 100;
+    document.getElementById("progress-bar").style.width = progress + "%";
+
+    document.getElementById("test-error").classList.add("hidden");
+  }
+
+  function captureCurrentGroupSelection() {
+    const mostRadios = document.querySelectorAll('input[name="most"]');
+    const leastRadios = document.querySelectorAll('input[name="least"]');
+
+    let most = null, least = null;
+
+    mostRadios.forEach(r => {
+      if (r.checked) most = parseInt(r.value, 10);
+    });
+    leastRadios.forEach(r => {
+      if (r.checked) least = parseInt(r.value, 10);
+    });
+
+    if (most === null || least === null) {
+      showTestError("Debe seleccionar una palabra como 'Más' y otra como 'Menos' en este grupo.");
+      return false;
+    }
+    if (most === least) {
+      showTestError("La misma palabra no puede ser 'Más' y 'Menos' en el mismo grupo.");
+      return false;
+    }
+
+    testAnswers[currentGroupIndex] = { most, least };
+    return true;
+  }
+
+  function showTestError(msg) {
+    const el = document.getElementById("test-error");
+    el.textContent = msg;
+    el.classList.remove("hidden");
+  }
+
+  function nextGroup() {
+    if (!captureCurrentGroupSelection()) return;
+    if (currentGroupIndex < TEST_GROUPS.length - 1) {
+      currentGroupIndex++;
+      renderCurrentGroup();
+    }
+  }
+
+  function prevGroup() {
+    if (currentGroupIndex > 0) {
+      // intentamos guardar también si es posible; si falta, simplemente retrocede
+      captureCurrentGroupSelection();
+      currentGroupIndex--;
+      renderCurrentGroup();
+    }
+  }
+
+  function allGroupsAnswered() {
+    return testAnswers.every(a => a.most !== null && a.least !== null);
+  }
+
+  function finishTest() {
+    if (!captureCurrentGroupSelection()) return;
+    if (!allGroupsAnswered()) {
+      showTestError("Debe completar todos los grupos antes de finalizar el test.");
+      return;
+    }
+
+    const scores = computeDISCFromAnswers();
+    const profile = determineMainProfile(scores);
+    const interpretation = interpretProfile(profile, scores);
+
+    saveResult(scores, profile);
+
+    renderResultView(scores, profile, interpretation);
+    showSection("results");
+  }
+
+  /************************************************************
+   * CÁLCULO DE PUNTAJES DISC
+   ************************************************************/
+  function computeDISCFromAnswers() {
+    const mostCounts = { D: 0, I: 0, S: 0, C: 0 };
+    const leastCounts = { D: 0, I: 0, S: 0, C: 0 };
+
+    testAnswers.forEach((ans, groupIndex) => {
+      const group = TEST_GROUPS[groupIndex];
+      const mostDim = group.words[ans.most].dim;
+      const leastDim = group.words[ans.least].dim;
+      mostCounts[mostDim]++;
+      leastCounts[leastDim]++;
+    });
+
+    const finalScores = {
+      D: mostCounts.D - leastCounts.D,
+      I: mostCounts.I - leastCounts.I,
+      S: mostCounts.S - leastCounts.S,
+      C: mostCounts.C - leastCounts.C,
+      most: mostCounts,
+      least: leastCounts
+    };
+
+    return finalScores;
+  }
+
+  function determineMainProfile(scores) {
+    const base = { D: scores.D, I: scores.I, S: scores.S, C: scores.C };
+    let maxDim = "D";
+    let maxVal = base.D;
+    ["I", "S", "C"].forEach(dim => {
+      if (base[dim] > maxVal) {
+        maxVal = base[dim];
+        maxDim = dim;
+      }
+    });
+    return maxDim;
+  }
+
+  function interpretProfile(mainDim, scores) {
+    const baseText = {
+      D: "Orientación a resultados, decisión y acción. Tiende a afrontar los desafíos de forma directa y con rapidez.",
+      I: "Orientación a las personas, comunicación y persuasión. Suele influir a través de relaciones y entusiasmo.",
+      S: "Orientación a la estabilidad, apoyo y trabajo en equipo. Prefiere ambientes previsibles y colaborativos.",
+      C: "Orientación a la calidad, detalle y normas. Valora la precisión, el análisis y el cumplimiento de procedimientos."
+    };
+
+    const dimNames = {
+      D: "Dominancia (D)",
+      I: "Influencia (I)",
+      S: "Estabilidad (S)",
+      C: "Cumplimiento (C)"
+    };
+
+    const mainLabel = dimNames[mainDim] || mainDim;
+    const mainDesc = baseText[mainDim] || "";
+
+    const details = `
+      El resultado refleja una puntuación relativa para cada dimensión:
+      Dominancia (D), Influencia (I), Estabilidad (S) y Cumplimiento (C).
+      El perfil predominante no implica ausencia de las demás dimensiones,
+      sino una tendencia principal en el estilo de respuesta laboral.
+    `;
+
+    return {
+      title: `Perfil predominante: ${mainLabel}`,
+      mainDesc,
+      details
+    };
+  }
+
+  /************************************************************
+   * GUARDADO DE RESULTADOS Y RENDERIZADO
+   ************************************************************/
+  function saveResult(scores, mainDim) {
+    const existing = readLocal(STORAGE_KEYS.resultados, []);
+    const now = new Date();
+    const fecha = now.toISOString().slice(0, 10) + " " + now.toTimeString().slice(0, 8);
+
+    const record = {
+      fecha,
+      ...currentWorkerData,
+      scores: {
+        D: scores.D,
+        I: scores.I,
+        S: scores.S,
+        C: scores.C
+      },
+      rawMost: scores.most,
+      rawLeast: scores.least,
+      perfil: mainDim
+    };
+
+    existing.push(record);
+    writeLocal(STORAGE_KEYS.resultados, existing);
+    refreshResultadosTable();
+  }
+
+  function renderResultView(scores, mainDim, interp) {
+    const personalDiv = document.getElementById("result-personal");
+    const scoresDiv = document.getElementById("result-scores");
+    const interpDiv = document.getElementById("result-interpretation");
+
+    const w = currentWorkerData;
+
+    personalDiv.innerHTML = `
+      <h3>Datos del trabajador</h3>
+      <div class="form-grid" style="margin-top:0.4rem;">
+        <div><strong>Nombre:</strong> ${w.nombre}</div>
+        <div><strong>Matrícula:</strong> ${w.matricula}</div>
+        <div><strong>Unidad:</strong> ${w.unidad}</div>
+        <div><strong>Categoría:</strong> ${w.categoria}</div>
+        <div><strong>Puesto:</strong> ${w.puesto}</div>
+        <div><strong>Edad:</strong> ${w.edad} años</div>
+        <div><strong>Fecha de nacimiento:</strong> ${w.fechaNacimiento}</div>
+        <div><strong>Lugar de nacimiento:</strong> ${w.lugarNacimiento}</div>
+      </div>
+    `;
+
+    scoresDiv.innerHTML = `
+      <h3>Puntajes por dimensión DISC</h3>
+      <div class="scores-row">
+        <div class="score-card">
+          <span>D</span> – Dominancia<br/>
+          Puntaje: ${scores.D} <br/>
+          Más: ${scores.most.D} / Menos: ${scores.least.D}
+        </div>
+        <div class="score-card">
+          <span>I</span> – Influencia<br/>
+          Puntaje: ${scores.I} <br/>
+          Más: ${scores.most.I} / Menos: ${scores.least.I}
+        </div>
+        <div class="score-card">
+          <span>S</span> – Estabilidad<br/>
+          Puntaje: ${scores.S} <br/>
+          Más: ${scores.most.S} / Menos: ${scores.least.S}
+        </div>
+        <div class="score-card">
+          <span>C</span> – Cumplimiento<br/>
+          Puntaje: ${scores.C} <br/>
+          Más: ${scores.most.C} / Menos: ${scores.least.C}
+        </div>
+      </div>
+    `;
+
+    const profileNames = {
+      D: "Dominancia (D)",
+      I: "Influencia (I)",
+      S: "Estabilidad (S)",
+      C: "Cumplimiento (C)"
+    };
+
+    interpDiv.innerHTML = `
+      <h3>Interpretación del perfil</h3>
+      <p>
+        <span class="badge">${profileNames[mainDim] || mainDim}</span>
+      </p>
+      <p>${interp.mainDesc}</p>
+      <p class="text-muted">${interp.details}</p>
+    `;
+  }
+
+  function resetForNewTest() {
+    currentWorkerData = null;
+    document.getElementById("matricula").value = "";
+    document.getElementById("nombre").value = "";
+    document.getElementById("puesto").value = "";
+    document.getElementById("fechaNacimiento").value = "";
+    document.getElementById("edad").value = "";
+    document.getElementById("lugarNacimiento").value = "";
+    document.getElementById("unidad").value = "";
+    document.getElementById("categoria").value = "";
+
+    testAnswers = TEST_GROUPS.map(() => ({ most: null, least: null }));
+    currentGroupIndex = 0;
+    showSection("worker");
+  }
+
+  /************************************************************
+   * ADMIN: LOGIN Y TABS
+   ************************************************************/
+  function tryAdminLogin() {
+    const input = document.getElementById("adminPasswordInput").value;
+    const errorEl = document.getElementById("admin-access-error");
+    if (input === ADMIN_PASSWORD) {
+      adminLoggedIn = true;
+      errorEl.classList.add("hidden");
+      showSection("admin");
+      refreshAdminTables();
+    } else {
+      errorEl.classList.remove("hidden");
+    }
+  }
+
+  function logoutAdmin() {
+    adminLoggedIn = false;
+    showSection("worker");
+  }
+
+  function setAdminTab(tabName) {
+    document.getElementById("admin-unidades").classList.add("hidden");
+    document.getElementById("admin-categorias").classList.add("hidden");
+    document.getElementById("admin-resultados").classList.add("hidden");
+
+    document.getElementById("tab-unidades").classList.remove("active");
+    document.getElementById("tab-categorias").classList.remove("active");
+    document.getElementById("tab-resultados").classList.remove("active");
+
+    if (tabName === "unidades") {
+      document.getElementById("admin-unidades").classList.remove("hidden");
+      document.getElementById("tab-unidades").classList.add("active");
+    } else if (tabName === "categorias") {
+      document.getElementById("admin-categorias").classList.remove("hidden");
+      document.getElementById("tab-categorias").classList.add("active");
+    } else if (tabName === "resultados") {
+      document.getElementById("admin-resultados").classList.remove("hidden");
+      document.getElementById("tab-resultados").classList.add("active");
+    }
+  }
+
+  function refreshAdminTables() {
+    refreshUnidadesTable();
+    refreshCategoriasTable();
+    refreshResultadosTable();
+  }
+
+  /************************************************************
+   * ADMIN: UNIDADES
+   ************************************************************/
+  function refreshUnidadesTable() {
+    const unidades = readLocal(STORAGE_KEYS.unidades, []);
+    const tbody = document.getElementById("tablaUnidades");
+    tbody.innerHTML = "";
+    unidades.forEach((u, idx) => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${u}</td>
+        <td>
+          <button class="btn-danger" onclick="deleteUnidad(${idx})">Borrar</button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+    populateWorkerSelects();
+  }
+
+  function addUnidad() {
+    const input = document.getElementById("nuevaUnidad");
+    const val = input.value.trim();
+    if (!val) return;
+    const unidades = readLocal(STORAGE_KEYS.unidades, []);
+    unidades.push(val);
+    writeLocal(STORAGE_KEYS.unidades, unidades);
+    input.value = "";
+    refreshUnidadesTable();
+  }
+
+  function deleteUnidad(index) {
+    const unidades = readLocal(STORAGE_KEYS.unidades, []);
+    if (index >= 0 && index < unidades.length) {
+      unidades.splice(index, 1);
+      writeLocal(STORAGE_KEYS.unidades, unidades);
+      refreshUnidadesTable();
+    }
+  }
+
+  /************************************************************
+   * ADMIN: CATEGORÍAS
+   ************************************************************/
+  function refreshCategoriasTable() {
+    const categorias = readLocal(STORAGE_KEYS.categorias, []);
+    const tbody = document.getElementById("tablaCategorias");
+    tbody.innerHTML = "";
+    categorias.forEach((c, idx) => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${c}</td>
+        <td>
+          <button class="btn-danger" onclick="deleteCategoria(${idx})">Borrar</button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+    populateWorkerSelects();
+  }
+
+  function addCategoria() {
+    const input = document.getElementById("nuevaCategoria");
+    const val = input.value.trim();
+    if (!val) return;
+    const categorias = readLocal(STORAGE_KEYS.categorias, []);
+    categorias.push(val);
+    writeLocal(STORAGE_KEYS.categorias, categorias);
+    input.value = "";
+    refreshCategoriasTable();
+  }
+
+  function deleteCategoria(index) {
+    const categorias = readLocal(STORAGE_KEYS.categorias, []);
+    if (index >= 0 && index < categorias.length) {
+      categorias.splice(index, 1);
+      writeLocal(STORAGE_KEYS.categorias, categorias);
+      refreshCategoriasTable();
+    }
+  }
+
+  /************************************************************
+   * ADMIN: RESULTADOS Y CSV
+   ************************************************************/
+  function refreshResultadosTable() {
+    const resultados = readLocal(STORAGE_KEYS.resultados, []);
+    const tbody = document.getElementById("tablaResultados");
+    tbody.innerHTML = "";
+    resultados.forEach(r => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${r.fecha}</td>
+        <td>${r.unidad}</td>
+        <td>${r.matricula}</td>
+        <td>${r.nombre}</td>
+        <td>${r.categoria}</td>
+        <td>${r.puesto}</td>
+        <td>${r.edad}</td>
+        <td>${r.lugarNacimiento}</td>
+        <td>${r.scores.D}</td>
+        <td>${r.scores.I}</td>
+        <td>${r.scores.S}</td>
+        <td>${r.scores.C}</td>
+        <td>${r.perfil}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function downloadCSV() {
+    const resultados = readLocal(STORAGE_KEYS.resultados, []);
+    if (!resultados.length) {
+      alert("No hay resultados para descargar.");
+      return;
+    }
+
+    const sep = ",";
+    const header = [
+      "Fecha",
+      "Unidad",
+      "Matricula",
+      "Nombre",
+      "Categoria",
+      "Puesto",
+      "Edad",
+      "LugarNacimiento",
+      "D",
+      "I",
+      "S",
+      "C",
+      "Perfil"
+    ];
+
+    const lines = [];
+    lines.push(header.join(sep));
+
+    resultados.forEach(r => {
+      const row = [
+        r.fecha,
+        r.unidad,
+        r.matricula,
+        r.nombre,
+        r.categoria,
+        r.puesto,
+        r.edad,
+        r.lugarNacimiento,
+        r.scores.D,
+        r.scores.I,
+        r.scores.S,
+        r.scores.C,
+        r.perfil
+      ];
+      const escaped = row.map(value => {
+        const v = value !== null && value !== undefined ? String(value) : "";
+        if (v.includes('"') || v.includes(",") || v.includes("\n")) {
+          return '"' + v.replace(/"/g, '""') + '"';
+        }
+        return v;
+      });
+      lines.push(escaped.join(sep));
+    });
+
+    const csvContent = lines.join("\r\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "resultados_PDL.csv";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  function clearAllResults() {
+    if (!confirm("¿Está seguro de borrar todos los resultados? Esta acción no se puede deshacer.")) {
+      return;
+    }
+    writeLocal(STORAGE_KEYS.resultados, []);
+    refreshResultadosTable();
+  }
+
+  /************************************************************
+   * INICIALIZACIÓN GENERAL
+   ************************************************************/
+  function initPDLApp() {
+    ensureDefaultConfig();
+    populateWorkerSelects();
+    refreshResultadosTable();
+  }
+
+  document.addEventListener("DOMContentLoaded", initPDLApp);
+</script>
+</body>
+</html>
