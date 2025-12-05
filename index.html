@@ -410,7 +410,7 @@
       <button class="btn-link" type="button" onclick="showAdminAccess()">Acceso administrador</button>
     </div>
     <p class="text-muted">
-      La información se almacena localmente y puede descargarse en formato CSV desde el panel de administración.
+      La información se almacena localmente y, si configura Firebase, también en Firestore. Puede descargarse en CSV desde el panel de administración.
     </p>
   </section>
 
@@ -527,11 +527,12 @@
     <div id="admin-resultados" class="hidden">
       <h3>Resultados registrados</h3>
       <p class="text-muted">
-        Los registros se guardan en este dispositivo. Puede descargar el archivo en formato CSV para usarlo en Excel.
+        Los registros se guardan en este dispositivo y, si configuraste Firebase, también en Firestore.
+        Puedes descargar el archivo en formato CSV para usarlo en Excel.
       </p>
       <div class="btn-row" style="margin-bottom:0.7rem;">
         <button class="btn-success" type="button" onclick="downloadCSV()">Descargar CSV</button>
-        <button class="btn-secondary" type="button" onclick="clearAllResults()">Borrar todos los resultados</button>
+        <button class="btn-secondary" type="button" onclick="clearAllResults()">Borrar resultados locales</button>
       </div>
       <div style="max-height:360px; overflow:auto; border-radius:8px; border:1px solid #dde2df;">
         <table>
@@ -553,14 +554,48 @@
   </section>
 </main>
 
-<script>
-  /******************** CONFIGURACIÓN ********************/
+<!-- JS principal como módulo para poder usar Firebase por CDN -->
+<script type="module">
+  /******************** IMPORTS FIREBASE (CDN) ********************/
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
+  import {
+    getFirestore,
+    collection,
+    addDoc,
+    getDocs,
+    query,
+    orderBy
+  } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-analytics.js";
+
+  /******************** CONFIGURACIÓN FIREBASE (TU PROYECTO) ********************/
+  const firebaseConfig = {
+    apiKey: "AIzaSyDJniFUuRh3mfjP40cAm2gJ2P3TGOyKqog",
+    authDomain: "perfil-de-dinamicas-laborales.firebaseapp.com",
+    projectId: "perfil-de-dinamicas-laborales",
+    storageBucket: "perfil-de-dinamicas-laborales.firebasestorage.app",
+    messagingSenderId: "231363532636",
+    appId: "1:231363532636:web:b610e5501cea73dce69399",
+    measurementId: "G-R1X0PZ3WYY"
+  };
+
+  let db = null;
+  try {
+    const app = initializeApp(firebaseConfig);
+    db = getFirestore(app);
+    getAnalytics(app); // opcional, solo para estadísticas
+    console.log("Firebase inicializado correctamente.");
+  } catch (err) {
+    console.warn("Firebase NO inicializado. Se usará solo almacenamiento local.", err);
+  }
+
+  /******************** CONFIG APP ********************/
   const ADMIN_PASSWORD = "admin123"; // <-- cámbiala aquí
 
   const STORAGE_KEYS = {
     unidades: "pdl_unidades",
     categorias: "pdl_categorias",
-    resultados: "pdl_resultados"
+    resultados: "pdl_resultados"  // copia local como respaldo
   };
 
   // 24 bloques de 4 adjetivos (versión propia inspirada en DISC)
@@ -716,6 +751,9 @@
   let currentGroupIndex = 0;
   let currentWorkerData = null;
 
+  // Caché de resultados (para tabla y CSV)
+  let resultadosCache = [];
+
   /******************** UTILIDADES GENERALES ********************/
   function showSection(section) {
     ["worker", "test", "results", "adminAccess", "admin"].forEach(s => {
@@ -727,8 +765,10 @@
   }
 
   function showAdminAccess() {
-    document.getElementById("adminPasswordInput").value = "";
-    document.getElementById("admin-access-error").classList.add("hidden");
+    const input = document.getElementById("adminPasswordInput");
+    const err = document.getElementById("admin-access-error");
+    if (input) input.value = "";
+    if (err) err.classList.add("hidden");
     showSection("adminAccess");
   }
 
@@ -760,11 +800,12 @@
   function ensureDefaultConfig() {
     let unidades = readLocal(STORAGE_KEYS.unidades, null);
     let categorias = readLocal(STORAGE_KEYS.categorias, null);
-    if (!Array.isArray(unidades)) {
+
+    if (!Array.isArray(unidades) || unidades.length === 0) {
       unidades = ["Unidad 1", "Unidad 2"];
       writeLocal(STORAGE_KEYS.unidades, unidades);
     }
-    if (!Array.isArray(categorias)) {
+    if (!Array.isArray(categorias) || categorias.length === 0) {
       categorias = ["Categoría A", "Categoría B"];
       writeLocal(STORAGE_KEYS.categorias, categorias);
     }
@@ -775,6 +816,8 @@
     const categorias = readLocal(STORAGE_KEYS.categorias, []);
     const unidadSelect = document.getElementById("unidad");
     const categoriaSelect = document.getElementById("categoria");
+
+    if (!unidadSelect || !categoriaSelect) return;
 
     unidadSelect.innerHTML = '<option value="">Seleccione...</option>';
     categoriaSelect.innerHTML = '<option value="">Seleccione...</option>';
@@ -794,10 +837,14 @@
   }
 
   /******************** FORMULARIO TRABAJADOR ********************/
-  document.getElementById("fechaNacimiento").addEventListener("change", function () {
-    const age = calculateAge(this.value);
-    document.getElementById("edad").value = age !== "" ? age : "";
-  });
+  const fechaNacimientoInput = document.getElementById("fechaNacimiento");
+  if (fechaNacimientoInput) {
+    fechaNacimientoInput.addEventListener("change", function () {
+      const age = calculateAge(this.value);
+      const edadEl = document.getElementById("edad");
+      if (edadEl) edadEl.value = age !== "" ? age : "";
+    });
+  }
 
   function validateWorkerForm() {
     let valid = true;
@@ -856,6 +903,7 @@
   /******************** TEST PDL ********************/
   function renderCurrentGroup() {
     const container = document.getElementById("test-group-container");
+    if (!container) return;
     const group = TEST_GROUPS[currentGroupIndex];
     const answers = testAnswers[currentGroupIndex];
 
@@ -877,7 +925,7 @@
       html += '</div>';
       html += '<div class="choice-cell">';
       html += `<input class="choice-radio choice-minus" type="radio" name="least" value="${idx}" ${leastChecked}>`;
-      html += '</div>';
+      html += '</div>`;
       html += '</div>`;
     });
 
@@ -887,7 +935,6 @@
     document.getElementById("block-label").textContent =
       "Bloque " + (currentGroupIndex + 1) + " de " + TEST_GROUPS.length;
 
-    // Evitar que la misma palabra sea MÁS y MENOS a la vez (a nivel de interfaz)
     setupChoiceMutualExclusion();
   }
 
@@ -916,15 +963,17 @@
 
   function updateProgressUI() {
     const progress = (currentGroupIndex / TEST_GROUPS.length) * 100;
-    document.getElementById("progress-bar").style.width = progress + "%";
-    document.getElementById("progress-percent").textContent = Math.round(progress) + "%";
+    const bar = document.getElementById("progress-bar");
+    const percent = document.getElementById("progress-percent");
+    if (bar) bar.style.width = progress + "%";
+    if (percent) percent.textContent = Math.round(progress) + "%";
   }
 
   function updateNavButtons() {
     const btnPrev = document.getElementById("btn-prev");
     const btnNext = document.getElementById("btn-next");
+    if (!btnPrev || !btnNext) return;
 
-    // Prev deshabilitado en el primer bloque
     if (currentGroupIndex === 0) {
       btnPrev.disabled = true;
       btnPrev.classList.add("btn-disabled");
@@ -933,7 +982,6 @@
       btnPrev.classList.remove("btn-disabled");
     }
 
-    // Next deshabilitado/ gris en el último bloque
     if (currentGroupIndex === TEST_GROUPS.length - 1) {
       btnNext.disabled = true;
       btnNext.classList.add("btn-disabled");
@@ -965,6 +1013,7 @@
 
   function showTestError(msg) {
     const el = document.getElementById("test-error");
+    if (!el) return;
     el.textContent = msg;
     el.classList.remove("hidden");
   }
@@ -993,7 +1042,7 @@
     return testAnswers.every(a => a.most !== null && a.least !== null);
   }
 
-  function finishTest() {
+  async function finishTest() {
     if (!captureCurrentGroupSelection()) return;
     if (!allGroupsAnswered()) {
       showTestError("Debe completar los 24 bloques antes de finalizar el test.");
@@ -1002,7 +1051,7 @@
     const scores = computeDISCFromAnswers();
     const profile = determineMainProfile(scores);
     const interpretation = interpretProfile(profile, scores);
-    saveResult(scores, profile);
+    await saveResult(scores, profile);
     renderResultView(scores, profile, interpretation);
     showSection("results");
   }
@@ -1135,21 +1184,36 @@
   }
 
   /******************** GUARDADO Y MOSTRADO DE RESULTADOS ********************/
-  function saveResult(scores, mainDim) {
-    const existing = readLocal(STORAGE_KEYS.resultados, []);
+  async function saveResult(scores, mainDim) {
+    const existingLocal = readLocal(STORAGE_KEYS.resultados, []);
     const now = new Date();
     const fecha = now.toISOString().slice(0, 10) + " " + now.toTimeString().slice(0, 8);
+    const fechaEpoch = now.getTime();
     const w = currentWorkerData;
 
     const record = {
       fecha,
+      fechaEpoch,
       ...w,
       scores: { D: scores.D, I: scores.I, S: scores.S, C: scores.C },
       perfil: mainDim
     };
-    existing.push(record);
-    writeLocal(STORAGE_KEYS.resultados, existing);
-    refreshResultadosTable();
+
+    // Guarda local
+    existingLocal.push(record);
+    writeLocal(STORAGE_KEYS.resultados, existingLocal);
+
+    // Intenta guardar en Firestore, si está configurado
+    if (db) {
+      try {
+        await addDoc(collection(db, "pdl_resultados"), record);
+      } catch (err) {
+        console.error("Error guardando en Firestore:", err);
+        alert("El resultado se guardó localmente, pero hubo un problema con la base de datos en la nube.");
+      }
+    }
+
+    await loadResults(); // refresca cache y tabla
   }
 
   function renderResultView(scores, mainDim, interp) {
@@ -1212,6 +1276,7 @@
       errorEl.classList.add("hidden");
       showSection("admin");
       refreshAdminTables();
+      loadResults(); // carga resultados (Firestore + local)
     } else {
       errorEl.classList.remove("hidden");
     }
@@ -1247,6 +1312,7 @@
   function refreshUnidadesTable() {
     const unidades = readLocal(STORAGE_KEYS.unidades, []);
     const tbody = document.getElementById("tablaUnidades");
+    if (!tbody) return;
     tbody.innerHTML = "";
     unidades.forEach((u, idx) => {
       const tr = document.createElement("tr");
@@ -1283,6 +1349,7 @@
   function refreshCategoriasTable() {
     const categorias = readLocal(STORAGE_KEYS.categorias, []);
     const tbody = document.getElementById("tablaCategorias");
+    if (!tbody) return;
     tbody.innerHTML = "";
     categorias.forEach((c, idx) => {
       const tr = document.createElement("tr");
@@ -1316,11 +1383,31 @@
   }
 
   /******************** ADMIN: RESULTADOS & CSV ********************/
+  async function loadResults() {
+    // Prioridad: Firestore (si está disponible), luego localStorage
+    let fromFirestore = [];
+    if (db) {
+      try {
+        const qRef = query(collection(db, "pdl_resultados"), orderBy("fechaEpoch", "desc"));
+        const snap = await getDocs(qRef);
+        fromFirestore = snap.docs.map(d => d.data());
+      } catch (err) {
+        console.error("Error leyendo Firestore:", err);
+      }
+    }
+    if (fromFirestore.length) {
+      resultadosCache = fromFirestore;
+    } else {
+      resultadosCache = readLocal(STORAGE_KEYS.resultados, []);
+    }
+    refreshResultadosTable();
+  }
+
   function refreshResultadosTable() {
-    const resultados = readLocal(STORAGE_KEYS.resultados, []);
     const tbody = document.getElementById("tablaResultados");
+    if (!tbody) return;
     tbody.innerHTML = "";
-    resultados.forEach(r => {
+    resultadosCache.forEach(r => {
       const tr = document.createElement("tr");
       tr.innerHTML = `
         <td>${r.fecha}</td>
@@ -1342,8 +1429,8 @@
   }
 
   function downloadCSV() {
-    const resultados = readLocal(STORAGE_KEYS.resultados, []);
-    if (!resultados.length) {
+    const data = resultadosCache.length ? resultadosCache : readLocal(STORAGE_KEYS.resultados, []);
+    if (!data.length) {
       alert("No hay resultados para descargar.");
       return;
     }
@@ -1353,7 +1440,7 @@
       "Edad","LugarNacimiento","D","I","S","C","Perfil"
     ];
     const lines = [header.join(sep)];
-    resultados.forEach(r => {
+    data.forEach(r => {
       const row = [
         r.fecha,r.unidad,r.matricula,r.nombre,r.categoria,r.puesto,
         r.edad,r.lugarNacimiento,r.scores.D,r.scores.I,r.scores.S,r.scores.C,r.perfil
@@ -1380,8 +1467,9 @@
   }
 
   function clearAllResults() {
-    if (!confirm("¿Está seguro de borrar todos los resultados?")) return;
+    if (!confirm("¿Está seguro de borrar los resultados almacenados localmente?")) return;
     writeLocal(STORAGE_KEYS.resultados, []);
+    resultadosCache = [];
     refreshResultadosTable();
   }
 
@@ -1389,10 +1477,28 @@
   function initPDLApp() {
     ensureDefaultConfig();
     populateWorkerSelects();
+    resultadosCache = readLocal(STORAGE_KEYS.resultados, []);
     refreshResultadosTable();
     showSection("worker");
   }
   document.addEventListener("DOMContentLoaded", initPDLApp);
+
+  /******************** EXPONER FUNCIONES AL HTML ********************/
+  window.showSection = showSection;
+  window.showAdminAccess = showAdminAccess;
+  window.startTest = startTest;
+  window.nextGroup = nextGroup;
+  window.prevGroup = prevGroup;
+  window.finishTest = finishTest;
+  window.resetForNewTest = resetForNewTest;
+  window.tryAdminLogin = tryAdminLogin;
+  window.setAdminTab = setAdminTab;
+  window.addUnidad = addUnidad;
+  window.deleteUnidad = deleteUnidad;
+  window.addCategoria = addCategoria;
+  window.deleteCategoria = deleteCategoria;
+  window.downloadCSV = downloadCSV;
+  window.clearAllResults = clearAllResults;
 </script>
 </body>
 </html>
