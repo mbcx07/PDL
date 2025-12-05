@@ -554,20 +554,12 @@
   </section>
 </main>
 
-<!-- JS principal como módulo para poder usar Firebase por CDN -->
-<script type="module">
-  /******************** IMPORTS FIREBASE (CDN) ********************/
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
-  import {
-    getFirestore,
-    collection,
-    addDoc,
-    getDocs,
-    query,
-    orderBy
-  } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
-  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-analytics.js";
+<!-- Firebase compat desde CDN (sin módulos) -->
+<script src="https://www.gstatic.com/firebasejs/12.6.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/12.6.0/firebase-analytics-compat.js"></script>
 
+<script>
   /******************** CONFIGURACIÓN FIREBASE (TU PROYECTO) ********************/
   const firebaseConfig = {
     apiKey: "AIzaSyDJniFUuRh3mfjP40cAm2gJ2P3TGOyKqog",
@@ -581,9 +573,9 @@
 
   let db = null;
   try {
-    const app = initializeApp(firebaseConfig);
-    db = getFirestore(app);
-    getAnalytics(app); // opcional, solo para estadísticas
+    const app = firebase.initializeApp(firebaseConfig);
+    db = firebase.firestore(app);
+    try { firebase.analytics(app); } catch(e) { console.warn("Analytics no disponible:", e); }
     console.log("Firebase inicializado correctamente.");
   } catch (err) {
     console.warn("Firebase NO inicializado. Se usará solo almacenamiento local.", err);
@@ -837,14 +829,16 @@
   }
 
   /******************** FORMULARIO TRABAJADOR ********************/
-  const fechaNacimientoInput = document.getElementById("fechaNacimiento");
-  if (fechaNacimientoInput) {
-    fechaNacimientoInput.addEventListener("change", function () {
-      const age = calculateAge(this.value);
-      const edadEl = document.getElementById("edad");
-      if (edadEl) edadEl.value = age !== "" ? age : "";
-    });
-  }
+  document.addEventListener("DOMContentLoaded", function() {
+    const fechaNacimientoInput = document.getElementById("fechaNacimiento");
+    if (fechaNacimientoInput) {
+      fechaNacimientoInput.addEventListener("change", function () {
+        const age = calculateAge(this.value);
+        const edadEl = document.getElementById("edad");
+        if (edadEl) edadEl.value = age !== "" ? age : "";
+      });
+    }
+  });
 
   function validateWorkerForm() {
     let valid = true;
@@ -1206,7 +1200,7 @@
     // Intenta guardar en Firestore, si está configurado
     if (db) {
       try {
-        await addDoc(collection(db, "pdl_resultados"), record);
+        await db.collection("pdl_resultados").add(record);
       } catch (err) {
         console.error("Error guardando en Firestore:", err);
         alert("El resultado se guardó localmente, pero hubo un problema con la base de datos en la nube.");
@@ -1388,8 +1382,9 @@
     let fromFirestore = [];
     if (db) {
       try {
-        const qRef = query(collection(db, "pdl_resultados"), orderBy("fechaEpoch", "desc"));
-        const snap = await getDocs(qRef);
+        const snap = await db.collection("pdl_resultados")
+                             .orderBy("fechaEpoch", "desc")
+                             .get();
         fromFirestore = snap.docs.map(d => d.data());
       } catch (err) {
         console.error("Error leyendo Firestore:", err);
@@ -1482,23 +1477,6 @@
     showSection("worker");
   }
   document.addEventListener("DOMContentLoaded", initPDLApp);
-
-  /******************** EXPONER FUNCIONES AL HTML ********************/
-  window.showSection = showSection;
-  window.showAdminAccess = showAdminAccess;
-  window.startTest = startTest;
-  window.nextGroup = nextGroup;
-  window.prevGroup = prevGroup;
-  window.finishTest = finishTest;
-  window.resetForNewTest = resetForNewTest;
-  window.tryAdminLogin = tryAdminLogin;
-  window.setAdminTab = setAdminTab;
-  window.addUnidad = addUnidad;
-  window.deleteUnidad = deleteUnidad;
-  window.addCategoria = addCategoria;
-  window.deleteCategoria = deleteCategoria;
-  window.downloadCSV = downloadCSV;
-  window.clearAllResults = clearAllResults;
 </script>
 </body>
 </html>
