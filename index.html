@@ -165,7 +165,6 @@
     }
     .hidden { display: none !important; }
 
-    /* Encabezado de bloque del test */
     .block-header {
       display: flex;
       justify-content: space-between;
@@ -202,7 +201,6 @@
       text-align: right;
     }
 
-    /* Tabla estilo test */
     .test-title {
       font-size: 1.1rem;
       font-weight: 700;
@@ -244,7 +242,6 @@
     .table-row-label { font-weight: 500; }
     .choice-cell { display: flex; justify-content: center; }
 
-    /* Radios tipo check */
     .choice-radio {
       appearance: none;
       -webkit-appearance: none;
@@ -296,7 +293,6 @@
       }
     }
 
-    /* Admin */
     table {
       width: 100%;
       border-collapse: collapse;
@@ -356,7 +352,7 @@
 </header>
 
 <main>
-  <!-- 1. CARÁTULA -->
+  <!-- CARÁTULA -->
   <section id="section-worker" class="card">
     <h2>Datos del trabajador <span class="pill">Paso 1 de 3</span></h2>
     <p class="subtitle">
@@ -414,7 +410,7 @@
     </p>
   </section>
 
-  <!-- 2. TEST PDL -->
+  <!-- TEST -->
   <section id="section-test" class="card hidden">
     <div class="block-header">
       <div id="block-label">Bloque 1 de 24</div>
@@ -446,7 +442,7 @@
     </div>
   </section>
 
-  <!-- 3. RESULTADOS -->
+  <!-- RESULTADOS -->
   <section id="section-results" class="card hidden">
     <h2>Resultados del PDL <span class="pill">Paso 3 de 3</span></h2>
     <div id="result-personal"></div>
@@ -459,7 +455,7 @@
     </div>
   </section>
 
-  <!-- 4. PANEL ADMIN -->
+  <!-- ADMIN -->
   <section id="section-admin" class="card hidden">
     <h2>Panel de administración</h2>
     <p class="subtitle">
@@ -472,7 +468,6 @@
       <button id="tab-resultados" class="btn-secondary" type="button" onclick="setAdminTab('resultados')">Resultados</button>
     </div>
 
-    <!-- Unidades -->
     <div id="admin-unidades">
       <h3>Gestión de unidades</h3>
       <div class="inline-form">
@@ -488,7 +483,6 @@
       </table>
     </div>
 
-    <!-- Categorías -->
     <div id="admin-categorias" class="hidden">
       <h3>Gestión de categorías</h3>
       <div class="inline-form">
@@ -504,7 +498,6 @@
       </table>
     </div>
 
-    <!-- Resultados -->
     <div id="admin-resultados" class="hidden">
       <h3>Resultados registrados</h3>
       <p class="text-muted">
@@ -536,7 +529,6 @@
   </section>
 </main>
 
-<!-- Firebase JS SDK por CDN (API modular) -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
   import {
@@ -549,7 +541,6 @@
   } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
   import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-analytics.js";
 
-  /******************** CONFIGURACIÓN FIREBASE ********************/
   const firebaseConfig = {
     apiKey: "AIzaSyDJniFUuRh3mfjP40cAm2gJ2P3TGOyKqog",
     authDomain: "perfil-de-dinamicas-laborales.firebaseapp.com",
@@ -564,13 +555,12 @@
   try {
     const app = initializeApp(firebaseConfig);
     db = getFirestore(app);
-    try { getAnalytics(app); } catch (e) { console.warn("Analytics no disponible:", e); }
+    try { getAnalytics(app); } catch (e) {}
     console.log("Firebase inicializado.");
   } catch (err) {
-    console.warn("Firebase NO inicializado. Solo se usará almacenamiento local.", err);
+    console.warn("Firebase NO inicializado. Solo localStorage.", err);
   }
 
-  /******************** CONFIG APP ********************/
   const STORAGE_KEYS = {
     unidades: "pdl_unidades",
     categorias: "pdl_categorias",
@@ -729,9 +719,8 @@
   let currentWorkerData = null;
   let resultadosCache = [];
 
-  /******************** UTILIDADES ********************/
   function showSection(section) {
-    ["worker", "test", "results", "admin"].forEach(s => {
+    ["worker","test","results","admin"].forEach(s => {
       const el = document.getElementById("section-" + s);
       if (!el) return;
       if (s === section) el.classList.remove("hidden");
@@ -755,250 +744,204 @@
     return age;
   }
 
-  function readLocal(key, defaultValue) {
+  function readLocal(key, defVal) {
     try {
       const raw = localStorage.getItem(key);
-      if (!raw) return defaultValue;
+      if (!raw) return defVal;
       return JSON.parse(raw);
     } catch {
-      return defaultValue;
+      return defVal;
     }
   }
-
-  function writeLocal(key, value) {
-    try { localStorage.setItem(key, JSON.stringify(value)); } catch {}
-  }
+  function writeLocal(key,v){try{localStorage.setItem(key,JSON.stringify(v));}catch{}}
 
   function ensureDefaultConfig() {
-    let unidades = readLocal(STORAGE_KEYS.unidades, null);
-    let categorias = readLocal(STORAGE_KEYS.categorias, null);
-
-    if (!Array.isArray(unidades) || unidades.length === 0) {
-      unidades = ["Unidad 1", "Unidad 2"];
-      writeLocal(STORAGE_KEYS.unidades, unidades);
+    let unidades = readLocal(STORAGE_KEYS.unidades,null);
+    let categorias = readLocal(STORAGE_KEYS.categorias,null);
+    if (!Array.isArray(unidades) || unidades.length===0){
+      unidades=["Unidad 1","Unidad 2"];
+      writeLocal(STORAGE_KEYS.unidades,unidades);
     }
-    if (!Array.isArray(categorias) || categorias.length === 0) {
-      categorias = ["Categoría A", "Categoría B"];
-      writeLocal(STORAGE_KEYS.categorias, categorias);
+    if (!Array.isArray(categorias) || categorias.length===0){
+      categorias=["Categoría A","Categoría B"];
+      writeLocal(STORAGE_KEYS.categorias,categorias);
     }
   }
 
-  function populateWorkerSelects() {
-    const unidades = readLocal(STORAGE_KEYS.unidades, []);
-    const categorias = readLocal(STORAGE_KEYS.categorias, []);
-    const unidadSelect = document.getElementById("unidad");
-    const categoriaSelect = document.getElementById("categoria");
-    if (!unidadSelect || !categoriaSelect) return;
-
-    unidadSelect.innerHTML = '<option value="">Seleccione...</option>';
-    categoriaSelect.innerHTML = '<option value="">Seleccione...</option>';
-
-    unidades.forEach(u => {
-      const opt = document.createElement("option");
-      opt.value = u;
-      opt.textContent = u;
-      unidadSelect.appendChild(opt);
+  function populateWorkerSelects(){
+    const unidades=readLocal(STORAGE_KEYS.unidades,[]);
+    const categorias=readLocal(STORAGE_KEYS.categorias,[]);
+    const uSel=document.getElementById("unidad");
+    const cSel=document.getElementById("categoria");
+    if(!uSel||!cSel)return;
+    uSel.innerHTML='<option value="">Seleccione...</option>';
+    cSel.innerHTML='<option value="">Seleccione...</option>';
+    unidades.forEach(u=>{
+      const o=document.createElement("option");
+      o.value=u;o.textContent=u;uSel.appendChild(o);
     });
-    categorias.forEach(c => {
-      const opt = document.createElement("option");
-      opt.value = c;
-      opt.textContent = c;
-      categoriaSelect.appendChild(opt);
+    categorias.forEach(c=>{
+      const o=document.createElement("option");
+      o.value=c;o.textContent=c;cSel.appendChild(o);
     });
   }
 
-  /******************** FORMULARIO TRABAJADOR ********************/
-  function initBirthDateListener() {
-    const fechaNacimientoInput = document.getElementById("fechaNacimiento");
-    if (fechaNacimientoInput) {
-      fechaNacimientoInput.addEventListener("change", function () {
-        const age = calculateAge(this.value);
-        const edadEl = document.getElementById("edad");
-        if (edadEl) edadEl.value = age !== "" ? age : "";
+  function initBirthDateListener(){
+    const f=document.getElementById("fechaNacimiento");
+    if(f){
+      f.addEventListener("change",function(){
+        const e=document.getElementById("edad");
+        if(e)e.value=calculateAge(this.value) || "";
       });
     }
   }
 
-  function validateWorkerForm() {
-    let valid = true;
-    const unidad = document.getElementById("unidad").value.trim();
-    const matricula = document.getElementById("matricula").value.trim();
-    const nombre = document.getElementById("nombre").value.trim();
-    const categoria = document.getElementById("categoria").value.trim();
-    const puesto = document.getElementById("puesto").value.trim();
-    const fechaNacimiento = document.getElementById("fechaNacimiento").value;
-    const lugarNacimiento = document.getElementById("lugarNacimiento").value.trim();
+  function validateWorkerForm(){
+    let valid=true;
+    const unidad=document.getElementById("unidad").value.trim();
+    const matricula=document.getElementById("matricula").value.trim();
+    const nombre=document.getElementById("nombre").value.trim();
+    const categoria=document.getElementById("categoria").value.trim();
+    const puesto=document.getElementById("puesto").value.trim();
+    const fechaNacimiento=document.getElementById("fechaNacimiento").value;
+    const lugarNacimiento=document.getElementById("lugarNacimiento").value.trim();
 
-    const fields = [
-      { id: "unidad", value: unidad },
-      { id: "matricula", value: matricula },
-      { id: "nombre", value: nombre },
-      { id: "categoria", value: categoria },
-      { id: "puesto", value: puesto },
-      { id: "fechaNacimiento", value: fechaNacimiento },
-      { id: "lugarNacimiento", value: lugarNacimiento }
+    const fields=[
+      {id:"unidad",value:unidad},
+      {id:"matricula",value:matricula},
+      {id:"nombre",value:nombre},
+      {id:"categoria",value:categoria},
+      {id:"puesto",value:puesto},
+      {id:"fechaNacimiento",value:fechaNacimiento},
+      {id:"lugarNacimiento",value:lugarNacimiento}
     ];
-    fields.forEach(f => {
-      const errorEl = document.getElementById(f.id + "-error");
-      if (!f.value) {
-        if (errorEl) errorEl.classList.remove("hidden");
-        valid = false;
-      } else {
-        if (errorEl) errorEl.classList.add("hidden");
-      }
+    fields.forEach(f=>{
+      const err=document.getElementById(f.id+"-error");
+      if(!f.value){valid=false;err&&err.classList.remove("hidden");}
+      else err&&err.classList.add("hidden");
     });
-    if (!valid) return null;
+    if(!valid)return null;
 
     return {
-      unidad,
-      matricula,
-      nombre,
-      categoria,
-      puesto,
-      fechaNacimiento,
-      edad: calculateAge(fechaNacimiento),
+      unidad,matricula,nombre,categoria,puesto,fechaNacimiento,
+      edad:calculateAge(fechaNacimiento),
       lugarNacimiento
     };
   }
 
-  function startTest() {
-    const workerData = validateWorkerForm();
-    if (!workerData) return;
-    currentWorkerData = workerData;
-    currentGroupIndex = 0;
-    testAnswers = TEST_GROUPS.map(() => ({ most: null, least: null }));
+  function startTest(){
+    const w=validateWorkerForm();
+    if(!w)return;
+    currentWorkerData=w;
+    currentGroupIndex=0;
+    testAnswers=TEST_GROUPS.map(()=>({most:null,least:null}));
     renderCurrentGroup();
     updateProgressUI();
     updateNavButtons();
     showSection("test");
   }
 
-  /******************** TEST PDL ********************/
-  function renderCurrentGroup() {
-    const container = document.getElementById("test-group-container");
-    if (!container) return;
-    const group = TEST_GROUPS[currentGroupIndex];
-    const answers = testAnswers[currentGroupIndex];
-
-    let html = "";
-    html += '<div class="table-like">';
-    html += '<div class="table-header">';
-    html += '<div>Palabra / adjetivo</div>';
-    html += '<div style="text-align:center;">MÁS (+)</div>';
-    html += '<div style="text-align:center;">MENOS (-)</div>';
-    html += '</div>';
-
-    group.words.forEach((w, idx) => {
-      const mostChecked = answers.most === idx ? "checked" : "";
-      const leastChecked = answers.least === idx ? "checked" : "";
-      html += '<div class="table-row">';
-      html += '<div class="table-row-label">' + w.text + '</div>';
-      html += '<div class="choice-cell">';
-      html += '<input class="choice-radio choice-plus" type="radio" name="most" value="' + idx + '" ' + mostChecked + '>';
-      html += '</div>';
-      html += '<div class="choice-cell">';
-      html += '<input class="choice-radio choice-minus" type="radio" name="least" value="' + idx + '" ' + leastChecked + '>';
-      html += '</div>';
-      html += '</div>';
+  function renderCurrentGroup(){
+    const c=document.getElementById("test-group-container");
+    if(!c)return;
+    const g=TEST_GROUPS[currentGroupIndex];
+    const ans=testAnswers[currentGroupIndex];
+    let html='<div class="table-like">';
+    html+='<div class="table-header"><div>Palabra / adjetivo</div><div style="text-align:center;">MÁS (+)</div><div style="text-align:center;">MENOS (-)</div></div>';
+    g.words.forEach((w,idx)=>{
+      const mChecked=ans.most===idx?"checked":"";
+      const lChecked=ans.least===idx?"checked":"";
+      html+='<div class="table-row">';
+      html+='<div class="table-row-label">'+w.text+'</div>';
+      html+='<div class="choice-cell"><input class="choice-radio choice-plus" type="radio" name="most" value="'+idx+'" '+mChecked+'></div>';
+      html+='<div class="choice-cell"><input class="choice-radio choice-minus" type="radio" name="least" value="'+idx+'" '+lChecked+'></div>';
+      html+='</div>';
     });
+    html+='</div>';
+    c.innerHTML=html;
 
-    html += '</div>';
-    container.innerHTML = html;
-
-    const err = document.getElementById("test-error");
-    if (err) err.classList.add("hidden");
-    const blockLabel = document.getElementById("block-label");
-    if (blockLabel) {
-      blockLabel.textContent = "Bloque " + (currentGroupIndex + 1) + " de " + TEST_GROUPS.length;
-    }
-
+    const err=document.getElementById("test-error");
+    err&&err.classList.add("hidden");
+    const bl=document.getElementById("block-label");
+    bl&&(bl.textContent="Bloque "+(currentGroupIndex+1)+" de "+TEST_GROUPS.length);
     setupChoiceMutualExclusion();
   }
 
-  function setupChoiceMutualExclusion() {
-    const container = document.getElementById("test-group-container");
-    if (!container) return;
-    const plusRadios = container.querySelectorAll(".choice-plus");
-    const minusRadios = container.querySelectorAll(".choice-minus");
-
-    plusRadios.forEach(r => {
-      r.addEventListener("change", function() {
-        if (!this.checked) return;
-        const val = this.value;
-        const sameMinus = container.querySelector('.choice-minus[value="' + val + '"]');
-        if (sameMinus && sameMinus.checked) sameMinus.checked = false;
+  function setupChoiceMutualExclusion(){
+    const c=document.getElementById("test-group-container");
+    if(!c)return;
+    const plus=c.querySelectorAll(".choice-plus");
+    const minus=c.querySelectorAll(".choice-minus");
+    plus.forEach(r=>{
+      r.addEventListener("change",function(){
+        if(!this.checked)return;
+        const val=this.value;
+        const m=c.querySelector('.choice-minus[value="'+val+'"]');
+        if(m&&m.checked)m.checked=false;
       });
     });
-    minusRadios.forEach(r => {
-      r.addEventListener("change", function() {
-        if (!this.checked) return;
-        const val = this.value;
-        const samePlus = container.querySelector('.choice-plus[value="' + val + '"]');
-        if (samePlus && samePlus.checked) samePlus.checked = false;
+    minus.forEach(r=>{
+      r.addEventListener("change",function(){
+        if(!this.checked)return;
+        const val=this.value;
+        const p=c.querySelector('.choice-plus[value="'+val+'"]');
+        if(p&&p.checked)p.checked=false;
       });
     });
   }
 
-  function updateProgressUI() {
-    const progress = (currentGroupIndex / TEST_GROUPS.length) * 100;
-    const bar = document.getElementById("progress-bar");
-    const percent = document.getElementById("progress-percent");
-    if (bar) bar.style.width = progress + "%";
-    if (percent) percent.textContent = Math.round(progress) + "%";
+  function updateProgressUI(){
+    const progress=(currentGroupIndex/TEST_GROUPS.length)*100;
+    const bar=document.getElementById("progress-bar");
+    const pct=document.getElementById("progress-percent");
+    if(bar)bar.style.width=progress+"%";
+    if(pct)pct.textContent=Math.round(progress)+"%";
   }
 
-  function updateNavButtons() {
-    const btnPrev = document.getElementById("btn-prev");
-    const btnNext = document.getElementById("btn-next");
-    if (!btnPrev || !btnNext) return;
-
-    if (currentGroupIndex === 0) {
-      btnPrev.disabled = true;
-      btnPrev.classList.add("btn-disabled");
+  function updateNavButtons(){
+    const prev=document.getElementById("btn-prev");
+    const next=document.getElementById("btn-next");
+    if(!prev||!next)return;
+    if(currentGroupIndex===0){
+      prev.disabled=true;prev.classList.add("btn-disabled");
     } else {
-      btnPrev.disabled = false;
-      btnPrev.classList.remove("btn-disabled");
+      prev.disabled=false;prev.classList.remove("btn-disabled");
     }
-
-    if (currentGroupIndex === TEST_GROUPS.length - 1) {
-      btnNext.disabled = true;
-      btnNext.classList.add("btn-disabled");
+    if(currentGroupIndex===TEST_GROUPS.length-1){
+      next.disabled=true;next.classList.add("btn-disabled");
     } else {
-      btnNext.disabled = false;
-      btnNext.classList.remove("btn-disabled");
+      next.disabled=false;next.classList.remove("btn-disabled");
     }
   }
 
-  function captureCurrentGroupSelection() {
-    const mostRadios = document.querySelectorAll('input[name="most"]');
-    const leastRadios = document.querySelectorAll('input[name="least"]');
-    let most = null, least = null;
-
-    mostRadios.forEach(r => { if (r.checked) most = parseInt(r.value, 10); });
-    leastRadios.forEach(r => { if (r.checked) least = parseInt(r.value, 10); });
-
-    if (most === null || least === null) {
+  function captureCurrentGroupSelection(){
+    const mostRadios=document.querySelectorAll('input[name="most"]');
+    const leastRadios=document.querySelectorAll('input[name="least"]');
+    let most=null,least=null;
+    mostRadios.forEach(r=>{if(r.checked)most=parseInt(r.value,10);});
+    leastRadios.forEach(r=>{if(r.checked)least=parseInt(r.value,10);});
+    if(most===null||least===null){
       showTestError("Debe elegir una palabra como MÁS (+) y otra como MENOS (-) en este bloque.");
       return false;
     }
-    if (most === least) {
+    if(most===least){
       showTestError("La misma palabra no puede ser MÁS (+) y MENOS (-) en el mismo bloque.");
       return false;
     }
-    testAnswers[currentGroupIndex] = { most, least };
+    testAnswers[currentGroupIndex]={most,least};
     return true;
   }
 
-  function showTestError(msg) {
-    const el = document.getElementById("test-error");
-    if (!el) return;
-    el.textContent = msg;
+  function showTestError(msg){
+    const el=document.getElementById("test-error");
+    if(!el)return;
+    el.textContent=msg;
     el.classList.remove("hidden");
   }
 
-  function nextGroup() {
-    if (!captureCurrentGroupSelection()) return;
-    if (currentGroupIndex < TEST_GROUPS.length - 1) {
+  function nextGroup(){
+    if(!captureCurrentGroupSelection())return;
+    if(currentGroupIndex<TEST_GROUPS.length-1){
       currentGroupIndex++;
       renderCurrentGroup();
       updateProgressUI();
@@ -1006,8 +949,8 @@
     }
   }
 
-  function prevGroup() {
-    if (currentGroupIndex > 0) {
+  function prevGroup(){
+    if(currentGroupIndex>0){
       captureCurrentGroupSelection();
       currentGroupIndex--;
       renderCurrentGroup();
@@ -1016,659 +959,302 @@
     }
   }
 
-  function allGroupsAnswered() {
-    return testAnswers.every(a => a.most !== null && a.least !== null);
+  function allGroupsAnswered(){
+    return testAnswers.every(a=>a.most!==null && a.least!==null);
   }
 
-  async function finishTest() {
-    // Siempre guarda lo que esté seleccionado en el bloque actual
-    if (!captureCurrentGroupSelection()) return;
+  async function finishTest(){
+    // Guarda lo que se contestó en el último bloque visible
+    if(!captureCurrentGroupSelection()) return;
 
-    // Verifica bloque por bloque y, si falta alguno, te lleva a ese bloque
-    for (let i = 0; i < TEST_GROUPS.length; i++) {
-      const ans = testAnswers[i];
-      if (ans.most === null || ans.least === null) {
-        showTestError("Falta responder el bloque " + (i + 1) + ". Se mostrará para completar.");
-        currentGroupIndex = i;
-        renderCurrentGroup();
-        updateProgressUI();
-        updateNavButtons();
-        return;
-      }
+    // Revisión global simple
+    if(!allGroupsAnswered()){
+      alert("Faltan uno o más bloques por contestar. Revise desde el bloque 1 y verifique que todos tengan una opción de MÁS (+) y una de MENOS (-).");
+      return;
     }
 
-    const scores = computeDISCFromAnswers();
-    const profile = determineMainProfile(scores);
-    const interpretation = interpretProfile(profile, scores);
-    const trainingPlan = generateTrainingPlan(profile, scores);
+    const scores=computeDISCFromAnswers();
+    const perfil=determineMainProfile(scores);
+    const interp=interpretProfile(perfil,scores);
+    const training=generateTrainingPlan(perfil,scores);
 
-    await saveResult(scores, profile, interpretation, trainingPlan);
-    renderResultView(scores, profile, interpretation, trainingPlan);
+    await saveResult(scores,perfil,interp,training);
+    renderResultView(scores,perfil,interp,training);
     showSection("results");
   }
 
-  /******************** CÁLCULO DISC ********************/
-  function computeDISCFromAnswers() {
-    const mostCounts = { D: 0, I: 0, S: 0, C: 0 };
-    const leastCounts = { D: 0, I: 0, S: 0, C: 0 };
-
-    testAnswers.forEach((ans, groupIndex) => {
-      const group = TEST_GROUPS[groupIndex];
-      const mostDim = group.words[ans.most].dim;
-      const leastDim = group.words[ans.least].dim;
-      mostCounts[mostDim]++;
-      leastCounts[leastDim]++;
+  function computeDISCFromAnswers(){
+    const most={D:0,I:0,S:0,C:0};
+    const least={D:0,I:0,S:0,C:0};
+    testAnswers.forEach((ans,idx)=>{
+      const g=TEST_GROUPS[idx];
+      const mDim=g.words[ans.most].dim;
+      const lDim=g.words[ans.least].dim;
+      most[mDim]++;least[lDim]++;
     });
-
     return {
-      D: mostCounts.D - leastCounts.D,
-      I: mostCounts.I - leastCounts.I,
-      S: mostCounts.S - leastCounts.S,
-      C: mostCounts.C - leastCounts.C,
-      most: mostCounts,
-      least: leastCounts
+      D:most.D-least.D,
+      I:most.I-least.I,
+      S:most.S-least.S,
+      C:most.C-least.C,
+      most,least
     };
   }
 
-  function determineMainProfile(scores) {
-    const base = { D: scores.D, I: scores.I, S: scores.S, C: scores.C };
-    let maxDim = "D";
-    let maxVal = base.D;
-    ["I", "S", "C"].forEach(dim => {
-      if (base[dim] > maxVal) {
-        maxVal = base[dim];
-        maxDim = dim;
-      }
+  function determineMainProfile(scores){
+    const base={D:scores.D,I:scores.I,S:scores.S,C:scores.C};
+    let maxDim="D",maxVal=base.D;
+    ["I","S","C"].forEach(dim=>{
+      if(base[dim]>maxVal){maxVal=base[dim];maxDim=dim;}
     });
     return maxDim;
   }
 
-  /******************** INTERPRETACIÓN DETALLADA ********************/
-  function interpretProfile(mainDim, scores) {
-    const dimNames = {
-      D: "Dominancia (D)",
-      I: "Influencia (I)",
-      S: "Estabilidad (S)",
-      C: "Cumplimiento (C)"
-    };
-
-    let mainDesc = "";
-    let details = "";
-
-    if (mainDim === "D") {
-      mainDesc =
-        "El resultado sugiere un estilo predominante de Dominancia. " +
-        "Las personas con este perfil suelen enfocarse en resultados concretos, retos y logros visibles. " +
-        "Tienden a tomar decisiones rápidas, asumir riesgos calculados y sentirse cómodas en contextos de presión o cambio.";
-      details =
-        "<strong>Fortalezas principales:</strong><br>" +
-        "• Capacidad para dirigir y tomar decisiones sin paralizarse.<br>" +
-        "• Orientación clara a objetivos y cumplimiento de metas exigentes.<br>" +
-        "• Rapidez para abordar problemas y remover obstáculos operativos.<br><br>" +
-        "<strong>Posibles áreas de tensión:</strong><br>" +
-        "• Puede parecer impaciente o poco sensible ante el ritmo de otras personas.<br>" +
-        "• Riesgo de priorizar el resultado por encima de la relación y el proceso.<br>" +
-        "• Tendencia a subestimar procedimientos cuando se perciben como burocráticos.<br><br>" +
-        "<strong>Impacto en el entorno laboral:</strong><br>" +
-        "• Suele dinamizar el trabajo cuando hay urgencia o necesidad de cambios rápidos.<br>" +
-        "• Puede entrar en conflicto con estilos más cautelosos, analíticos o orientados a la estabilidad.<br>" +
-        "• Requiere espacios donde se le permita proponer mejoras y asumir responsabilidad.";
-    } else if (mainDim === "I") {
-      mainDesc =
-        "El resultado sugiere un estilo predominante de Influencia. " +
-        "Las personas con este perfil se caracterizan por su orientación a las relaciones, la comunicación y la persuasión. " +
-        "Buscan generar ambientes cordiales y suelen aportar energía y optimismo al equipo.";
-      details =
-        "<strong>Fortalezas principales:</strong><br>" +
-        "• Habilidad para establecer confianza y cercanía con diferentes personas usuarias y colegas.<br>" +
-        "• Facilidad para comunicar ideas y motivar al equipo durante procesos de cambio.<br>" +
-        "• Capacidad para adaptarse socialmente a distintos contextos y perfiles de personas.<br><br>" +
-        "<strong>Posibles áreas de tensión:</strong><br>" +
-        "• Puede dispersarse si las tareas son muy rutinarias o poco interactivas.<br>" +
-        "• Riesgo de subestimar tiempos o detalles técnicos por exceso de optimismo.<br>" +
-        "• Tendencia a evitar confrontaciones directas para no afectar la armonía del grupo.<br><br>" +
-        "<strong>Impacto en el entorno laboral:</strong><br>" +
-        "• Favorece la integración de equipos multidisciplinarios y el clima organizacional positivo.<br>" +
-        "• Es útil en roles de orientación, capacitación, coordinación o atención a usuarios.<br>" +
-        "• Requiere lineamientos claros para equilibrar la parte relacional con el cumplimiento de objetivos.";
-    } else if (mainDim === "S") {
-      mainDesc =
-        "El resultado sugiere un estilo predominante de Estabilidad. " +
-        "Las personas con este perfil tienden a ser pacientes, constantes y confiables, valorando entornos predecibles y colaborativos. " +
-        "Suelen enfocarse en la continuidad, el acompañamiento y el apoyo al equipo.";
-      details =
-        "<strong>Fortalezas principales:</strong><br>" +
-        "• Perseverancia y consistencia en el seguimiento de tareas y procedimientos establecidos.<br>" +
-        "• Disposición para escuchar, contener y apoyar a compañeros y personas usuarias.<br>" +
-        "• Capacidad para mantener la calma en situaciones de tensión, aportando equilibrio al equipo.<br><br>" +
-        "<strong>Posibles áreas de tensión:</strong><br>" +
-        "• Puede mostrar resistencia ante cambios bruscos o decisiones muy aceleradas.<br>" +
-        "• Tendencia a postergar conversaciones difíciles o confrontaciones necesarias.<br>" +
-        "• Puede sentirse saturado si no se le da tiempo para adaptarse a nuevas demandas.<br><br>" +
-        "<strong>Impacto en el entorno laboral:</strong><br>" +
-        "• Contribuye a que los procesos se sostengan en el tiempo y se mantenga la calidad diaria del servicio.<br>" +
-        "• Funciona bien en equipos donde se valora la cooperación y el apoyo mutuo.<br>" +
-        "• Requiere comunicación clara ante los cambios, explicando el sentido y los beneficios.";
-    } else if (mainDim === "C") {
-      mainDesc =
-        "El resultado sugiere un estilo predominante de Cumplimiento. " +
-        "Las personas con este perfil se orientan al detalle, la precisión y la observancia de normas, protocolos y lineamientos técnicos. " +
-        "Suelen analizar la información con profundidad antes de actuar.";
-      details =
-        "<strong>Fortalezas principales:</strong><br>" +
-        "• Alta precisión en tareas que implican registros, análisis de datos o control de calidad.<br>" +
-        "• Respeto por los procedimientos y las normativas institucionales.<br>" +
-        "• Capacidad para detectar inconsistencias, áreas de riesgo o desvíos en los procesos.<br><br>" +
-        "<strong>Posibles áreas de tensión:</strong><br>" +
-        "• Puede dedicar demasiado tiempo al análisis antes de tomar decisiones.<br>" +
-        "• Riesgo de ser autocrítico o exigente en exceso consigo mismo y con otras personas.<br>" +
-        "• Puede percibirse como rígido cuando defiende criterios técnicos o normativos.<br><br>" +
-        "<strong>Impacto en el entorno laboral:</strong><br>" +
-        "• Resulta clave para asegurar calidad, trazabilidad y cumplimiento normativo en el servicio.<br>" +
-        "• Aporta una mirada estructurada que complementa a perfiles más impulsivos o relacionales.<br>" +
-        "• Requiere espacios para argumentar y consensuar los criterios técnicos que sustenta.";
+  function interpretProfile(mainDim,scores){
+    const dimNames={D:"Dominancia (D)",I:"Influencia (I)",S:"Estabilidad (S)",C:"Cumplimiento (C)"};
+    let mainDesc="",details="";
+    if(mainDim==="D"){
+      mainDesc="El resultado sugiere un estilo predominante de Dominancia. Las personas con este perfil suelen enfocarse en resultados concretos, retos y logros visibles. Tienden a tomar decisiones rápidas, asumir riesgos calculados y sentirse cómodas en contextos de presión o cambio.";
+      details="<strong>Fortalezas principales:</strong><br>• Capacidad para dirigir y tomar decisiones sin paralizarse.<br>• Orientación clara a objetivos y cumplimiento de metas exigentes.<br>• Rapidez para abordar problemas y remover obstáculos operativos.<br><br><strong>Posibles áreas de tensión:</strong><br>• Puede parecer impaciente o poco sensible ante el ritmo de otras personas.<br>• Riesgo de priorizar el resultado por encima de la relación y el proceso.<br>• Tendencia a subestimar procedimientos cuando se perciben como burocráticos.<br><br><strong>Impacto en el entorno laboral:</strong><br>• Suele dinamizar el trabajo cuando hay urgencia o necesidad de cambios rápidos.<br>• Puede entrar en conflicto con estilos más cautelosos, analíticos o orientados a la estabilidad.<br>• Requiere espacios donde se le permita proponer mejoras y asumir responsabilidad.";
+    } else if(mainDim==="I"){
+      mainDesc="El resultado sugiere un estilo predominante de Influencia. Las personas con este perfil se caracterizan por su orientación a las relaciones, la comunicación y la persuasión. Buscan generar ambientes cordiales y suelen aportar energía y optimismo al equipo.";
+      details="<strong>Fortalezas principales:</strong><br>• Habilidad para establecer confianza y cercanía con diferentes personas usuarias y colegas.<br>• Facilidad para comunicar ideas y motivar al equipo durante procesos de cambio.<br>• Capacidad para adaptarse socialmente a distintos contextos y perfiles de personas.<br><br><strong>Posibles áreas de tensión:</strong><br>• Puede dispersarse si las tareas son muy rutinarias o poco interactivas.<br>• Riesgo de subestimar tiempos o detalles técnicos por exceso de optimismo.<br>• Tendencia a evitar confrontaciones directas para no afectar la armonía del grupo.<br><br><strong>Impacto en el entorno laboral:</strong><br>• Favorece la integración de equipos multidisciplinarios y el clima organizacional positivo.<br>• Es útil en roles de orientación, capacitación, coordinación o atención a usuarios.<br>• Requiere lineamientos claros para equilibrar la parte relacional con el cumplimiento de objetivos.";
+    } else if(mainDim==="S"){
+      mainDesc="El resultado sugiere un estilo predominante de Estabilidad. Las personas con este perfil tienden a ser pacientes, constantes y confiables, valorando entornos predecibles y colaborativos. Suelen enfocarse en la continuidad, el acompañamiento y el apoyo al equipo.";
+      details="<strong>Fortalezas principales:</strong><br>• Perseverancia y consistencia en el seguimiento de tareas y procedimientos establecidos.<br>• Disposición para escuchar, contener y apoyar a compañeros y personas usuarias.<br>• Capacidad para mantener la calma en situaciones de tensión, aportando equilibrio al equipo.<br><br><strong>Posibles áreas de tensión:</strong><br>• Puede mostrar resistencia ante cambios bruscos o decisiones muy aceleradas.<br>• Tendencia a postergar conversaciones difíciles o confrontaciones necesarias.<br>• Puede sentirse saturado si no se le da tiempo para adaptarse a nuevas demandas.<br><br><strong>Impacto en el entorno laboral:</strong><br>• Contribuye a que los procesos se sostengan en el tiempo y se mantenga la calidad diaria del servicio.<br>• Funciona bien en equipos donde se valora la cooperación y el apoyo mutuo.<br>• Requiere comunicación clara ante los cambios, explicando el sentido y los beneficios.";
+    } else if(mainDim==="C"){
+      mainDesc="El resultado sugiere un estilo predominante de Cumplimiento. Las personas con este perfil se orientan al detalle, la precisión y la observancia de normas, protocolos y lineamientos técnicos. Suelen analizar la información con profundidad antes de actuar.";
+      details="<strong>Fortalezas principales:</strong><br>• Alta precisión en tareas que implican registros, análisis de datos o control de calidad.<br>• Respeto por los procedimientos y las normativas institucionales.<br>• Capacidad para detectar inconsistencias, áreas de riesgo o desvíos en los procesos.<br><br><strong>Posibles áreas de tensión:</strong><br>• Puede dedicar demasiado tiempo al análisis antes de tomar decisiones.<br>• Riesgo de ser autocrítico o exigente en exceso consigo mismo y con otras personas.<br>• Puede percibirse como rígido cuando defiende criterios técnicos o normativos.<br><br><strong>Impacto en el entorno laboral:</strong><br>• Resulta clave para asegurar calidad, trazabilidad y cumplimiento normativo en el servicio.<br>• Aporta una mirada estructurada que complementa a perfiles más impulsivos o relacionales.<br>• Requiere espacios para argumentar y consensuar los criterios técnicos que sustenta.";
     } else {
-      mainDesc =
-        "El perfil muestra una combinación equilibrada de las dimensiones DISC, sin un rasgo claramente predominante. " +
-        "Esto suele asociarse con flexibilidad y capacidad para ajustarse a diferentes demandas del entorno laboral.";
-      details =
-        "<strong>Implicaciones generales:</strong><br>" +
-        "• Posible capacidad de adaptarse según la situación, el tipo de usuario o las características del equipo.<br>" +
-        "• Puede alternar entre tareas de análisis, interacción social, ejecución constante o toma de decisiones.<br>" +
-        "• Es conveniente revisar el contexto de trabajo actual para identificar qué dimensión utiliza más y en qué momentos.<br><br>" +
-        "Esta combinación puede ser muy útil en entornos cambiantes, siempre que cuente con lineamientos claros y espacios de acompañamiento.";
+      mainDesc="El perfil muestra una combinación equilibrada de las dimensiones DISC, sin un rasgo claramente predominante. Esto suele asociarse con flexibilidad y capacidad para ajustarse a diferentes demandas del entorno laboral.";
+      details="<strong>Implicaciones generales:</strong><br>• Posible capacidad de adaptarse según la situación, el tipo de usuario o las características del equipo.<br>• Puede alternar entre tareas de análisis, interacción social, ejecución constante o toma de decisiones.<br>• Es conveniente revisar el contexto de trabajo actual para identificar qué dimensión utiliza más y en qué momentos.<br><br>Esta combinación puede ser muy útil en entornos cambiantes, siempre que cuente con lineamientos claros y espacios de acompañamiento.";
     }
-
-    return {
-      title: "Perfil predominante: " + (dimNames[mainDim] || mainDim),
-      mainDesc,
-      details
-    };
+    return {title:"Perfil predominante: "+(dimNames[mainDim]||mainDim),mainDesc,details};
   }
 
-  /******************** PLAN DE CAPACITACIÓN DETALLADO ********************/
-  function generateTrainingPlan(mainDim, scores) {
-    let plan = "";
-
-    if (mainDim === "D") {
-      plan =
-        "<strong>Objetivo general de capacitación:</strong><br>" +
-        "Canalizar la orientación a resultados hacia un liderazgo efectivo, considerando el impacto en el equipo, " +
-        "el cuidado de la comunicación y el respeto a los procesos institucionales.<br><br>" +
-
-        "<strong>Líneas de desarrollo recomendadas:</strong><br>" +
-        "1) <u>Liderazgo colaborativo y gestión de equipos</u><br>" +
-        "• Estrategias para integrar diferentes estilos de personalidad en el equipo.<br>" +
-        "• Técnicas para delegar de manera clara, estableciendo metas y criterios de seguimiento.<br>" +
-        "• Manejo de la autoridad sin caer en imposición o confrontación innecesaria.<br><br>" +
-        "2) <u>Comunicación asertiva en contextos de presión</u><br>" +
-        "• Herramientas para expresar desacuerdos sin descalificar ni invalidar.<br>" +
-        "• Técnicas de escucha activa para incorporar la visión de otras personas en la toma de decisiones.<br>" +
-        "• Estrategias para dar retroalimentación constructiva al equipo.<br><br>" +
-        "3) <u>Gestión de riesgos y toma de decisiones basadas en datos</u><br>" +
-        "• Análisis de información cuantitativa y cualitativa antes de tomar decisiones críticas.<br>" +
-        "• Identificación de riesgos clínicos, operativos o administrativos y priorización de acciones.<br>" +
-        "• Uso de indicadores para evaluar el impacto de las decisiones en la calidad del servicio.<br><br>" +
-
-        "<strong>Modalidades sugeridas:</strong><br>" +
-        "• Talleres prácticos de liderazgo y simulación de casos complejos.<br>" +
-        "• Acompañamiento o mentoría con jefaturas que modelen liderazgo firme pero empático.<br>" +
-        "• Revisión periódica de indicadores y planes de mejora elaborados por la propia persona.<br><br>" +
-
-        "<strong>Indicadores de avance:</strong><br>" +
-        "• Reducción de conflictos generados por la forma de comunicar decisiones.<br>" +
-        "• Mayor participación del equipo en la definición de metas y en la propuesta de mejoras.<br>" +
-        "• Cumplimiento de objetivos sin deterioro significativo del clima laboral.";
-    } else if (mainDim === "I") {
-      plan =
-        "<strong>Objetivo general de capacitación:</strong><br>" +
-        "Fortalecer el uso de las habilidades interpersonales para favorecer la coordinación, la orientación a usuarios " +
-        "y el trabajo en equipo, incorporando también disciplina en la gestión del tiempo y el seguimiento de tareas.<br><br>" +
-
-        "<strong>Líneas de desarrollo recomendadas:</strong><br>" +
-        "1) <u>Comunicación efectiva y manejo de grupos</u><br>" +
-        "• Técnicas para conducir reuniones productivas, con acuerdos claros y tiempos definidos.<br>" +
-        "• Herramientas para facilitar espacios de diálogo y resolución de problemas en equipo.<br>" +
-        "• Estrategias para adaptar el mensaje según el perfil de la audiencia (usuarios, colegas, directivos).<br><br>" +
-        "2) <u>Gestión del tiempo y priorización</u><br>" +
-        "• Diseño de agendas diarias y semanales con seguimiento de compromisos.<br>" +
-        "• Identificación de tareas críticas versus actividades de menor impacto.<br>" +
-        "• Uso de listas, recordatorios y tableros para evitar la dispersión en múltiples actividades.<br><br>" +
-        "3) <u>Manejo de límites y confrontación constructiva</u><br>" +
-        "• Estrategias para abordar conversaciones difíciles sin perder la relación de confianza.<br>" +
-        "• Habilidades para poner límites claros a conductas que afectan el trabajo del equipo.<br>" +
-        "• Técnicas de negociación colaborativa ante diferencias de criterio.<br><br>" +
-
-        "<strong>Modalidades sugeridas:</strong><br>" +
-        "• Talleres vivenciales de comunicación y trabajo en equipo.<br>" +
-        "• Espacios de co-visión o supervisión grupal donde se analicen casos reales de interacción.<br>" +
-        "• Uso de herramientas digitales simples para organizar tareas y proyectos compartidos.<br><br>" +
-
-        "<strong>Indicadores de avance:</strong><br>" +
-        "• Mayor puntualidad y cumplimiento de acuerdos definidos en reuniones.<br>" +
-        "• Disminución de tareas postergadas por falta de seguimiento.<br>" +
-        "• Capacidad para sostener conversaciones difíciles con respeto y claridad.";
-    } else if (mainDim === "S") {
-      plan =
-        "<strong>Objetivo general de capacitación:</strong><br>" +
-        "Potenciar la estabilidad y la constancia como base para la calidad del servicio, incorporando herramientas " +
-        "para gestionar el cambio, expresar necesidades y participar activamente en la mejora de procesos.<br><br>" +
-
-        "<strong>Líneas de desarrollo recomendadas:</strong><br>" +
-        "1) <u>Manejo del cambio y resiliencia</u><br>" +
-        "• Comprender las fases emocionales del cambio en el ámbito laboral.<br>" +
-        "• Estrategias para adaptarse a nuevas formas de trabajo manteniendo la estabilidad personal.<br>" +
-        "• Identificación de recursos de apoyo (jefaturas, pares, protocolos) ante cambios importantes.<br><br>" +
-        "2) <u>Comunicación asertiva y expresión de necesidades</u><br>" +
-        "• Técnicas para expresar desacuerdos sin evitar el conflicto ni generar tensión innecesaria.<br>" +
-        "• Herramientas para pedir apoyo, aclarar expectativas y negociar cargas de trabajo.<br>" +
-        "• Desarrollo de frases modelo para hacer solicitudes y dar retroalimentación respetuosa.<br><br>" +
-        "3) <u>Participación en mejora de procesos</u><br>" +
-        "• Identificación de oportunidades de mejora en el día a día del servicio.<br>" +
-        "• Uso de formatos simples para proponer cambios y documentar sugerencias.<br>" +
-        "• Trabajo en pequeños grupos para revisar procedimientos y proponer ajustes realistas.<br><br>" +
-
-        "<strong>Modalidades sugeridas:</strong><br>" +
-        "• Talleres sobre afrontamiento del estrés y manejo del cambio.<br>" +
-        "• Espacios de reflexión guiada sobre experiencias de trabajo en equipo.<br>" +
-        "• Participación en comités o grupos de mejora continua con acompañamiento inicial.<br><br>" +
-
-        "<strong>Indicadores de avance:</strong><br>" +
-        "• Mayor participación en reuniones donde se toman decisiones.<br>" +
-        "• Incremento de propuestas concretas para optimizar la operación del servicio.<br>" +
-        "• Disminución de la sensación de saturación o desbordamiento ante cambios.";
-    } else if (mainDim === "C") {
-      plan =
-        "<strong>Objetivo general de capacitación:</strong><br>" +
-        "Aprovechar la orientación al detalle y al cumplimiento de normas para fortalecer la calidad del servicio, " +
-        "equilibrándolo con habilidades de comunicación, flexibilidad y priorización.<br><br>" +
-
-        "<strong>Líneas de desarrollo recomendadas:</strong><br>" +
-        "1) <u>Priorización y manejo de la carga de trabajo</u><br>" +
-        "• Técnicas para distinguir lo urgente de lo importante sin perder la calidad.<br>" +
-        "• Estrategias para evitar la sobrecarga por perfeccionismo excesivo.<br>" +
-        "• Uso de herramientas de planificación que incluyan márgenes de flexibilidad.<br><br>" +
-        "2) <u>Comunicación y trabajo interdisciplinario</u><br>" +
-        "• Desarrollo de habilidades para explicar criterios técnicos en lenguaje accesible.<br>" +
-        "• Entrenamiento en escucha empática hacia perfiles más orientados a personas o resultados rápidos.<br>" +
-        "• Estrategias para negociar ajustes en procedimientos sin comprometer la seguridad ni la normatividad.<br><br>" +
-        "3) <u>Manejo de la autocrítica y del error</u><br>" +
-        "• Herramientas para transformar el error en una oportunidad de aprendizaje estructurado.<br>" +
-        "• Técnicas para modular la autoexigencia y prevenir desgaste emocional.<br>" +
-        "• Espacios para revisar casos críticos con enfoque en lecciones aprendidas, no en culpables.<br><br>" +
-
-        "<strong>Modalidades sugeridas:</strong><br>" +
-        "• Talleres sobre gestión de la calidad y mejora continua con enfoque práctico.<br>" +
-        "• Grupos de análisis de casos donde se revisen procedimientos y desviaciones.<br>" +
-        "• Acompañamiento en la implementación de pequeños ajustes que permitan mayor flexibilidad controlada.<br><br>" +
-
-        "<strong>Indicadores de avance:</strong><br>" +
-        "• Capacidad para priorizar tareas sin perder los estándares mínimos requeridos.<br>" +
-        "• Mayor apertura al intercambio de puntos de vista con otros perfiles DISC.<br>" +
-        "• Disminución de la frustración ante errores inevitables y mejor aprovechamiento de la retroalimentación.";
+  function generateTrainingPlan(mainDim,scores){
+    let plan="";
+    if(mainDim==="D"){
+      plan="<strong>Objetivo general de capacitación:</strong><br>Canalizar la orientación a resultados hacia un liderazgo efectivo, considerando el impacto en el equipo, el cuidado de la comunicación y el respeto a los procesos institucionales.<br><br><strong>Líneas de desarrollo recomendadas:</strong><br>1) <u>Liderazgo colaborativo y gestión de equipos</u><br>• Estrategias para integrar diferentes estilos de personalidad en el equipo.<br>• Técnicas para delegar de manera clara, estableciendo metas y criterios de seguimiento.<br>• Manejo de la autoridad sin caer en imposición o confrontación innecesaria.<br><br>2) <u>Comunicación asertiva en contextos de presión</u><br>• Herramientas para expresar desacuerdos sin descalificar ni invalidar.<br>• Técnicas de escucha activa para incorporar la visión de otras personas en la toma de decisiones.<br>• Estrategias para dar retroalimentación constructiva al equipo.<br><br>3) <u>Gestión de riesgos y toma de decisiones basadas en datos</u><br>• Análisis de información cuantitativa y cualitativa antes de tomar decisiones críticas.<br>• Identificación de riesgos clínicos, operativos o administrativos y priorización de acciones.<br>• Uso de indicadores para evaluar el impacto de las decisiones en la calidad del servicio.<br><br><strong>Modalidades sugeridas:</strong><br>• Talleres prácticos de liderazgo y simulación de casos complejos.<br>• Acompañamiento o mentoría con jefaturas que modelen liderazgo firme pero empático.<br>• Revisión periódica de indicadores y planes de mejora elaborados por la propia persona.<br><br><strong>Indicadores de avance:</strong><br>• Reducción de conflictos generados por la forma de comunicar decisiones.<br>• Mayor participación del equipo en la definición de metas y en la propuesta de mejoras.<br>• Cumplimiento de objetivos sin deterioro significativo del clima laboral.";
+    } else if(mainDim==="I"){
+      plan="<strong>Objetivo general de capacitación:</strong><br>Fortalecer el uso de las habilidades interpersonales para favorecer la coordinación, la orientación a usuarios y el trabajo en equipo, incorporando también disciplina en la gestión del tiempo y el seguimiento de tareas.<br><br><strong>Líneas de desarrollo recomendadas:</strong><br>1) <u>Comunicación efectiva y manejo de grupos</u><br>• Técnicas para conducir reuniones productivas, con acuerdos claros y tiempos definidos.<br>• Herramientas para facilitar espacios de diálogo y resolución de problemas en equipo.<br>• Estrategias para adaptar el mensaje según el perfil de la audiencia.<br><br>2) <u>Gestión del tiempo y priorización</u><br>• Diseño de agendas diarias y semanales con seguimiento de compromisos.<br>• Identificación de tareas críticas versus actividades de menor impacto.<br>• Uso de listas, recordatorios y tableros para evitar la dispersión en múltiples actividades.<br><br>3) <u>Manejo de límites y confrontación constructiva</u><br>• Estrategias para abordar conversaciones difíciles sin perder la relación de confianza.<br>• Habilidades para poner límites claros a conductas que afectan el trabajo del equipo.<br>• Técnicas de negociación colaborativa ante diferencias de criterio.<br><br><strong>Modalidades sugeridas:</strong><br>• Talleres vivenciales de comunicación y trabajo en equipo.<br>• Espacios de co-visión o supervisión grupal donde se analicen casos reales de interacción.<br>• Uso de herramientas digitales simples para organizar tareas y proyectos compartidos.<br><br><strong>Indicadores de avance:</strong><br>• Mayor puntualidad y cumplimiento de acuerdos definidos en reuniones.<br>• Disminución de tareas postergadas por falta de seguimiento.<br>• Capacidad para sostener conversaciones difíciles con respeto y claridad.";
+    } else if(mainDim==="S"){
+      plan="<strong>Objetivo general de capacitación:</strong><br>Potenciar la estabilidad y la constancia como base para la calidad del servicio, incorporando herramientas para gestionar el cambio, expresar necesidades y participar activamente en la mejora de procesos.<br><br><strong>Líneas de desarrollo recomendadas:</strong><br>1) <u>Manejo del cambio y resiliencia</u><br>• Comprender las fases emocionales del cambio en el ámbito laboral.<br>• Estrategias para adaptarse a nuevas formas de trabajo manteniendo la estabilidad personal.<br>• Identificación de recursos de apoyo ante cambios importantes.<br><br>2) <u>Comunicación asertiva y expresión de necesidades</u><br>• Técnicas para expresar desacuerdos sin evitar el conflicto.<br>• Herramientas para pedir apoyo, aclarar expectativas y negociar cargas de trabajo.<br>• Desarrollo de frases modelo para hacer solicitudes y dar retroalimentación respetuosa.<br><br>3) <u>Participación en mejora de procesos</u><br>• Identificación de oportunidades de mejora en el día a día del servicio.<br>• Uso de formatos simples para proponer cambios y documentar sugerencias.<br>• Trabajo en pequeños grupos para revisar procedimientos y proponer ajustes realistas.<br><br><strong>Modalidades sugeridas:</strong><br>• Talleres sobre afrontamiento del estrés y manejo del cambio.<br>• Espacios de reflexión guiada sobre experiencias de trabajo en equipo.<br>• Participación en comités o grupos de mejora continua con acompañamiento inicial.<br><br><strong>Indicadores de avance:</strong><br>• Mayor participación en reuniones donde se toman decisiones.<br>• Incremento de propuestas concretas para optimizar la operación del servicio.<br>• Disminución de la sensación de saturación ante cambios.";
+    } else if(mainDim==="C"){
+      plan="<strong>Objetivo general de capacitación:</strong><br>Aprovechar la orientación al detalle y al cumplimiento de normas para fortalecer la calidad del servicio, equilibrándolo con habilidades de comunicación, flexibilidad y priorización.<br><br><strong>Líneas de desarrollo recomendadas:</strong><br>1) <u>Priorización y manejo de la carga de trabajo</u><br>• Técnicas para distinguir lo urgente de lo importante sin perder la calidad.<br>• Estrategias para evitar la sobrecarga por perfeccionismo excesivo.<br>• Uso de herramientas de planificación que incluyan márgenes de flexibilidad.<br><br>2) <u>Comunicación y trabajo interdisciplinario</u><br>• Desarrollo de habilidades para explicar criterios técnicos en lenguaje accesible.<br>• Entrenamiento en escucha empática hacia perfiles más orientados a personas o resultados rápidos.<br>• Estrategias para negociar ajustes en procedimientos sin comprometer la seguridad ni la normatividad.<br><br>3) <u>Manejo de la autocrítica y del error</u><br>• Herramientas para transformar el error en una oportunidad de aprendizaje.<br>• Técnicas para modular la autoexigencia y prevenir desgaste emocional.<br>• Espacios para revisar casos críticos con enfoque en lecciones aprendidas.<br><br><strong>Modalidades sugeridas:</strong><br>• Talleres sobre gestión de la calidad y mejora continua.<br>• Grupos de análisis de casos donde se revisen procedimientos y desviaciones.<br>• Acompañamiento en la implementación de pequeños ajustes que permitan mayor flexibilidad controlada.<br><br><strong>Indicadores de avance:</strong><br>• Capacidad para priorizar tareas sin perder estándares mínimos.<br>• Mayor apertura al intercambio de puntos de vista con otros perfiles DISC.<br>• Disminución de la frustración ante errores inevitables.";
     } else {
-      plan =
-        "<strong>Objetivo general de capacitación:</strong><br>" +
-        "Aprovechar la flexibilidad del perfil combinado, orientando el desarrollo hacia la claridad de rol, " +
-        "la toma de decisiones y la integración equilibrada de tareas técnicas y relacionales.<br><br>" +
-
-        "<strong>Líneas de desarrollo recomendadas:</strong><br>" +
-        "1) <u>Claridad de rol y responsabilidades</u><br>" +
-        "• Definición conjunta de expectativas, productos esperados y límites de actuación.<br>" +
-        "• Herramientas para organizar el trabajo cuando hay múltiples demandas.<br><br>" +
-        "2) <u>Fortalecimiento de la toma de decisiones</u><br>" +
-        "• Análisis de casos donde sea necesario decidir bajo presión o con información incompleta.<br>" +
-        "• Estrategias para construir criterios personales de priorización y acción.<br><br>" +
-        "3) <u>Integración de fortalezas múltiples</u><br>" +
-        "• Identificación de en qué contextos conviene activar más la Dominancia, Influencia, Estabilidad o Cumplimiento.<br>" +
-        "• Diseño de un plan personal donde se señale cómo utilizar cada dimensión en el trabajo cotidiano.<br><br>" +
-
-        "<strong>Modalidades sugeridas:</strong><br>" +
-        "• Sesiones de coaching o tutoría centradas en definición de objetivos profesionales.<br>" +
-        "• Talleres breves sobre toma de decisiones y gestión de prioridades.<br><br>" +
-
-        "<strong>Indicadores de avance:</strong><br>" +
-        "• Mayor claridad al describir su rol y sus límites en el equipo.<br>" +
-        "• Sensación de control y propósito frente a las demandas del servicio.";
+      plan="<strong>Objetivo general de capacitación:</strong><br>Aprovechar la flexibilidad del perfil combinado, orientando el desarrollo hacia la claridad de rol, la toma de decisiones y la integración equilibrada de tareas técnicas y relacionales.<br><br><strong>Líneas de desarrollo recomendadas:</strong><br>1) <u>Claridad de rol y responsabilidades</u><br>• Definición conjunta de expectativas, productos esperados y límites de actuación.<br>• Herramientas para organizar el trabajo cuando hay múltiples demandas.<br><br>2) <u>Fortalecimiento de la toma de decisiones</u><br>• Análisis de casos donde sea necesario decidir bajo presión o con información incompleta.<br>• Estrategias para construir criterios personales de priorización y acción.<br><br>3) <u>Integración de fortalezas múltiples</u><br>• Identificación de en qué contextos conviene activar más cada dimensión DISC.<br>• Diseño de un plan personal donde se señale cómo utilizar cada estilo en el trabajo cotidiano.<br><br><strong>Modalidades sugeridas:</strong><br>• Sesiones de coaching o tutoría centradas en objetivos profesionales.<br>• Talleres breves sobre toma de decisiones y gestión de prioridades.<br><br><strong>Indicadores de avance:</strong><br>• Mayor claridad al describir su rol y sus límites en el equipo.<br>• Sensación de control y propósito frente a las demandas del servicio.";
     }
-
     return plan;
   }
 
-  /******************** GUARDADO RESULTADOS ********************/
-  async function saveResult(scores, mainDim, interpretation, trainingPlan) {
-    const existingLocal = readLocal(STORAGE_KEYS.resultados, []);
-    const now = new Date();
-    const fecha = now.toISOString().slice(0, 10) + " " + now.toTimeString().slice(0, 8);
-    const fechaEpoch = now.getTime();
-    const w = currentWorkerData;
-
-    const record = {
-      fecha,
-      fechaEpoch,
-      ...w,
-      scores: { D: scores.D, I: scores.I, S: scores.S, C: scores.C },
-      perfil: mainDim,
-      interpTitle: interpretation.title,
-      interpMain: interpretation.mainDesc,
-      interpDetails: interpretation.details,
-      trainingPlan: trainingPlan
+  async function saveResult(scores,perfil,interp,training){
+    const existing=readLocal(STORAGE_KEYS.resultados,[]);
+    const now=new Date();
+    const fecha=now.toISOString().slice(0,10)+" "+now.toTimeString().slice(0,8);
+    const fechaEpoch=now.getTime();
+    const w=currentWorkerData;
+    const record={
+      fecha,fechaEpoch,...w,
+      scores:{D:scores.D,I:scores.I,S:scores.S,C:scores.C},
+      perfil,
+      interpTitle:interp.title,
+      interpMain:interp.mainDesc,
+      interpDetails:interp.details,
+      trainingPlan:training
     };
-
-    existingLocal.push(record);
-    writeLocal(STORAGE_KEYS.resultados, existingLocal);
-
-    if (db) {
-      try {
-        await addDoc(collection(db, "pdl_resultados"), record);
-      } catch (err) {
-        console.error("Error guardando en Firestore:", err);
-        alert("El resultado se guardó localmente, pero hubo un problema con la base de datos en la nube.");
-      }
+    existing.push(record);
+    writeLocal(STORAGE_KEYS.resultados,existing);
+    if(db){
+      try{await addDoc(collection(db,"pdl_resultados"),record);}catch(e){console.error(e);}
     }
-
     await loadResults();
   }
 
-  function renderResultView(scores, mainDim, interp, trainingPlan) {
-    const w = currentWorkerData;
-    const personalDiv = document.getElementById("result-personal");
-    const scoresDiv = document.getElementById("result-scores");
-    const interpDiv = document.getElementById("result-interpretation");
-    const trainingDiv = document.getElementById("result-training");
-
-    if (personalDiv) {
-      personalDiv.innerHTML = [
-        "<h3>Datos del trabajador</h3>",
-        '<div class="form-grid" style="margin-top:0.4rem;">',
-        "<div><strong>Nombre:</strong> " + w.nombre + "</div>",
-        "<div><strong>Matrícula:</strong> " + w.matricula + "</div>",
-        "<div><strong>Unidad:</strong> " + w.unidad + "</div>",
-        "<div><strong>Categoría:</strong> " + w.categoria + "</div>",
-        "<div><strong>Puesto:</strong> " + w.puesto + "</div>",
-        "<div><strong>Edad:</strong> " + w.edad + " años</div>",
-        "<div><strong>Fecha de nacimiento:</strong> " + w.fechaNacimiento + "</div>",
-        "<div><strong>Lugar de nacimiento:</strong> " + w.lugarNacimiento + "</div>",
-        "</div>"
-      ].join("");
-    }
-
-    if (scoresDiv) {
-      scoresDiv.innerHTML = [
-        "<h3>Puntajes por dimensión DISC</h3>",
-        '<div class="form-grid" style="margin-top:0.4rem;">',
-        "<div><strong>D – Dominancia:</strong> " + scores.D + " (Más: " + scores.most.D + ", Menos: " + scores.least.D + ")</div>",
-        "<div><strong>I – Influencia:</strong> " + scores.I + " (Más: " + scores.most.I + ", Menos: " + scores.least.I + ")</div>",
-        "<div><strong>S – Estabilidad:</strong> " + scores.S + " (Más: " + scores.most.S + ", Menos: " + scores.least.S + ")</div>",
-        "<div><strong>C – Cumplimiento:</strong> " + scores.C + " (Más: " + scores.most.C + ", Menos: " + scores.least.C + ")</div>",
-        "</div>"
-      ].join("");
-    }
-
-    if (interpDiv) {
-      interpDiv.innerHTML = [
-        "<h3>Análisis interpretativo del perfil</h3>",
-        "<p><span class=\"badge\">" + interp.title + "</span></p>",
-        "<p>" + interp.mainDesc + "</p>",
-        "<p class=\"text-muted\">" + interp.details + "</p>"
-      ].join("");
-    }
-
-    if (trainingDiv) {
-      trainingDiv.innerHTML = [
-        "<h3>Sugerencias de desarrollo y capacitación</h3>",
-        "<p class=\"text-muted\">" + trainingPlan + "</p>"
-      ].join("");
-    }
+  function renderResultView(scores,perfil,interp,training){
+    const w=currentWorkerData;
+    const p=document.getElementById("result-personal");
+    const s=document.getElementById("result-scores");
+    const i=document.getElementById("result-interpretation");
+    const t=document.getElementById("result-training");
+    if(p)p.innerHTML="<h3>Datos del trabajador</h3><div class='form-grid' style='margin-top:0.4rem;'><div><strong>Nombre:</strong> "+w.nombre+"</div><div><strong>Matrícula:</strong> "+w.matricula+"</div><div><strong>Unidad:</strong> "+w.unidad+"</div><div><strong>Categoría:</strong> "+w.categoria+"</div><div><strong>Puesto:</strong> "+w.puesto+"</div><div><strong>Edad:</strong> "+w.edad+" años</div><div><strong>Fecha de nacimiento:</strong> "+w.fechaNacimiento+"</div><div><strong>Lugar de nacimiento:</strong> "+w.lugarNacimiento+"</div></div>";
+    if(s)s.innerHTML="<h3>Puntajes por dimensión DISC</h3><div class='form-grid' style='margin-top:0.4rem;'><div><strong>D – Dominancia:</strong> "+scores.D+" (Más: "+scores.most.D+", Menos: "+scores.least.D+")</div><div><strong>I – Influencia:</strong> "+scores.I+" (Más: "+scores.most.I+", Menos: "+scores.least.I+")</div><div><strong>S – Estabilidad:</strong> "+scores.S+" (Más: "+scores.most.S+", Menos: "+scores.least.S+")</div><div><strong>C – Cumplimiento:</strong> "+scores.C+" (Más: "+scores.most.C+", Menos: "+scores.least.C+")</div></div>";
+    if(i)i.innerHTML="<h3>Análisis interpretativo del perfil</h3><p><span class='badge'>"+interp.title+"</span></p><p>"+interp.mainDesc+"</p><p class='text-muted'>"+interp.details+"</p>";
+    if(t)t.innerHTML="<h3>Sugerencias de desarrollo y capacitación</h3><p class='text-muted'>"+training+"</p>";
   }
 
-  function resetForNewTest() {
-    currentWorkerData = null;
-    ["unidad","matricula","nombre","categoria","puesto",
-     "fechaNacimiento","edad","lugarNacimiento"].forEach(id => {
-      const el = document.getElementById(id);
-      if (!el) return;
-      if (el.tagName === "SELECT") el.value = "";
-      else el.value = "";
+  function resetForNewTest(){
+    currentWorkerData=null;
+    ["unidad","matricula","nombre","categoria","puesto","fechaNacimiento","edad","lugarNacimiento"].forEach(id=>{
+      const el=document.getElementById(id);
+      if(!el)return;
+      if(el.tagName==="SELECT")el.value="";
+      else el.value="";
     });
-    testAnswers = TEST_GROUPS.map(() => ({ most: null, least: null }));
-    currentGroupIndex = 0;
+    testAnswers=TEST_GROUPS.map(()=>({most:null,least:null}));
+    currentGroupIndex=0;
     showSection("worker");
   }
 
-  /******************** ADMIN: TABS ********************/
-  function setAdminTab(tabName) {
-    const adminUnidades = document.getElementById("admin-unidades");
-    const adminCategorias = document.getElementById("admin-categorias");
-    const adminResultados = document.getElementById("admin-resultados");
-    const tabU = document.getElementById("tab-unidades");
-    const tabC = document.getElementById("tab-categorias");
-    const tabR = document.getElementById("tab-resultados");
-
-    if (adminUnidades && adminCategorias && adminResultados && tabU && tabC && tabR) {
-      adminUnidades.classList.add("hidden");
-      adminCategorias.classList.add("hidden");
-      adminResultados.classList.add("hidden");
-      tabU.classList.remove("active");
-      tabC.classList.remove("active");
-      tabR.classList.remove("active");
-
-      if (tabName === "unidades") {
-        adminUnidades.classList.remove("hidden");
-        tabU.classList.add("active");
-      } else if (tabName === "categorias") {
-        adminCategorias.classList.remove("hidden");
-        tabC.classList.add("active");
-      } else if (tabName === "resultados") {
-        adminResultados.classList.remove("hidden");
-        tabR.classList.add("active");
-      }
-    }
+  function setAdminTab(tab){
+    const u=document.getElementById("admin-unidades");
+    const c=document.getElementById("admin-categorias");
+    const r=document.getElementById("admin-resultados");
+    const tu=document.getElementById("tab-unidades");
+    const tc=document.getElementById("tab-categorias");
+    const tr=document.getElementById("tab-resultados");
+    if(!u||!c||!r||!tu||!tc||!tr)return;
+    u.classList.add("hidden");c.classList.add("hidden");r.classList.add("hidden");
+    tu.classList.remove("active");tc.classList.remove("active");tr.classList.remove("active");
+    if(tab==="unidades"){u.classList.remove("hidden");tu.classList.add("active");}
+    else if(tab==="categorias"){c.classList.remove("hidden");tc.classList.add("active");}
+    else {r.classList.remove("hidden");tr.classList.add("active");}
   }
 
-  function refreshAdminTables() {
+  function refreshAdminTables(){
     refreshUnidadesTable();
     refreshCategoriasTable();
     refreshResultadosTable();
   }
 
-  /******************** ADMIN: UNIDADES ********************/
-  function refreshUnidadesTable() {
-    const unidades = readLocal(STORAGE_KEYS.unidades, []);
-    const tbody = document.getElementById("tablaUnidades");
-    if (!tbody) return;
-    tbody.innerHTML = "";
-    unidades.forEach((u, idx) => {
-      const tr = document.createElement("tr");
-      tr.innerHTML =
-        "<td>" + u + "</td>" +
-        '<td><button class="btn-danger" type="button" onclick="deleteUnidad(' + idx + ')">Borrar</button></td>';
+  function refreshUnidadesTable(){
+    const arr=readLocal(STORAGE_KEYS.unidades,[]);
+    const tbody=document.getElementById("tablaUnidades");
+    if(!tbody)return;
+    tbody.innerHTML="";
+    arr.forEach((u,idx)=>{
+      const tr=document.createElement("tr");
+      tr.innerHTML="<td>"+u+"</td><td><button class='btn-danger' type='button' onclick='deleteUnidad("+idx+")'>Borrar</button></td>";
       tbody.appendChild(tr);
     });
     populateWorkerSelects();
   }
-
-  function addUnidad() {
-    const input = document.getElementById("nuevaUnidad");
-    if (!input) return;
-    const val = input.value.trim();
-    if (!val) return;
-    const unidades = readLocal(STORAGE_KEYS.unidades, []);
-    unidades.push(val);
-    writeLocal(STORAGE_KEYS.unidades, unidades);
-    input.value = "";
-    refreshUnidadesTable();
+  function addUnidad(){
+    const inp=document.getElementById("nuevaUnidad");
+    if(!inp)return;
+    const val=inp.value.trim();
+    if(!val)return;
+    const arr=readLocal(STORAGE_KEYS.unidades,[]);
+    arr.push(val);writeLocal(STORAGE_KEYS.unidades,arr);
+    inp.value="";refreshUnidadesTable();
+  }
+  function deleteUnidad(i){
+    const arr=readLocal(STORAGE_KEYS.unidades,[]);
+    if(i>=0&&i<arr.length){arr.splice(i,1);writeLocal(STORAGE_KEYS.unidades,arr);refreshUnidadesTable();}
   }
 
-  function deleteUnidad(index) {
-    const unidades = readLocal(STORAGE_KEYS.unidades, []);
-    if (index >= 0 && index < unidades.length) {
-      unidades.splice(index, 1);
-      writeLocal(STORAGE_KEYS.unidades, unidades);
-      refreshUnidadesTable();
-    }
-  }
-
-  /******************** ADMIN: CATEGORÍAS ********************/
-  function refreshCategoriasTable() {
-    const categorias = readLocal(STORAGE_KEYS.categorias, []);
-    const tbody = document.getElementById("tablaCategorias");
-    if (!tbody) return;
-    tbody.innerHTML = "";
-    categorias.forEach((c, idx) => {
-      const tr = document.createElement("tr");
-      tr.innerHTML =
-        "<td>" + c + "</td>" +
-        '<td><button class="btn-danger" type="button" onclick="deleteCategoria(' + idx + ')">Borrar</button></td>';
+  function refreshCategoriasTable(){
+    const arr=readLocal(STORAGE_KEYS.categorias,[]);
+    const tbody=document.getElementById("tablaCategorias");
+    if(!tbody)return;
+    tbody.innerHTML="";
+    arr.forEach((c,idx)=>{
+      const tr=document.createElement("tr");
+      tr.innerHTML="<td>"+c+"</td><td><button class='btn-danger' type='button' onclick='deleteCategoria("+idx+")'>Borrar</button></td>";
       tbody.appendChild(tr);
     });
     populateWorkerSelects();
   }
-
-  function addCategoria() {
-    const input = document.getElementById("nuevaCategoria");
-    if (!input) return;
-    const val = input.value.trim();
-    if (!val) return;
-    const categorias = readLocal(STORAGE_KEYS.categorias, []);
-    categorias.push(val);
-    writeLocal(STORAGE_KEYS.categorias, categorias);
-    input.value = "";
-    refreshCategoriasTable();
+  function addCategoria(){
+    const inp=document.getElementById("nuevaCategoria");
+    if(!inp)return;
+    const val=inp.value.trim();
+    if(!val)return;
+    const arr=readLocal(STORAGE_KEYS.categorias,[]);
+    arr.push(val);writeLocal(STORAGE_KEYS.categorias,arr);
+    inp.value="";refreshCategoriasTable();
+  }
+  function deleteCategoria(i){
+    const arr=readLocal(STORAGE_KEYS.categorias,[]);
+    if(i>=0&&i<arr.length){arr.splice(i,1);writeLocal(STORAGE_KEYS.categorias,arr);refreshCategoriasTable();}
   }
 
-  function deleteCategoria(index) {
-    const categorias = readLocal(STORAGE_KEYS.categorias, []);
-    if (index >= 0 && index < categorias.length) {
-      categorias.splice(index, 1);
-      writeLocal(STORAGE_KEYS.categorias, categorias);
-      refreshCategoriasTable();
+  async function loadResults(){
+    let fromFS=[];
+    if(db){
+      try{
+        const q=query(collection(db,"pdl_resultados"),orderBy("fechaEpoch","desc"));
+        const snap=await getDocs(q);
+        fromFS=snap.docs.map(d=>d.data());
+      }catch(e){console.error(e);}
     }
-  }
-
-  /******************** ADMIN: RESULTADOS & CSV ********************/
-  async function loadResults() {
-    let fromFirestore = [];
-    if (db) {
-      try {
-        const qRef = query(collection(db, "pdl_resultados"), orderBy("fechaEpoch", "desc"));
-        const snap = await getDocs(qRef);
-        fromFirestore = snap.docs.map(d => d.data());
-      } catch (err) {
-        console.error("Error leyendo Firestore:", err);
-      }
-    }
-    if (fromFirestore.length) {
-      resultadosCache = fromFirestore;
-    } else {
-      resultadosCache = readLocal(STORAGE_KEYS.resultados, []);
-    }
+    resultadosCache=fromFS.length?fromFS:readLocal(STORAGE_KEYS.resultados,[]);
     refreshResultadosTable();
   }
 
-  function refreshResultadosTable() {
-    const tbody = document.getElementById("tablaResultados");
-    if (!tbody) return;
-    tbody.innerHTML = "";
-    resultadosCache.forEach(r => {
-      const tr = document.createElement("tr");
-      const interpResumen = r.interpMain ? (r.interpMain.slice(0, 80) + (r.interpMain.length > 80 ? "..." : "")) : "";
-      const planResumen = r.trainingPlan ? (r.trainingPlan.slice(0, 80) + (r.trainingPlan.length > 80 ? "..." : "")) : "";
-      tr.innerHTML =
-        "<td>" + (r.fecha || "") + "</td>" +
-        "<td>" + (r.unidad || "") + "</td>" +
-        "<td>" + (r.matricula || "") + "</td>" +
-        "<td>" + (r.nombre || "") + "</td>" +
-        "<td>" + (r.categoria || "") + "</td>" +
-        "<td>" + (r.puesto || "") + "</td>" +
-        "<td>" + (r.edad || "") + "</td>" +
-        "<td>" + (r.lugarNacimiento || "") + "</td>" +
-        "<td>" + (r.scores ? r.scores.D : "") + "</td>" +
-        "<td>" + (r.scores ? r.scores.I : "") + "</td>" +
-        "<td>" + (r.scores ? r.scores.S : "") + "</td>" +
-        "<td>" + (r.scores ? r.scores.C : "") + "</td>" +
-        "<td>" + (r.perfil || "") + "</td>" +
-        "<td>" + interpResumen + "</td>" +
-        "<td>" + planResumen + "</td>";
+  function refreshResultadosTable(){
+    const tbody=document.getElementById("tablaResultados");
+    if(!tbody)return;
+    tbody.innerHTML="";
+    resultadosCache.forEach(r=>{
+      const tr=document.createElement("tr");
+      const interpResumen=r.interpMain?(r.interpMain.slice(0,80)+(r.interpMain.length>80?"...":"")):"";
+      const planResumen=r.trainingPlan?(r.trainingPlan.slice(0,80)+(r.trainingPlan.length>80?"...":"")):"";
+      tr.innerHTML="<td>"+(r.fecha||"")+"</td><td>"+(r.unidad||"")+"</td><td>"+(r.matricula||"")+"</td><td>"+(r.nombre||"")+"</td><td>"+(r.categoria||"")+"</td><td>"+(r.puesto||"")+"</td><td>"+(r.edad||"")+"</td><td>"+(r.lugarNacimiento||"")+"</td><td>"+(r.scores?r.scores.D:"")+"</td><td>"+(r.scores?r.scores.I:"")+"</td><td>"+(r.scores?r.scores.S:"")+"</td><td>"+(r.scores?r.scores.C:"")+"</td><td>"+(r.perfil||"")+"</td><td>"+interpResumen+"</td><td>"+planResumen+"</td>";
       tbody.appendChild(tr);
     });
   }
 
-  function downloadCSV() {
-    const data = resultadosCache.length ? resultadosCache : readLocal(STORAGE_KEYS.resultados, []);
-    if (!data.length) {
-      alert("No hay resultados para descargar.");
-      return;
-    }
-    const sep = ",";
-    const header = [
-      "Fecha","Unidad","Matricula","Nombre","Categoria","Puesto",
-      "Edad","LugarNacimiento","D","I","S","C","Perfil",
-      "InterpretacionTitulo","InterpretacionPrincipal","InterpretacionDetalle","PlanCapacitacion"
-    ];
-    const lines = [header.join(sep)];
-    data.forEach(r => {
-      const row = [
-        r.fecha || "", r.unidad || "", r.matricula || "", r.nombre || "", r.categoria || "", r.puesto || "",
-        r.edad || "", r.lugarNacimiento || "",
-        r.scores ? r.scores.D : "", r.scores ? r.scores.I : "", r.scores ? r.scores.S : "", r.scores ? r.scores.C : "",
-        r.perfil || "",
-        r.interpTitle || "", r.interpMain || "", r.interpDetails || "", r.trainingPlan || ""
+  function downloadCSV(){
+    const data=resultadosCache.length?resultadosCache:readLocal(STORAGE_KEYS.resultados,[]);
+    if(!data.length){alert("No hay resultados para descargar.");return;}
+    const sep=",";
+    const header=["Fecha","Unidad","Matricula","Nombre","Categoria","Puesto","Edad","LugarNacimiento","D","I","S","C","Perfil","InterpretacionTitulo","InterpretacionPrincipal","InterpretacionDetalle","PlanCapacitacion"];
+    const lines=[header.join(sep)];
+    data.forEach(r=>{
+      const row=[
+        r.fecha||"",r.unidad||"",r.matricula||"",r.nombre||"",r.categoria||"",r.puesto||"",
+        r.edad||"",r.lugarNacimiento||"",
+        r.scores?r.scores.D:"",r.scores?r.scores.I:"",r.scores?r.scores.S:"",r.scores?r.scores.C:"",
+        r.perfil||"",r.interpTitle||"",r.interpMain||"",r.interpDetails||"",r.trainingPlan||""
       ];
-      const escaped = row.map(v => {
-        const value = v != null ? String(v) : "";
-        if (value.includes('"') || value.includes(",") || value.includes("\n") || value.includes("\r")) {
-          return '"' + value.replace(/"/g, '""') + '"';
-        }
-        return value;
+      const esc=row.map(v=>{
+        const val=v!=null?String(v):"";
+        if(val.includes('"')||val.includes(",")||val.includes("\n")||val.includes("\r"))return '"'+val.replace(/"/g,'""')+'"';
+        return val;
       });
-      lines.push(escaped.join(sep));
+      lines.push(esc.join(sep));
     });
-    const csvContent = lines.join("\r\n");
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "resultados_PDL.csv";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+    const csvContent=lines.join("\r\n");
+    const blob=new Blob([csvContent],{type:"text/csv;charset=utf-8;"});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement("a");
+    a.href=url;a.download="resultados_PDL.csv";
+    document.body.appendChild(a);a.click();document.body.removeChild(a);
     URL.revokeObjectURL(url);
   }
 
-  function clearAllResults() {
-    if (!confirm("¿Está seguro de borrar los resultados almacenados localmente?")) return;
-    writeLocal(STORAGE_KEYS.resultados, []);
-    resultadosCache = [];
-    refreshResultadosTable();
+  function clearAllResults(){
+    if(!confirm("¿Está seguro de borrar los resultados almacenados localmente?"))return;
+    writeLocal(STORAGE_KEYS.resultados,[]);
+    resultadosCache=[];refreshResultadosTable();
   }
 
-  /******************** INICIALIZACIÓN ********************/
-  function initPDLApp() {
+  function initPDLApp(){
     ensureDefaultConfig();
     populateWorkerSelects();
     initBirthDateListener();
-    resultadosCache = readLocal(STORAGE_KEYS.resultados, []);
+    resultadosCache=readLocal(STORAGE_KEYS.resultados,[]);
     refreshResultadosTable();
     showSection("worker");
   }
-  document.addEventListener("DOMContentLoaded", initPDLApp);
+  document.addEventListener("DOMContentLoaded",initPDLApp);
 
-  /******************** EXPONER FUNCIONES AL window ********************/
-  window.showSection = showSection;
-  window.openAdminDirect = openAdminDirect;
-  window.startTest = startTest;
-  window.nextGroup = nextGroup;
-  window.prevGroup = prevGroup;
-  window.finishTest = finishTest;
-  window.resetForNewTest = resetForNewTest;
-  window.setAdminTab = setAdminTab;
-  window.addUnidad = addUnidad;
-  window.deleteUnidad = deleteUnidad;
-  window.addCategoria = addCategoria;
-  window.deleteCategoria = deleteCategoria;
-  window.downloadCSV = downloadCSV;
-  window.clearAllResults = clearAllResults;
+  // Exponer funciones al HTML
+  window.showSection=showSection;
+  window.openAdminDirect=openAdminDirect;
+  window.startTest=startTest;
+  window.nextGroup=nextGroup;
+  window.prevGroup=prevGroup;
+  window.finishTest=finishTest;
+  window.resetForNewTest=resetForNewTest;
+  window.setAdminTab=setAdminTab;
+  window.addUnidad=addUnidad;
+  window.deleteUnidad=deleteUnidad;
+  window.addCategoria=addCategoria;
+  window.deleteCategoria=deleteCategoria;
+  window.downloadCSV=downloadCSV;
+  window.clearAllResults=clearAllResults;
 </script>
 </body>
 </html>
