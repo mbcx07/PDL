@@ -537,7 +537,10 @@
     addDoc,
     getDocs,
     query,
-    orderBy
+    orderBy,
+    doc,
+    getDoc,
+    setDoc
   } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
   import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-analytics.js";
 
@@ -755,7 +758,7 @@
   }
   function writeLocal(key,v){try{localStorage.setItem(key,JSON.stringify(v));}catch{}}
 
-  function ensureDefaultConfig() {
+  function ensureDefaultConfigLocal() {
     let unidades = readLocal(STORAGE_KEYS.unidades,null);
     let categorias = readLocal(STORAGE_KEYS.categorias,null);
     if (!Array.isArray(unidades) || unidades.length===0){
@@ -765,6 +768,36 @@
     if (!Array.isArray(categorias) || categorias.length===0){
       categorias=["Categoría A","Categoría B"];
       writeLocal(STORAGE_KEYS.categorias,categorias);
+    }
+  }
+
+  async function loadRemoteConfig() {
+    if (!db) return;
+    try {
+      const uniSnap = await getDoc(doc(db,"config","unidades"));
+      const catSnap = await getDoc(doc(db,"config","categorias"));
+      let changed = false;
+      if (uniSnap.exists()) {
+        const data = uniSnap.data();
+        if (Array.isArray(data.items)) {
+          writeLocal(STORAGE_KEYS.unidades, data.items);
+          changed = true;
+        }
+      }
+      if (catSnap.exists()) {
+        const data = catSnap.data();
+        if (Array.isArray(data.items)) {
+          writeLocal(STORAGE_KEYS.categorias, data.items);
+          changed = true;
+        }
+      }
+      if (changed) {
+        populateWorkerSelects();
+        refreshUnidadesTable();
+        refreshCategoriasTable();
+      }
+    } catch (e) {
+      console.error("Error cargando configuración desde Firestore:", e);
     }
   }
 
@@ -964,10 +997,8 @@
   }
 
   async function finishTest(){
-    // Guarda lo que se contestó en el último bloque visible
     if(!captureCurrentGroupSelection()) return;
 
-    // Revisión global simple
     if(!allGroupsAnswered()){
       alert("Faltan uno o más bloques por contestar. Revise desde el bloque 1 y verifique que todos tengan una opción de MÁS (+) y una de MENOS (-).");
       return;
@@ -1066,7 +1097,7 @@
     existing.push(record);
     writeLocal(STORAGE_KEYS.resultados,existing);
     if(db){
-      try{await addDoc(collection(db,"pdl_resultados"),record);}catch(e){console.error(e);}
+      try{await addDoc(collection(db,"pdl_resultados"),record);}catch(e){console.error("Error Firestore resultados:",e);}
     }
     await loadResults();
   }
@@ -1117,6 +1148,19 @@
     refreshResultadosTable();
   }
 
+  async function syncUnitsToCloud(unidades){
+    if(!db)return;
+    try{
+      await setDoc(doc(db,"config","unidades"),{items:unidades});
+    }catch(e){console.error("Error Firestore unidades:",e);}
+  }
+  async function syncCategoriasToCloud(categorias){
+    if(!db)return;
+    try{
+      await setDoc(doc(db,"config","categorias"),{items:categorias});
+    }catch(e){console.error("Error Firestore categorias:",e);}
+  }
+
   function refreshUnidadesTable(){
     const arr=readLocal(STORAGE_KEYS.unidades,[]);
     const tbody=document.getElementById("tablaUnidades");
@@ -1137,10 +1181,16 @@
     const arr=readLocal(STORAGE_KEYS.unidades,[]);
     arr.push(val);writeLocal(STORAGE_KEYS.unidades,arr);
     inp.value="";refreshUnidadesTable();
+    syncUnitsToCloud(arr);
   }
   function deleteUnidad(i){
     const arr=readLocal(STORAGE_KEYS.unidades,[]);
-    if(i>=0&&i<arr.length){arr.splice(i,1);writeLocal(STORAGE_KEYS.unidades,arr);refreshUnidadesTable();}
+    if(i>=0&&i<arr.length){
+      arr.splice(i,1);
+      writeLocal(STORAGE_KEYS.unidades,arr);
+      refreshUnidadesTable();
+      syncUnitsToCloud(arr);
+    }
   }
 
   function refreshCategoriasTable(){
@@ -1163,10 +1213,16 @@
     const arr=readLocal(STORAGE_KEYS.categorias,[]);
     arr.push(val);writeLocal(STORAGE_KEYS.categorias,arr);
     inp.value="";refreshCategoriasTable();
+    syncCategoriasToCloud(arr);
   }
   function deleteCategoria(i){
     const arr=readLocal(STORAGE_KEYS.categorias,[]);
-    if(i>=0&&i<arr.length){arr.splice(i,1);writeLocal(STORAGE_KEYS.categorias,arr);refreshCategoriasTable();}
+    if(i>=0&&i<arr.length){
+      arr.splice(i,1);
+      writeLocal(STORAGE_KEYS.categorias,arr);
+      refreshCategoriasTable();
+      syncCategoriasToCloud(arr);
+    }
   }
 
   async function loadResults(){
@@ -1176,7 +1232,7 @@
         const q=query(collection(db,"pdl_resultados"),orderBy("fechaEpoch","desc"));
         const snap=await getDocs(q);
         fromFS=snap.docs.map(d=>d.data());
-      }catch(e){console.error(e);}
+      }catch(e){console.error("Error leyendo Firestore resultados:",e);}
     }
     resultadosCache=fromFS.length?fromFS:readLocal(STORAGE_KEYS.resultados,[]);
     refreshResultadosTable();
@@ -1231,12 +1287,13 @@
   }
 
   function initPDLApp(){
-    ensureDefaultConfig();
+    ensureDefaultConfigLocal();
     populateWorkerSelects();
     initBirthDateListener();
     resultadosCache=readLocal(STORAGE_KEYS.resultados,[]);
     refreshResultadosTable();
     showSection("worker");
+    loadRemoteConfig(); // carga unidades/categorías desde Firestore si hay permisos
   }
   document.addEventListener("DOMContentLoaded",initPDLApp);
 
