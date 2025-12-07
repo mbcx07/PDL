@@ -339,6 +339,36 @@
       font-size: 0.78rem;
       font-weight: 600;
     }
+
+    /* Modal acceso administrador */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+    }
+    .modal {
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+      padding: 1.2rem 1.5rem;
+      max-width: 360px;
+      width: 100%;
+    }
+    .modal h3 {
+      margin-top: 0;
+      margin-bottom: 0.3rem;
+      color: var(--imss-green-dark);
+    }
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.5rem;
+      margin-top: 0.9rem;
+    }
   </style>
 </head>
 <body>
@@ -347,7 +377,7 @@
   <nav>
     <a onclick="showSection('worker')">Inicio</a>
     <a onclick="showSection('worker')">Aplicar test</a>
-    <a onclick="openAdminDirect()">Administrador</a>
+    <a onclick="requestAdminAccess()">Administrador</a>
   </nav>
 </header>
 
@@ -403,7 +433,7 @@
 
     <div class="btn-row">
       <button class="btn-primary" type="button" onclick="startTest()">Iniciar test PDL</button>
-      <button class="btn-link" type="button" onclick="openAdminDirect()">Acceso administrador</button>
+      <button class="btn-link" type="button" onclick="requestAdminAccess()">Acceso administrador</button>
     </div>
     <p class="text-muted">
       La información se almacena localmente y, si la conexión está disponible, también en Firestore. Puede descargarse en CSV desde el panel de administración.
@@ -451,7 +481,7 @@
     <div id="result-training"></div>
     <div class="btn-row">
       <button class="btn-primary" type="button" onclick="resetForNewTest()">Aplicar a otro trabajador</button>
-      <button class="btn-secondary" type="button" onclick="openAdminDirect()">Ir a administrador</button>
+      <button class="btn-secondary" type="button" onclick="requestAdminAccess()">Ir a administrador</button>
     </div>
   </section>
 
@@ -527,6 +557,25 @@
       <button class="btn-secondary" type="button" onclick="showSection('worker')">Volver al inicio</button>
     </div>
   </section>
+
+  <!-- MODAL LOGIN ADMIN -->
+  <div id="admin-login-overlay" class="modal-overlay hidden">
+    <div class="modal">
+      <h3>Acceso a administrador</h3>
+      <p class="text-muted">
+        Ingrese la contraseña de administración para acceder a las unidades, categorías y resultados.
+      </p>
+      <label for="admin-password-input">Contraseña</label>
+      <input id="admin-password-input" type="password" />
+      <div id="admin-login-error" class="error hidden" style="margin-top:0.4rem;">
+        Contraseña incorrecta. Intente nuevamente.
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" type="button" onclick="closeAdminLogin()">Cancelar</button>
+        <button class="btn-primary" type="button" onclick="submitAdminLogin()">Ingresar</button>
+      </div>
+    </div>
+  </div>
 </main>
 
 <script type="module">
@@ -543,6 +592,13 @@
     setDoc
   } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
   import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-analytics.js";
+
+  /* ====== CONTRASEÑA DE ADMINISTRADOR ======
+     Cambia el valor de ADMIN_PASSWORD para usar otra clave.
+     Ejemplo: const ADMIN_PASSWORD = "MiClaveSegura123";
+  */
+  const ADMIN_PASSWORD = "PDL2025";
+  let adminUnlocked = false; // se pone true cuando la contraseña es correcta
 
   const firebaseConfig = {
     apiKey: "AIzaSyDJniFUuRh3mfjP40cAm2gJ2P3TGOyKqog",
@@ -721,6 +777,41 @@
   let currentGroupIndex = 0;
   let currentWorkerData = null;
   let resultadosCache = [];
+
+  /* ========= ACCESO ADMIN ========= */
+  function requestAdminAccess() {
+    if (adminUnlocked) {
+      openAdminDirect();
+      return;
+    }
+    const overlay = document.getElementById("admin-login-overlay");
+    const input = document.getElementById("admin-password-input");
+    const err = document.getElementById("admin-login-error");
+    if (!overlay || !input || !err) return;
+    input.value = "";
+    err.classList.add("hidden");
+    overlay.classList.remove("hidden");
+    setTimeout(() => input.focus(), 50);
+  }
+
+  function closeAdminLogin() {
+    const overlay = document.getElementById("admin-login-overlay");
+    if (overlay) overlay.classList.add("hidden");
+  }
+
+  function submitAdminLogin() {
+    const input = document.getElementById("admin-password-input");
+    const err = document.getElementById("admin-login-error");
+    if (!input || !err) return;
+    if (input.value === ADMIN_PASSWORD) {
+      adminUnlocked = true;
+      err.classList.add("hidden");
+      closeAdminLogin();
+      openAdminDirect();
+    } else {
+      err.classList.remove("hidden");
+    }
+  }
 
   function showSection(section) {
     ["worker","test","results","admin"].forEach(s => {
@@ -1293,13 +1384,15 @@
     resultadosCache=readLocal(STORAGE_KEYS.resultados,[]);
     refreshResultadosTable();
     showSection("worker");
-    loadRemoteConfig(); // carga unidades/categorías desde Firestore si hay permisos
+    loadRemoteConfig();
   }
   document.addEventListener("DOMContentLoaded",initPDLApp);
 
   // Exponer funciones al HTML
   window.showSection=showSection;
-  window.openAdminDirect=openAdminDirect;
+  window.requestAdminAccess=requestAdminAccess;
+  window.closeAdminLogin=closeAdminLogin;
+  window.submitAdminLogin=submitAdminLogin;
   window.startTest=startTest;
   window.nextGroup=nextGroup;
   window.prevGroup=prevGroup;
