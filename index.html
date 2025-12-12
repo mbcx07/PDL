@@ -613,6 +613,7 @@
               <th>Puesto</th><th>Edad</th><th>Lugar nac.</th>
               <th>D</th><th>I</th><th>S</th><th>C</th><th>Perfil</th>
               <th>Interpretación</th><th>Plan de capacitación</th>
+              <th>Acciones</th>
             </tr>
           </thead>
           <tbody id="tablaResultados"></tbody>
@@ -656,13 +657,12 @@
     orderBy,
     doc,
     getDoc,
-    setDoc
+    setDoc,
+    deleteDoc
   } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
   import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-analytics.js";
 
-  /* ====== CONTRASEÑA DE ADMINISTRADOR ======
-     Cambia el valor de ADMIN_PASSWORD si quieres otra clave.
-  */
+  /* ====== CONTRASEÑA DE ADMINISTRADOR ====== */
   const ADMIN_PASSWORD = "PDL2025";
   let adminUnlocked = false;
 
@@ -1569,6 +1569,7 @@
     const fecha=now.toISOString().slice(0,10)+" "+now.toTimeString().slice(0,8);
     const fechaEpoch=now.getTime();
     const w=currentWorkerData;
+
     const record={
       fecha,fechaEpoch,...w,
       scores:disc,
@@ -1578,11 +1579,21 @@
       interpDetails:interp.details,
       trainingPlan:training
     };
+
+    // Primero guardamos en Firestore (si disponible) para obtener el id del documento
+    if(db){
+      try{
+        const docRef = await addDoc(collection(db,"pdl_resultados"),record);
+        record._id = docRef.id; // id de Firestore
+      }catch(e){
+        console.error("Error Firestore resultados:",e);
+      }
+    }
+
+    // Agregamos el registro (con o sin _id) al localStorage
     existing.push(record);
     writeLocal(STORAGE_KEYS.resultados,existing);
-    if(db){
-      try{await addDoc(collection(db,"pdl_resultados"),record);}catch(e){console.error("Error Firestore resultados:",e);}
-    }
+
     await loadResults();
   }
 
@@ -1699,17 +1710,18 @@
     }
   }
 
-  /* ========= ADMIN: RESULTADOS + CSV ========= */
+  /* ========= ADMIN: RESULTADOS + ELIMINAR + CSV ========= */
 
   async function loadResults(){
     let fromFS=[];
     if(db){
       try{
-        const q=query(collection(db,"pdl_resultados"),orderBy("fechaEpoch","desc"));
-        const snap=await getDocs(q);
-        fromFS=snap.docs.map(d=>d.data());
+        const qSnap=query(collection(db,"pdl_resultados"),orderBy("fechaEpoch","desc"));
+        const snap=await getDocs(qSnap);
+        fromFS=snap.docs.map(d=>({ ...d.data(), _id:d.id }));
       }catch(e){console.error("Error leyendo Firestore resultados:",e);}
     }
+    // Si hay datos en Firestore, se usan como fuente principal
     resultadosCache=fromFS.length?fromFS:readLocal(STORAGE_KEYS.resultados,[]);
     refreshResultadosTable();
   }
@@ -1718,7 +1730,7 @@
     const tbody=document.getElementById("tablaResultados");
     if(!tbody)return;
     tbody.innerHTML="";
-    resultadosCache.forEach(r=>{
+    resultadosCache.forEach((r,idx)=>{
       const tr=document.createElement("tr");
       const scoresC = r.scores && r.scores.C ? r.scores.C : {D:"",I:"",S:"",C:""};
       const interpResumen=r.interpMain?(r.interpMain.slice(0,80)+(r.interpMain.length>80?"...":"")):"";
@@ -1738,9 +1750,34 @@
         "<td>"+(scoresC.C)+"</td>"+
         "<td>"+(r.perfil||"")+"</td>"+
         "<td>"+interpResumen+"</td>"+
-        "<td>"+planResumen+"</td>";
+        "<td>"+planResumen+"</td>"+
+        "<td><button class='btn-danger' type='button' onclick='deleteResultado("+idx+")'>Eliminar</button></td>";
       tbody.appendChild(tr);
     });
+  }
+
+  async function deleteResultado(index){
+    if(index<0 || index>=resultadosCache.length)return;
+    const registro = resultadosCache[index];
+    if(!confirm("¿Eliminar este resultado de forma permanente?"))return;
+
+    // Eliminar en Firestore si tiene _id y hay conexión
+    if(db && registro._id){
+      try{
+        await deleteDoc(doc(db,"pdl_resultados",registro._id));
+      }catch(e){
+        console.error("Error eliminando en Firestore:", e);
+      }
+    }
+
+    // Eliminar de la caché en memoria
+    resultadosCache.splice(index,1);
+
+    // Sincronizar localStorage con la lista actual
+    writeLocal(STORAGE_KEYS.resultados,resultadosCache);
+
+    // Refrescar tabla
+    refreshResultadosTable();
   }
 
   function downloadCSV(){
@@ -1775,7 +1812,8 @@
       lines.push(esc.join(sep));
     });
     const csvContent=lines.join("\r\n");
-    const blob=new Blob([csvContent],{type:"text/csv;charset=utf-8;"});
+    // Agregar BOM para que Excel reconozca UTF-8 y no rompa los acentos
+    const blob=new Blob(["\ufeff"+csvContent],{type:"text/csv;charset=utf-8;"});
     const url=URL.createObjectURL(blob);
     const a=document.createElement("a");
     a.href=url;a.download="resultados_PDL.csv";
@@ -1819,6 +1857,7 @@
   window.deleteCategoria=deleteCategoria;
   window.downloadCSV=downloadCSV;
   window.clearAllResults=clearAllResults;
+  window.deleteResultado=deleteResultado;
 </script>
 </body>
 </html>
