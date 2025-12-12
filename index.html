@@ -1,4 +1,3 @@
-<!-- Parte 1/4 - Estructura HTML + CSS (sin JS) -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -375,7 +374,7 @@
       margin-top: 0.9rem;
     }
 
-    /* Gráficas DISC (A-B-C) */
+    /* Gráficas DISC (A-B-C) con rombo/radar */
     .charts-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
@@ -394,39 +393,19 @@
       color: var(--imss-green-dark);
       margin-bottom: 0.4rem;
     }
-    .chart-bars {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 0.25rem;
-      margin-top: 0.3rem;
+
+    svg text {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
-    .chart-row {
-      display: grid;
-      grid-template-columns: 26px 1fr 36px;
-      align-items: center;
-      font-size: 0.78rem;
-      gap: 0.35rem;
-    }
-    .chart-label {
+    .chart-axis-label {
+      font-size: 0.8rem;
+      fill: #134E39;
       font-weight: 600;
     }
-    .chart-bar-track {
-      height: 8px;
-      border-radius: 999px;
-      background: #dde3df;
-      overflow: hidden;
+    .chart-tick-label {
+      font-size: 0.7rem;
+      fill: #888;
     }
-    .chart-bar-fill {
-      height: 100%;
-      width: 0%;
-      border-radius: 999px;
-      background: var(--imss-green-main);
-      transition: width 0.3s ease;
-    }
-    .chart-bar-fill.negative {
-      background: var(--danger);
-    }
-
   </style>
 </head>
 <body>
@@ -499,7 +478,7 @@
     </p>
   </section>
 
-  <!-- TEST PDL (24 bloques MOST / LEAST) -->
+  <!-- TEST PDL (24 bloques MOST / MENOS) -->
   <section id="section-test" class="card hidden">
     <div class="block-header">
       <div id="block-label">Bloque 1 de 24</div>
@@ -513,8 +492,8 @@
 
     <div class="test-title">Seleccione la palabra que MÁS (+) y MENOS (-) lo describe</div>
     <div class="test-subtitle-center">
-      En cada bloque del PDL, seleccione <strong>una palabra como MÁS (+)</strong> y <strong>una palabra como MENOS (-)</strong>.
-      Este formato está basado en el modelo DISC.
+      En cada bloque del PDL, seleccione <strong>una palabra como MÁS (+)</strong> y
+      <strong>una palabra como MENOS (-)</strong>. Este formato está basado en el modelo DISC.
     </div>
 
     <div id="test-group-container"></div>
@@ -539,7 +518,6 @@
     <div id="result-personal"></div>
     <div id="result-scores"></div>
 
-    <!-- Gráficas tipo Cleaver: A (MOST), B (LEAST), C (Diferencial) -->
     <h3>Gráficas del perfil DISC</h3>
     <p class="text-muted">
       Las siguientes gráficas representan la distribución de las cuatro dimensiones DISC.
@@ -551,80 +529,17 @@
     <div class="charts-grid">
       <div class="chart-card">
         <div class="chart-title">Gráfica A – Conducta natural (MÁS)</div>
-        <div class="chart-bars">
-          <div class="chart-row">
-            <div class="chart-label">D</div>
-            <div class="chart-bar-track"><div id="chartA-D" class="chart-bar-fill"></div></div>
-            <div id="chartA-D-val">0</div>
-          </div>
-          <div class="chart-row">
-            <div class="chart-label">I</div>
-            <div class="chart-bar-track"><div id="chartA-I" class="chart-bar-fill"></div></div>
-            <div id="chartA-I-val">0</div>
-          </div>
-          <div class="chart-row">
-            <div class="chart-label">S</div>
-            <div class="chart-bar-track"><div id="chartA-S" class="chart-bar-fill"></div></div>
-            <div id="chartA-S-val">0</div>
-          </div>
-          <div class="chart-row">
-            <div class="chart-label">C</div>
-            <div class="chart-bar-track"><div id="chartA-C" class="chart-bar-fill"></div></div>
-            <div id="chartA-C-val">0</div>
-          </div>
-        </div>
+        <svg id="chartA-svg" viewBox="0 0 260 220" width="100%" height="220"></svg>
       </div>
 
       <div class="chart-card">
         <div class="chart-title">Gráfica B – Conducta adaptada (MENOS)</div>
-        <div class="chart-bars">
-          <div class="chart-row">
-            <div class="chart-label">D</div>
-            <div class="chart-bar-track"><div id="chartB-D" class="chart-bar-fill"></div></div>
-            <div id="chartB-D-val">0</div>
-          </div>
-          <div class="chart-row">
-            <div class="chart-label">I</div>
-            <div class="chart-bar-track"><div id="chartB-I" class="chart-bar-fill"></div></div>
-            <div id="chartB-I-val">0</div>
-          </div>
-          <div class="chart-row">
-            <div class="chart-label">S</div>
-            <div class="chart-bar-track"><div id="chartB-S" class="chart-bar-fill"></div></div>
-            <div id="chartB-S-val">0</div>
-          </div>
-          <div class="chart-row">
-            <div class="chart-label">C</div>
-            <div class="chart-bar-track"><div id="chartB-C" class="chart-bar-fill"></div></div>
-            <div id="chartB-C-val">0</div>
-          </div>
-        </div>
+        <svg id="chartB-svg" viewBox="0 0 260 220" width="100%" height="220"></svg>
       </div>
 
       <div class="chart-card">
         <div class="chart-title">Gráfica C – Diferencial (A − B)</div>
-        <div class="chart-bars">
-          <div class="chart-row">
-            <div class="chart-label">D</div>
-            <div class="chart-bar-track"><div id="chartC-D" class="chart-bar-fill"></div></div>
-            <div id="chartC-D-val">0</div>
-          </div>
-          <div class="chart-row">
-            <div class="chart-label">I</div>
-            <div class="chart-bar-track"><div id="chartC-I" class="chart-bar-fill"></div></div>
-            <div id="chartC-I-val">0</div>
-          </div>
-          <div class="chart-row">
-            <div class="chart-label">S</div>
-            <div class="chart-bar-track"><div id="chartC-S" class="chart-bar-fill"></div></div>
-            <div id="chartC-S-val">0</div>
-          </div>
-          <div class="chart-row">
-            <div class="chart-label">C</div>
-            <div class="chart-bar-track"><div id="chartC-C" class="chart-bar-fill"></div></div>
-            <div id="chartC-C-val">0</div>
-          </div>
-        </div>
+        <svg id="chartC-svg" viewBox="0 0 260 220" width="100%" height="220"></svg>
       </div>
     </div>
 
@@ -637,7 +552,7 @@
     </div>
   </section>
 
-  <!-- PANEL DE ADMINISTRACIÓN (seguirá igual pero con validación de acceso) -->
+  <!-- PANEL DE ADMINISTRACIÓN -->
   <section id="section-admin" class="card hidden">
     <h2>Panel de administración</h2>
     <p class="subtitle">
@@ -729,7 +644,7 @@
     </div>
   </div>
 </main>
-<!-- Parte 2/2 - Lógica completa en JS + Firebase -->
+
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
   import {
@@ -746,10 +661,9 @@
   import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-analytics.js";
 
   /* ====== CONTRASEÑA DE ADMINISTRADOR ======
-     Cambia el valor de ADMIN_PASSWORD para usar otra clave.
-     Ejemplo: const ADMIN_PASSWORD = "MiClaveSegura123";
+     Cambia el valor de ADMIN_PASSWORD si quieres otra clave.
   */
-  const ADMIN_PASSWORD = "PDL2024!";
+  const ADMIN_PASSWORD = "PDL2025";
   let adminUnlocked = false;
 
   const firebaseConfig = {
@@ -778,11 +692,7 @@
     resultados: "pdl_resultados"
   };
 
-  /* 
-    TEST_GROUPS (24 bloques, 4 adjetivos cada uno).
-    Inspirado en el formato Cleaver / DISC:
-    cada palabra está etiquetada con la dimensión que principalmente representa.
-  */
+  /* TEST_GROUPS (24 bloques, 4 adjetivos cada uno) */
   const TEST_GROUPS = [
     { words: [
       { text: "Dominante", dim: "D" },
@@ -935,7 +845,7 @@
   let currentWorkerData = null;
   let resultadosCache = [];
 
-  /* ========= UTILIDADES GENERALES ========= */
+  /* ========= UTILIDADES ========= */
 
   function showSection(section) {
     ["worker","test","results","admin"].forEach(s => {
@@ -1038,7 +948,7 @@
     }
   }
 
-  /* ========= ACCESO ADMIN (CONTRASEÑA) ========= */
+  /* ========= ACCESO ADMIN ========= */
 
   function requestAdminAccess() {
     if (adminUnlocked) {
@@ -1080,7 +990,7 @@
     loadResults();
   }
 
-  /* ========= VALIDACIÓN CARÁTULA ========= */
+  /* ========= CARÁTULA ========= */
 
   function validateWorkerForm(){
     let valid=true;
@@ -1254,7 +1164,7 @@
     return testAnswers.every(a=>a.most!==null && a.least!==null);
   }
 
-  /* ========= CÁLCULO ESTILO CLEAVER (A, B, C) ========= */
+  /* ========= CÁLCULO DISC (A, B, C) ========= */
 
   function computeDISCFromAnswers(){
     const A={D:0,I:0,S:0,C:0};
@@ -1271,13 +1181,7 @@
       S:A.S-B.S,
       C:A.C-B.C
     };
-    const main={
-      D:C.D,
-      I:C.I,
-      S:C.S,
-      C:C.C
-    };
-    return {A,B,C,main};
+    return {A,B,C};
   }
 
   function determineMainProfile(scoresC){
@@ -1376,16 +1280,16 @@
       "• Flexibilidad para integrarse a equipos con estilos muy diversos.<br><br>"+
       "<strong>Posibles áreas de riesgo:</strong><br>"+
       "• Puede experimentar dudas sobre cuál estilo usar en situaciones de alta presión.<br>"+
-      "• Riesgo de sobrecarga si se le asignan demasiadas funciones distintas sin claridad de prioridades.";
+      "• Riesgo de sobrecarga si se le asignan muchas funciones distintas sin claridad de prioridades.";
     }
 
     const dimResumen = 
-      "Gráfica A (MÁS): D="+scores.A.D+", I="+scores.A.I+
-      ", S="+scores.A.S+", C="+scores.A.C+"<br>"+
-      "Gráfica B (MENOS): D="+scores.B.D+", I="+scores.B.I+
-      ", S="+scores.B.S+", C="+scores.B.C+"<br>"+
-      "Gráfica C (A−B): D="+scores.C.D+", I="+scores.C.I+
-      ", S="+scores.C.S+", C="+scores.C.C;
+      "Gráfica A (MÁS): D="+A.D+", I="+A.I+
+      ", S="+A.S+", C="+A.C+"<br>"+
+      "Gráfica B (MENOS): D="+B.D+", I="+B.I+
+      ", S="+B.S+", C="+B.C+"<br>"+
+      "Gráfica C (A−B): D="+C.D+", I="+C.I+
+      ", S="+C.S+", C="+C.C;
 
     return {
       title:"Perfil predominante: "+(dimNames[mainDim]||mainDim),
@@ -1497,34 +1401,115 @@
     return plan;
   }
 
-  function updateCharts(scores){
-    const A=scores.A,B=scores.B,C=scores.C;
-    const dims=["D","I","S","C"];
+  /* ========= GRÁFICAS TIPO ROMBO/RADAR ========= */
 
-    const maxA=Math.max(A.D,A.I,A.S,A.C) || 1;
-    const maxB=Math.max(B.D,B.I,B.S,B.C) || 1;
-    const maxC=Math.max(Math.abs(C.D),Math.abs(C.I),Math.abs(C.S),Math.abs(C.C)) || 1;
+  function drawDiamondChart(svgId, values, options = {}) {
+    const svg = document.getElementById(svgId);
+    if (!svg) return;
 
-    dims.forEach(dim=>{
-      const aVal=A[dim],bVal=B[dim],cVal=C[dim];
+    svg.innerHTML = "";
 
-      const aBar=document.getElementById("chartA-"+dim);
-      const aLabel=document.getElementById("chartA-"+dim+"-val");
-      if(aBar){ aBar.style.width=(aVal/maxA*100)+"%"; }
-      if(aLabel){ aLabel.textContent=aVal; }
+    const cx = 130;
+    const cy = 110;
+    const radius = 80;
 
-      const bBar=document.getElementById("chartB-"+dim);
-      const bLabel=document.getElementById("chartB-"+dim+"-val");
-      if(bBar){ bBar.style.width=(bVal/maxB*100)+"%"; }
-      if(bLabel){ bLabel.textContent=bVal; }
+    const dims = ["D", "I", "S", "C"];
+    const labels = { D: "D", I: "I", S: "S", C: "C" };
 
-      const cBar=document.getElementById("chartC-"+dim);
-      const cLabel=document.getElementById("chartC-"+dim+"-val");
-      if(cBar){
-        cBar.style.width=(Math.abs(cVal)/maxC*100)+"%";
-        cBar.classList.toggle("negative", cVal<0);
+    const absVals = dims.map(d => Math.abs(values[d] || 0));
+    const maxVal = Math.max(...absVals, 1);
+
+    function pointFor(dim, factor) {
+      let x = cx;
+      let y = cy;
+      if (dim === "D") {
+        y = cy - radius * factor;
+      } else if (dim === "I") {
+        x = cx + radius * factor;
+      } else if (dim === "S") {
+        y = cy + radius * factor;
+      } else if (dim === "C") {
+        x = cx - radius * factor;
       }
-      if(cLabel){ cLabel.textContent=cVal; }
+      return { x, y };
+    }
+
+    const levels = [0.33, 0.66, 1];
+    levels.forEach(lvl => {
+      const pts = dims.map(dim => pointFor(dim, lvl));
+      const pathData = pts.map((p, i) => (i === 0 ? "M" : "L") + p.x + " " + p.y).join(" ") + " Z";
+      const ring = document.createElementNS("http://www.w3.org/2000/svg", "path");
+      ring.setAttribute("d", pathData);
+      ring.setAttribute("fill", "none");
+      ring.setAttribute("stroke", "#dde3df");
+      ring.setAttribute("stroke-width", "1");
+      svg.appendChild(ring);
+    });
+
+    dims.forEach(dim => {
+      const end = pointFor(dim, 1);
+      const axis = document.createElementNS("http://www.w3.org/2000/svg", "line");
+      axis.setAttribute("x1", cx);
+      axis.setAttribute("y1", cy);
+      axis.setAttribute("x2", end.x);
+      axis.setAttribute("y2", end.y);
+      axis.setAttribute("stroke", "#c0c7c3");
+      axis.setAttribute("stroke-width", "1");
+      svg.appendChild(axis);
+    });
+
+    dims.forEach(dim => {
+      const end = pointFor(dim, 1.15);
+      const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+      text.setAttribute("x", end.x);
+      text.setAttribute("y", end.y);
+      text.setAttribute("text-anchor", "middle");
+      text.setAttribute("alignment-baseline", "middle");
+      text.setAttribute("class", "chart-axis-label");
+      text.textContent = labels[dim];
+      svg.appendChild(text);
+    });
+
+    const maxLabel = document.createElementNS("http://www.w3.org/2000/svg", "text");
+    maxLabel.setAttribute("x", cx);
+    maxLabel.setAttribute("y", cy + radius + 25);
+    maxLabel.setAttribute("text-anchor", "middle");
+    maxLabel.setAttribute("class", "chart-tick-label");
+    maxLabel.textContent = "Valores: " + dims.map(d => d + "=" + (values[d] || 0)).join("  ");
+    svg.appendChild(maxLabel);
+
+    const ptsValue = dims.map(dim => {
+      const v = values[dim] || 0;
+      const factor = Math.abs(v) / maxVal;
+      return pointFor(dim, factor);
+    });
+    const pathDataVal = ptsValue.map((p, i) => (i === 0 ? "M" : "L") + p.x + " " + p.y).join(" ") + " Z";
+    const poly = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    poly.setAttribute("d", pathDataVal);
+    poly.setAttribute("fill", options.fillColor || "rgba(0,102,87,0.25)");
+    poly.setAttribute("stroke", options.strokeColor || "#006657");
+    poly.setAttribute("stroke-width", "2");
+    svg.appendChild(poly);
+  }
+
+  function updateCharts(scores){
+    const A = scores.A;
+    const B = scores.B;
+    const C = scores.C;
+
+    drawDiamondChart("chartA-svg", A, {
+      fillColor: "rgba(0,102,87,0.25)",
+      strokeColor: "#006657"
+    });
+
+    drawDiamondChart("chartB-svg", B, {
+      fillColor: "rgba(188,149,92,0.25)",
+      strokeColor: "#BC955C"
+    });
+
+    drawDiamondChart("chartC-svg", C, {
+      fillColor: "rgba(198,40,40,0.20)",
+      strokeColor: "#c62828"
     });
   }
 
@@ -1586,7 +1571,7 @@
     const w=currentWorkerData;
     const record={
       fecha,fechaEpoch,...w,
-      scores:disc, // A, B, C
+      scores:disc,
       perfil,
       interpTitle:interp.title,
       interpMain:interp.mainDesc,
@@ -1837,4 +1822,3 @@
 </script>
 </body>
 </html>
-
