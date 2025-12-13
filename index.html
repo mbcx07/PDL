@@ -1,1846 +1,364 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8" />
-  <title>Perfil de Dinámicas Laborales (PDL)</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <style>
-    :root {
-      --imss-green-main: #006657;
-      --imss-green-dark: #134E39;
-      --imss-green-soft: #e6f2ef;
-      --accent-gold: #BC955C;
-      --bg: #f5f7f6;
-      --text: #222;
-      --danger: #c62828;
-      --muted: #777;
-      --card-radius: 10px;
-      --shadow: 0 2px 6px rgba(0,0,0,0.08);
-    }
-    * {
-      box-sizing: border-box;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    }
-    body {
-      margin: 0;
-      background: var(--bg);
-      color: var(--text);
-    }
-    header {
-      background: #ffffff;
-      box-shadow: var(--shadow);
-      padding: 0.75rem 1.5rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      position: sticky;
-      top: 0;
-      z-index: 10;
-    }
-    header h1 {
-      margin: 0;
-      font-size: 1.1rem;
-      font-weight: 700;
-      color: var(--imss-green-dark);
-    }
-    header nav a {
-      margin-left: 1rem;
-      text-decoration: none;
-      font-size: 0.88rem;
-      color: var(--imss-green-main);
-      cursor: pointer;
-    }
-    header nav a:hover { text-decoration: underline; }
-
-    main {
-      max-width: 1100px;
-      margin: 1.5rem auto 2.5rem;
-      padding: 0 1rem;
-    }
-    .card {
-      background: #ffffff;
-      border-radius: var(--card-radius);
-      box-shadow: var(--shadow);
-      padding: 1.4rem 1.5rem;
-      margin-bottom: 1.25rem;
-    }
-    h2 {
-      margin-top: 0;
-      font-size: 1.3rem;
-      color: var(--imss-green-dark);
-    }
-    h3 {
-      font-size: 1.05rem;
-      margin-top: 1rem;
-    }
-    .subtitle {
-      font-size: 0.9rem;
-      color: var(--muted);
-      margin-bottom: 0.75rem;
-    }
-    .pill {
-      display: inline-block;
-      padding: 0.15rem 0.6rem;
-      border-radius: 999px;
-      font-size: 0.75rem;
-      background: var(--imss-green-soft);
-      color: var(--imss-green-dark);
-      margin-left: 0.4rem;
-      font-weight: 600;
-    }
-    .form-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-      gap: 0.8rem 1rem;
-    }
-    label {
-      display: block;
-      font-size: 0.8rem;
-      margin-bottom: 0.2rem;
-      font-weight: 600;
-    }
-    input, select, textarea {
-      width: 100%;
-      padding: 0.45rem 0.55rem;
-      border-radius: 5px;
-      border: 1px solid #cfd4d1;
-      font-size: 0.9rem;
-      background: #ffffff;
-    }
-    input:focus, select:focus, textarea:focus {
-      outline: 2px solid var(--imss-green-soft);
-      border-color: var(--imss-green-main);
-    }
-    textarea { resize: vertical; min-height: 70px; }
-
-    .btn-row {
-      margin-top: 1rem;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.6rem;
-    }
-    button {
-      border-radius: 6px;
-      border: none;
-      padding: 0.45rem 0.95rem;
-      font-size: 0.9rem;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.25rem;
-    }
-    .btn-primary {
-      background: var(--imss-green-main);
-      color: #ffffff;
-    }
-    .btn-secondary {
-      background: #e0e4e2;
-      color: #333;
-    }
-    .btn-danger {
-      background: var(--danger);
-      color: #ffffff;
-    }
-    .btn-success {
-      background: var(--imss-green-dark);
-      color: #ffffff;
-    }
-    .btn-link {
-      background: transparent;
-      color: var(--imss-green-main);
-      padding-left: 0;
-    }
-    .btn-disabled {
-      background: #cfd4d1 !important;
-      color: #888 !important;
-      cursor: default !important;
-      opacity: 0.7;
-    }
-    .error {
-      color: var(--danger);
-      font-size: 0.8rem;
-      margin-top: 0.25rem;
-    }
-    .text-muted {
-      font-size: 0.8rem;
-      color: var(--muted);
-    }
-    .hidden { display: none !important; }
-
-    /* Bloques del test */
-    .block-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 0.85rem;
-      margin-bottom: 0.5rem;
-      color: var(--muted);
-      flex-wrap: wrap;
-      gap: 0.4rem;
-    }
-    .progress-wrapper {
-      display: flex;
-      align-items: center;
-      gap: 0.4rem;
-      min-width: 150px;
-    }
-    .progress-bar-container {
-      background: #dde3df;
-      border-radius: 999px;
-      height: 6px;
-      flex: 1;
-      overflow: hidden;
-    }
-    .progress-bar {
-      height: 100%;
-      width: 0%;
-      background: var(--imss-green-main);
-      transition: width 0.2s ease;
-    }
-    .progress-percent {
-      font-size: 0.8rem;
-      color: var(--muted);
-      min-width: 32px;
-      text-align: right;
-    }
-
-    .test-title {
-      font-size: 1.1rem;
-      font-weight: 700;
-      text-align: center;
-      margin: 0.6rem 0 0.4rem;
-    }
-    .test-subtitle-center {
-      text-align: center;
-      font-size: 0.86rem;
-      color: var(--muted);
-      margin-bottom: 0.8rem;
-    }
-    .table-like {
-      width: 100%;
-      border-radius: 10px;
-      border: 1px solid #e0e4e2;
-      overflow: hidden;
-      background: #ffffff;
-    }
-    .table-header, .table-row {
-      display: grid;
-      grid-template-columns: minmax(0, 1.5fr) repeat(2, minmax(80px, 0.6fr));
-      align-items: center;
-      padding: 0.6rem 0.9rem;
-    }
-    .table-header {
-      background: var(--imss-green-soft);
-      font-size: 0.8rem;
-      font-weight: 600;
-      color: var(--imss-green-dark);
-    }
-    .table-row {
-      border-top: 1px solid #edf1ee;
-      font-size: 0.9rem;
-    }
-    .table-row:nth-child(even) {
-      background: #fafcfb;
-    }
-    .table-row-label { font-weight: 500; }
-    .choice-cell { display: flex; justify-content: center; }
-
-    .choice-radio {
-      appearance: none;
-      -webkit-appearance: none;
-      width: 22px;
-      height: 22px;
-      border-radius: 50%;
-      border: 2px solid #cfd4d1;
-      background: #ffffff;
-      position: relative;
-      cursor: pointer;
-      transition: all 0.15s ease;
-    }
-    .choice-radio::after {
-      content: "";
-      position: absolute;
-      inset: 4px;
-      border-radius: 50%;
-      background: transparent;
-      transition: background 0.15s ease;
-    }
-    .choice-radio.choice-plus:checked {
-      border-color: var(--imss-green-main);
-      background: var(--imss-green-main);
-    }
-    .choice-radio.choice-plus:checked::after {
-      background: #ffffff;
-    }
-    .choice-radio.choice-minus:checked {
-      border-color: var(--danger);
-      background: var(--danger);
-    }
-    .choice-radio.choice-minus:checked::after {
-      background: #ffffff;
-    }
-
-    .test-footer {
-      margin-top: 0.9rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 0.5rem;
-      flex-wrap: wrap;
-    }
-
-    @media (max-width: 650px) {
-      .table-header, .table-row {
-        grid-template-columns: minmax(0, 1.6fr) repeat(2, 70px);
-        padding-inline: 0.55rem;
-      }
-    }
-
-    /* Tablas admin */
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.82rem;
-    }
-    th, td {
-      border: 1px solid #dde2df;
-      padding: 0.35rem 0.45rem;
-      text-align: left;
-    }
-    th {
-      background: var(--imss-green-soft);
-      font-weight: 600;
-      color: var(--imss-green-dark);
-    }
-    tbody tr:nth-child(even) { background: #fafcfb; }
-    .admin-tabs {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.3rem;
-      margin-bottom: 0.7rem;
-    }
-    .admin-tabs button {
-      font-size: 0.8rem;
-      padding: 0.35rem 0.7rem;
-    }
-    .admin-tabs button.active {
-      background: var(--imss-green-main);
-      color: #ffffff;
-    }
-    .inline-form {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-      margin-bottom: 0.7rem;
-      align-items: center;
-    }
-    .badge {
-      display: inline-block;
-      padding: 0.16rem 0.5rem;
-      border-radius: 999px;
-      background: var(--accent-gold);
-      color: #fff;
-      font-size: 0.78rem;
-      font-weight: 600;
-    }
-
-    /* Modal acceso administrador */
-    .modal-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.45);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 50;
-    }
-    .modal {
-      background: #fff;
-      border-radius: 10px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.25);
-      padding: 1.2rem 1.5rem;
-      max-width: 360px;
-      width: 100%;
-    }
-    .modal h3 {
-      margin-top: 0;
-      margin-bottom: 0.3rem;
-      color: var(--imss-green-dark);
-    }
-    .modal-footer {
-      display: flex;
-      justify-content: flex-end;
-      gap: 0.5rem;
-      margin-top: 0.9rem;
-    }
-
-    /* Gráficas DISC (A-B-C) con rombo/radar */
-    .charts-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 1rem;
-      margin-top: 0.7rem;
-    }
-    .chart-card {
-      border-radius: 10px;
-      border: 1px solid #e0e4e2;
-      padding: 0.75rem 0.8rem;
-      background: #fafcfb;
-    }
-    .chart-title {
-      font-size: 0.88rem;
-      font-weight: 600;
-      color: var(--imss-green-dark);
-      margin-bottom: 0.4rem;
-    }
-
-    svg text {
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    }
-    .chart-axis-label {
-      font-size: 0.8rem;
-      fill: #134E39;
-      font-weight: 600;
-    }
-    .chart-tick-label {
-      font-size: 0.7rem;
-      fill: #888;
-    }
-  </style>
-</head>
-<body>
-<header>
-  <h1>Perfil de Dinámicas Laborales (PDL)</h1>
-  <nav>
-    <a onclick="showSection('worker')">Inicio</a>
-    <a onclick="showSection('worker')">Aplicar test</a>
-    <a onclick="requestAdminAccess()">Administrador</a>
-  </nav>
-</header>
-
-<main>
-  <!-- CARÁTULA / DATOS DEL TRABAJADOR -->
-  <section id="section-worker" class="card">
-    <h2>Datos del trabajador <span class="pill">Paso 1 de 3</span></h2>
-    <p class="subtitle">
-      Capture los datos antes de iniciar el <strong>Test PDL – Perfil de Dinámicas Laborales</strong>.
-    </p>
-
-    <div class="form-grid">
-      <div>
-        <label for="unidad">Unidad *</label>
-        <select id="unidad"></select>
-        <div id="unidad-error" class="error hidden">Seleccione una unidad.</div>
-      </div>
-      <div>
-        <label for="matricula">Matrícula *</label>
-        <input id="matricula" type="text" />
-        <div id="matricula-error" class="error hidden">Capture la matrícula.</div>
-      </div>
-      <div>
-        <label for="nombre">Nombre completo *</label>
-        <input id="nombre" type="text" />
-        <div id="nombre-error" class="error hidden">Capture el nombre completo.</div>
-      </div>
-      <div>
-        <label for="categoria">Categoría *</label>
-        <select id="categoria"></select>
-        <div id="categoria-error" class="error hidden">Seleccione una categoría.</div>
-      </div>
-      <div>
-        <label for="puesto">Puesto que desempeña en el servicio *</label>
-        <input id="puesto" type="text" />
-        <div id="puesto-error" class="error hidden">Capture el puesto.</div>
-      </div>
-      <div>
-        <label for="fechaNacimiento">Fecha de nacimiento *</label>
-        <input id="fechaNacimiento" type="date" />
-        <div id="fechaNacimiento-error" class="error hidden">Capture la fecha de nacimiento.</div>
-      </div>
-      <div>
-        <label for="edad">Edad (años)</label>
-        <input id="edad" type="text" readonly />
-      </div>
-      <div>
-        <label for="lugarNacimiento">Lugar de nacimiento *</label>
-        <input id="lugarNacimiento" type="text" />
-        <div id="lugarNacimiento-error" class="error hidden">Capture el lugar de nacimiento.</div>
-      </div>
-    </div>
-
-    <div class="btn-row">
-      <button class="btn-primary" type="button" onclick="startTest()">Iniciar test PDL</button>
-      <button class="btn-link" type="button" onclick="requestAdminAccess()">Acceso administrador</button>
-    </div>
-    <p class="text-muted">
-      La información se almacena localmente y, si la conexión está disponible, también en Firestore.
-      Puede descargarse en CSV desde el panel de administración.
-    </p>
-  </section>
-
-  <!-- TEST PDL (24 bloques MOST / MENOS) -->
-  <section id="section-test" class="card hidden">
-    <div class="block-header">
-      <div id="block-label">Bloque 1 de 24</div>
-      <div class="progress-wrapper">
-        <div class="progress-bar-container">
-          <div id="progress-bar" class="progress-bar"></div>
-        </div>
-        <span id="progress-percent" class="progress-percent">0%</span>
-      </div>
-    </div>
-
-    <div class="test-title">Seleccione la palabra que MÁS (+) y MENOS (-) lo describe</div>
-    <div class="test-subtitle-center">
-      En cada bloque del PDL, seleccione <strong>una palabra como MÁS (+)</strong> y
-      <strong>una palabra como MENOS (-)</strong>. Este formato está basado en el modelo DISC.
-    </div>
-
-    <div id="test-group-container"></div>
-    <div id="test-error" class="error hidden" style="margin-top:0.5rem;"></div>
-
-    <div class="test-footer">
-      <div class="text-muted" style="font-size:0.78rem;">
-        Debe seleccionar una opción en ambas columnas para continuar.
-      </div>
-      <div class="btn-row" style="margin-top:0;">
-        <button id="btn-prev" class="btn-secondary" type="button" onclick="prevGroup()">Anterior</button>
-        <button id="btn-next" class="btn-primary" type="button" onclick="nextGroup()">Siguiente</button>
-        <button id="btn-finish" class="btn-success" type="button" onclick="finishTest()">Finalizar test</button>
-      </div>
-    </div>
-  </section>
-
-  <!-- RESULTADOS + GRÁFICAS A / B / C -->
-  <section id="section-results" class="card hidden">
-    <h2>Resultados del PDL <span class="pill">Paso 3 de 3</span></h2>
-
-    <div id="result-personal"></div>
-    <div id="result-scores"></div>
-
-    <h3>Gráficas del perfil DISC</h3>
-    <p class="text-muted">
-      Las siguientes gráficas representan la distribución de las cuatro dimensiones DISC.
-      La Gráfica A se basa en las respuestas de <strong>MÁS (+)</strong> (conducta natural),
-      la Gráfica B en las respuestas de <strong>MENOS (-)</strong> (conducta adaptada)
-      y la Gráfica C muestra las diferencias entre ambas.
-    </p>
-
-    <div class="charts-grid">
-      <div class="chart-card">
-        <div class="chart-title">Gráfica A – Conducta natural (MÁS)</div>
-        <svg id="chartA-svg" viewBox="0 0 260 220" width="100%" height="220"></svg>
-      </div>
-
-      <div class="chart-card">
-        <div class="chart-title">Gráfica B – Conducta adaptada (MENOS)</div>
-        <svg id="chartB-svg" viewBox="0 0 260 220" width="100%" height="220"></svg>
-      </div>
-
-      <div class="chart-card">
-        <div class="chart-title">Gráfica C – Diferencial (A − B)</div>
-        <svg id="chartC-svg" viewBox="0 0 260 220" width="100%" height="220"></svg>
-      </div>
-    </div>
-
-    <div id="result-interpretation"></div>
-    <div id="result-training"></div>
-
-    <div class="btn-row">
-      <button class="btn-primary" type="button" onclick="resetForNewTest()">Aplicar a otro trabajador</button>
-      <button class="btn-secondary" type="button" onclick="requestAdminAccess()">Ir a administrador</button>
-    </div>
-  </section>
-
-  <!-- PANEL DE ADMINISTRACIÓN -->
-  <section id="section-admin" class="card hidden">
-    <h2>Panel de administración</h2>
-    <p class="subtitle">
-      Administre <strong>unidades</strong>, <strong>categorías</strong> y consulte/descargue los resultados del PDL.
-    </p>
-
-    <div class="admin-tabs">
-      <button id="tab-unidades" class="btn-secondary active" type="button" onclick="setAdminTab('unidades')">Unidades</button>
-      <button id="tab-categorias" class="btn-secondary" type="button" onclick="setAdminTab('categorias')">Categorías</button>
-      <button id="tab-resultados" class="btn-secondary" type="button" onclick="setAdminTab('resultados')">Resultados</button>
-    </div>
-
-    <div id="admin-unidades">
-      <h3>Gestión de unidades</h3>
-      <div class="inline-form">
-        <input id="nuevaUnidad" type="text" placeholder="Nombre de nueva unidad" />
-        <button class="btn-primary" type="button" onclick="addUnidad()">Agregar</button>
-      </div>
-      <p class="text-muted">Estas unidades se muestran en el desplegable de la carátula.</p>
-      <table>
-        <thead>
-          <tr><th>Unidad</th><th style="width:80px;">Acciones</th></tr>
-        </thead>
-        <tbody id="tablaUnidades"></tbody>
-      </table>
-    </div>
-
-    <div id="admin-categorias" class="hidden">
-      <h3>Gestión de categorías</h3>
-      <div class="inline-form">
-        <input id="nuevaCategoria" type="text" placeholder="Nombre de nueva categoría" />
-        <button class="btn-primary" type="button" onclick="addCategoria()">Agregar</button>
-      </div>
-      <p class="text-muted">Estas categorías se muestran en el desplegable de la carátula.</p>
-      <table>
-        <thead>
-          <tr><th>Categoría</th><th style="width:80px;">Acciones</th></tr>
-        </thead>
-        <tbody id="tablaCategorias"></tbody>
-      </table>
-    </div>
-
-    <div id="admin-resultados" class="hidden">
-      <h3>Resultados registrados</h3>
-      <p class="text-muted">
-        Los registros se guardan en este dispositivo y, si la conexión con Firebase funciona, también en Firestore.
-        Desde aquí puede descargar el archivo en formato CSV.
-      </p>
-      <div class="btn-row" style="margin-bottom:0.7rem;">
-        <button class="btn-success" type="button" onclick="downloadCSV()">Descargar CSV</button>
-        <button class="btn-secondary" type="button" onclick="clearAllResults()">Borrar resultados locales</button>
-      </div>
-      <div style="max-height:360px; overflow:auto; border-radius:8px; border:1px solid #dde2df;">
-        <table>
-          <thead>
-            <tr>
-              <th>Fecha</th><th>Unidad</th><th>Matrícula</th><th>Nombre</th><th>Categoría</th>
-              <th>Puesto</th><th>Edad</th><th>Lugar nac.</th>
-              <th>D</th><th>I</th><th>S</th><th>C</th><th>Perfil</th>
-              <th>Interpretación</th><th>Plan de capacitación</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody id="tablaResultados"></tbody>
-        </table>
-      </div>
-    </div>
-
-    <div class="btn-row" style="margin-top:1rem;">
-      <button class="btn-secondary" type="button" onclick="showSection('worker')">Volver al inicio</button>
-    </div>
-  </section>
-
-  <!-- MODAL LOGIN ADMIN -->
-  <div id="admin-login-overlay" class="modal-overlay hidden">
-    <div class="modal">
-      <h3>Acceso a administrador</h3>
-      <p class="text-muted">
-        Ingrese la contraseña de administración para acceder a las unidades, categorías y resultados.
-      </p>
-      <label for="admin-password-input">Contraseña</label>
-      <input id="admin-password-input" type="password" />
-      <div id="admin-login-error" class="error hidden" style="margin-top:0.4rem;">
-        Contraseña incorrecta. Intente nuevamente.
-      </div>
-      <div class="modal-footer">
-        <button class="btn-secondary" type="button" onclick="closeAdminLogin()">Cancelar</button>
-        <button class="btn-primary" type="button" onclick="submitAdminLogin()">Ingresar</button>
-      </div>
-    </div>
-  </div>
-</main>
-
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
-  import {
-    getFirestore,
-    collection,
-    addDoc,
-    getDocs,
-    query,
-    orderBy,
-    doc,
-    getDoc,
-    setDoc,
-    deleteDoc
-  } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
-  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-analytics.js";
-
-  /* ====== CONTRASEÑA DE ADMINISTRADOR ====== */
-  const ADMIN_PASSWORD = "PDL2025";
-  let adminUnlocked = false;
-
-  const firebaseConfig = {
-    apiKey: "AIzaSyDJniFUuRh3mfjP40cAm2gJ2P3TGOyKqog",
-    authDomain: "perfil-de-dinamicas-laborales.firebaseapp.com",
-    projectId: "perfil-de-dinamicas-laborales",
-    storageBucket: "perfil-de-dinamicas-laborales.firebasestorage.app",
-    messagingSenderId: "231363532636",
-    appId: "1:231363532636:web:b610e5501cea73dce69399",
-    measurementId: "G-R1X0PZ3WYY"
-  };
-
-  let db = null;
-  try {
-    const app = initializeApp(firebaseConfig);
-    db = getFirestore(app);
-    try { getAnalytics(app); } catch (e) {}
-    console.log("Firebase inicializado.");
-  } catch (err) {
-    console.warn("Firebase NO inicializado. Solo localStorage.", err);
-  }
-
-  const STORAGE_KEYS = {
-    unidades: "pdl_unidades",
-    categorias: "pdl_categorias",
-    resultados: "pdl_resultados"
-  };
-
-  /* TEST_GROUPS (24 bloques, 4 adjetivos cada uno) */
-  const TEST_GROUPS = [
-    { words: [
-      { text: "Dominante", dim: "D" },
-      { text: "Sociable", dim: "I" },
-      { text: "Paciente", dim: "S" },
-      { text: "Metódico", dim: "C" }
-    ]},
-    { words: [
-      { text: "Decidido", dim: "D" },
-      { text: "Entusiasta", dim: "I" },
-      { text: "Sereno", dim: "S" },
-      { text: "Analítico", dim: "C" }
-    ]},
-    { words: [
-      { text: "Competitivo", dim: "D" },
-      { text: "Persuasivo", dim: "I" },
-      { text: "Colaborador", dim: "S" },
-      { text: "Preciso", dim: "C" }
-    ]},
-    { words: [
-      { text: "Directo", dim: "D" },
-      { text: "Optimista", dim: "I" },
-      { text: "Constante", dim: "S" },
-      { text: "Cuidadoso", dim: "C" }
-    ]},
-    { words: [
-      { text: "Audaz", dim: "D" },
-      { text: "Carismático", dim: "I" },
-      { text: "Apacible", dim: "S" },
-      { text: "Minucioso", dim: "C" }
-    ]},
-    { words: [
-      { text: "Enérgico", dim: "D" },
-      { text: "Alegre", dim: "I" },
-      { text: "Leal", dim: "S" },
-      { text: "Exacto", dim: "C" }
-    ]},
-    { words: [
-      { text: "Firme", dim: "D" },
-      { text: "Animado", dim: "I" },
-      { text: "Equilibrado", dim: "S" },
-      { text: "Organizado", dim: "C" }
-    ]},
-    { words: [
-      { text: "Resolutivo", dim: "D" },
-      { text: "Espontáneo", dim: "I" },
-      { text: "Considerado", dim: "S" },
-      { text: "Crítico", dim: "C" }
-    ]},
-    { words: [
-      { text: "Exigente", dim: "D" },
-      { text: "Conversador", dim: "I" },
-      { text: "Paciente con otros", dim: "S" },
-      { text: "Objetivo", dim: "C" }
-    ]},
-    { words: [
-      { text: "Autoritario", dim: "D" },
-      { text: "Amigable", dim: "I" },
-      { text: "Tolerante", dim: "S" },
-      { text: "Riguroso", dim: "C" }
-    ]},
-    { words: [
-      { text: "Arriesgado", dim: "D" },
-      { text: "Expresivo", dim: "I" },
-      { text: "Calmado", dim: "S" },
-      { text: "Detallista", dim: "C" }
-    ]},
-    { words: [
-      { text: "Orientado a resultados", dim: "D" },
-      { text: "Orientado a personas", dim: "I" },
-      { text: "Estable", dim: "S" },
-      { text: "Orientado a normas", dim: "C" }
-    ]},
-    { words: [
-      { text: "Competidor nato", dim: "D" },
-      { text: "Conversador social", dim: "I" },
-      { text: "Serio", dim: "S" },
-      { text: "Cauteloso", dim: "C" }
-    ]},
-    { words: [
-      { text: "Decisivo", dim: "D" },
-      { text: "Animador", dim: "I" },
-      { text: "Tranquilo", dim: "S" },
-      { text: "Controlado", dim: "C" }
-    ]},
-    { words: [
-      { text: "Independiente", dim: "D" },
-      { text: "Inspirador", dim: "I" },
-      { text: "Comprensivo", dim: "S" },
-      { text: "Disciplinado", dim: "C" }
-    ]},
-    { words: [
-      { text: "Franco", dim: "D" },
-      { text: "Entregado al grupo", dim: "I" },
-      { text: "Paciente con tareas", dim: "S" },
-      { text: "Ordenado", dim: "C" }
-    ]},
-    { words: [
-      { text: "Seguro de sí mismo", dim: "D" },
-      { text: "Optimista social", dim: "I" },
-      { text: "Leal al equipo", dim: "S" },
-      { text: "Exacto con datos", dim: "C" }
-    ]},
-    { words: [
-      { text: "Bajo presión decide", dim: "D" },
-      { text: "Bajo presión influye", dim: "I" },
-      { text: "Bajo presión mantiene calma", dim: "S" },
-      { text: "Bajo presión analiza", dim: "C" }
-    ]},
-    { words: [
-      { text: "Orientado a desafíos", dim: "D" },
-      { text: "Comunicador nato", dim: "I" },
-      { text: "Estable emocionalmente", dim: "S" },
-      { text: "Respetuoso de reglas", dim: "C" }
-    ]},
-    { words: [
-      { text: "Dispuesto a liderar", dim: "D" },
-      { text: "Gusta de convivir", dim: "I" },
-      { text: "Prefiere la armonía", dim: "S" },
-      { text: "Analiza antes de actuar", dim: "C" }
-    ]},
-    { words: [
-      { text: "Competitivo en metas", dim: "D" },
-      { text: "Se integra fácilmente", dim: "I" },
-      { text: "Mantiene la calma", dim: "S" },
-      { text: "Exigente con calidad", dim: "C" }
-    ]},
-    { words: [
-      { text: "Asume riesgos", dim: "D" },
-      { text: "Disfruta convencer", dim: "I" },
-      { text: "Paciente con personas", dim: "S" },
-      { text: "Cumple procedimientos", dim: "C" }
-    ]},
-    { words: [
-      { text: "Impulsor de cambios", dim: "D" },
-      { text: "Motivador", dim: "I" },
-      { text: "Constante en el servicio", dim: "S" },
-      { text: "Verificador de detalles", dim: "C" }
-    ]},
-    { words: [
-      { text: "Decidido ante conflictos", dim: "D" },
-      { text: "Busca consenso", dim: "I" },
-      { text: "Evita confrontaciones", dim: "S" },
-      { text: "Defiende normas", dim: "C" }
-    ]}
-  ];
-
-  let testAnswers = TEST_GROUPS.map(() => ({ most: null, least: null }));
-  let currentGroupIndex = 0;
-  let currentWorkerData = null;
-  let resultadosCache = [];
-
-  /* ========= UTILIDADES ========= */
-
-  function showSection(section) {
-    ["worker","test","results","admin"].forEach(s => {
-      const el = document.getElementById("section-" + s);
-      if (!el) return;
-      if (s === section) el.classList.remove("hidden");
-      else el.classList.add("hidden");
-    });
-  }
-
-  function calculateAge(dateStr) {
-    if (!dateStr) return "";
-    const today = new Date();
-    const birth = new Date(dateStr);
-    let age = today.getFullYear() - birth.getFullYear();
-    const m = today.getMonth() - birth.getMonth();
-    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
-    return age;
-  }
-
-  function readLocal(key, defVal) {
-    try {
-      const raw = localStorage.getItem(key);
-      if (!raw) return defVal;
-      return JSON.parse(raw);
-    } catch {
-      return defVal;
-    }
-  }
-  function writeLocal(key,v){try{localStorage.setItem(key,JSON.stringify(v));}catch{}}
-
-  function ensureDefaultConfigLocal() {
-    let unidades = readLocal(STORAGE_KEYS.unidades,null);
-    let categorias = readLocal(STORAGE_KEYS.categorias,null);
-    if (!Array.isArray(unidades) || unidades.length===0){
-      unidades=["Unidad 1","Unidad 2"];
-      writeLocal(STORAGE_KEYS.unidades,unidades);
-    }
-    if (!Array.isArray(categorias) || categorias.length===0){
-      categorias=["Categoría A","Categoría B"];
-      writeLocal(STORAGE_KEYS.categorias,categorias);
-    }
-  }
-
-  async function loadRemoteConfig() {
-    if (!db) return;
-    try {
-      const uniSnap = await getDoc(doc(db,"config","unidades"));
-      const catSnap = await getDoc(doc(db,"config","categorias"));
-      let changed = false;
-      if (uniSnap.exists()) {
-        const data = uniSnap.data();
-        if (Array.isArray(data.items)) {
-          writeLocal(STORAGE_KEYS.unidades, data.items);
-          changed = true;
-        }
-      }
-      if (catSnap.exists()) {
-        const data = catSnap.data();
-        if (Array.isArray(data.items)) {
-          writeLocal(STORAGE_KEYS.categorias, data.items);
-          changed = true;
-        }
-      }
-      if (changed) {
-        populateWorkerSelects();
-        refreshUnidadesTable();
-        refreshCategoriasTable();
-      }
-    } catch (e) {
-      console.error("Error cargando configuración desde Firestore:", e);
-    }
-  }
-
-  function populateWorkerSelects(){
-    const unidades=readLocal(STORAGE_KEYS.unidades,[]);
-    const categorias=readLocal(STORAGE_KEYS.categorias,[]);
-    const uSel=document.getElementById("unidad");
-    const cSel=document.getElementById("categoria");
-    if(!uSel||!cSel)return;
-    uSel.innerHTML='<option value="">Seleccione...</option>';
-    cSel.innerHTML='<option value="">Seleccione...</option>';
-    unidades.forEach(u=>{
-      const o=document.createElement("option");
-      o.value=u;o.textContent=u;uSel.appendChild(o);
-    });
-    categorias.forEach(c=>{
-      const o=document.createElement("option");
-      o.value=c;o.textContent=c;cSel.appendChild(o);
-    });
-  }
-
-  function initBirthDateListener(){
-    const f=document.getElementById("fechaNacimiento");
-    if(f){
-      f.addEventListener("change",function(){
-        const e=document.getElementById("edad");
-        if(e)e.value=calculateAge(this.value) || "";
-      });
-    }
-  }
-
-  /* ========= ACCESO ADMIN ========= */
-
-  function requestAdminAccess() {
-    if (adminUnlocked) {
-      openAdminDirect();
-      return;
-    }
-    const overlay = document.getElementById("admin-login-overlay");
-    const input = document.getElementById("admin-password-input");
-    const err = document.getElementById("admin-login-error");
-    if (!overlay || !input || !err) return;
-    input.value = "";
-    err.classList.add("hidden");
-    overlay.classList.remove("hidden");
-    setTimeout(() => input.focus(), 50);
-  }
-
-  function closeAdminLogin() {
-    const overlay = document.getElementById("admin-login-overlay");
-    if (overlay) overlay.classList.add("hidden");
-  }
-
-  function submitAdminLogin() {
-    const input = document.getElementById("admin-password-input");
-    const err = document.getElementById("admin-login-error");
-    if (!input || !err) return;
-    if (input.value === ADMIN_PASSWORD) {
-      adminUnlocked = true;
-      err.classList.add("hidden");
-      closeAdminLogin();
-      openAdminDirect();
-    } else {
-      err.classList.remove("hidden");
-    }
-  }
-
-  function openAdminDirect() {
-    showSection("admin");
-    refreshAdminTables();
-    loadResults();
-  }
-
-  /* ========= CARÁTULA ========= */
-
-  function validateWorkerForm(){
-    let valid=true;
-    const unidad=document.getElementById("unidad").value.trim();
-    const matricula=document.getElementById("matricula").value.trim();
-    const nombre=document.getElementById("nombre").value.trim();
-    const categoria=document.getElementById("categoria").value.trim();
-    const puesto=document.getElementById("puesto").value.trim();
-    const fechaNacimiento=document.getElementById("fechaNacimiento").value;
-    const lugarNacimiento=document.getElementById("lugarNacimiento").value.trim();
-
-    const fields=[
-      {id:"unidad",value:unidad},
-      {id:"matricula",value:matricula},
-      {id:"nombre",value:nombre},
-      {id:"categoria",value:categoria},
-      {id:"puesto",value:puesto},
-      {id:"fechaNacimiento",value:fechaNacimiento},
-      {id:"lugarNacimiento",value:lugarNacimiento}
-    ];
-    fields.forEach(f=>{
-      const err=document.getElementById(f.id+"-error");
-      if(!f.value){valid=false;err&&err.classList.remove("hidden");}
-      else err&&err.classList.add("hidden");
-    });
-    if(!valid)return null;
-
-    return {
-      unidad,matricula,nombre,categoria,puesto,fechaNacimiento,
-      edad:calculateAge(fechaNacimiento),
-      lugarNacimiento
-    };
-  }
-
-  function startTest(){
-    const w=validateWorkerForm();
-    if(!w)return;
-    currentWorkerData=w;
-    currentGroupIndex=0;
-    testAnswers=TEST_GROUPS.map(()=>({most:null,least:null}));
-    renderCurrentGroup();
-    updateProgressUI();
-    updateNavButtons();
-    showSection("test");
-  }
-
-  /* ========= TEST: RENDER Y NAVEGACIÓN ========= */
-
-  function renderCurrentGroup(){
-    const c=document.getElementById("test-group-container");
-    if(!c)return;
-    const g=TEST_GROUPS[currentGroupIndex];
-    const ans=testAnswers[currentGroupIndex];
-    let html='<div class="table-like">';
-    html+='<div class="table-header"><div>Palabra / adjetivo</div><div style="text-align:center;">MÁS (+)</div><div style="text-align:center;">MENOS (-)</div></div>';
-    g.words.forEach((w,idx)=>{
-      const mChecked=ans.most===idx?"checked":"";
-      const lChecked=ans.least===idx?"checked":"";
-      html+='<div class="table-row">';
-      html+='<div class="table-row-label">'+w.text+'</div>';
-      html+='<div class="choice-cell"><input class="choice-radio choice-plus" type="radio" name="most" value="'+idx+'" '+mChecked+'></div>';
-      html+='<div class="choice-cell"><input class="choice-radio choice-minus" type="radio" name="least" value="'+idx+'" '+lChecked+'></div>';
-      html+='</div>';
-    });
-    html+='</div>';
-    c.innerHTML=html;
-
-    const err=document.getElementById("test-error");
-    err&&err.classList.add("hidden");
-    const bl=document.getElementById("block-label");
-    bl&&(bl.textContent="Bloque "+(currentGroupIndex+1)+" de "+TEST_GROUPS.length);
-    setupChoiceMutualExclusion();
-  }
-
-  function setupChoiceMutualExclusion(){
-    const c=document.getElementById("test-group-container");
-    if(!c)return;
-    const plus=c.querySelectorAll(".choice-plus");
-    const minus=c.querySelectorAll(".choice-minus");
-    plus.forEach(r=>{
-      r.addEventListener("change",function(){
-        if(!this.checked)return;
-        const val=this.value;
-        const m=c.querySelector('.choice-minus[value="'+val+'"]');
-        if(m&&m.checked)m.checked=false;
-      });
-    });
-    minus.forEach(r=>{
-      r.addEventListener("change",function(){
-        if(!this.checked)return;
-        const val=this.value;
-        const p=c.querySelector('.choice-plus[value="'+val+'"]');
-        if(p&&p.checked)p.checked=false;
-      });
-    });
-  }
-
-  function updateProgressUI(){
-    const progress=((currentGroupIndex)/TEST_GROUPS.length)*100;
-    const bar=document.getElementById("progress-bar");
-    const pct=document.getElementById("progress-percent");
-    if(bar)bar.style.width=progress+"%";
-    if(pct)pct.textContent=Math.round(progress)+"%";
-  }
-
-  function updateNavButtons(){
-    const prev=document.getElementById("btn-prev");
-    const next=document.getElementById("btn-next");
-    const finish=document.getElementById("btn-finish");
-    if(!prev||!next||!finish)return;
-    if(currentGroupIndex===0){
-      prev.disabled=true;prev.classList.add("btn-disabled");
-    } else {
-      prev.disabled=false;prev.classList.remove("btn-disabled");
-    }
-    if(currentGroupIndex===TEST_GROUPS.length-1){
-      next.disabled=true;next.classList.add("btn-disabled");
-      finish.disabled=false;finish.classList.remove("btn-disabled");
-    } else {
-      next.disabled=false;next.classList.remove("btn-disabled");
-      finish.disabled=false;finish.classList.remove("btn-disabled");
-    }
-  }
-
-  function captureCurrentGroupSelection(){
-    const mostRadios=document.querySelectorAll('input[name="most"]');
-    const leastRadios=document.querySelectorAll('input[name="least"]');
-    let most=null,least=null;
-    mostRadios.forEach(r=>{if(r.checked)most=parseInt(r.value,10);});
-    leastRadios.forEach(r=>{if(r.checked)least=parseInt(r.value,10);});
-    if(most===null||least===null){
-      showTestError("Debe elegir una palabra como MÁS (+) y otra como MENOS (-) en este bloque.");
-      return false;
-    }
-    if(most===least){
-      showTestError("La misma palabra no puede ser MÁS (+) y MENOS (-) en el mismo bloque.");
-      return false;
-    }
-    testAnswers[currentGroupIndex]={most,least};
-    return true;
-  }
-
-  function showTestError(msg){
-    const el=document.getElementById("test-error");
-    if(!el)return;
-    el.textContent=msg;
-    el.classList.remove("hidden");
-  }
-
-  function nextGroup(){
-    if(!captureCurrentGroupSelection())return;
-    if(currentGroupIndex<TEST_GROUPS.length-1){
-      currentGroupIndex++;
-      renderCurrentGroup();
-      updateProgressUI();
-      updateNavButtons();
-    }
-  }
-
-  function prevGroup(){
-    if(currentGroupIndex>0){
-      captureCurrentGroupSelection();
-      currentGroupIndex--;
-      renderCurrentGroup();
-      updateProgressUI();
-      updateNavButtons();
-    }
-  }
-
-  function allGroupsAnswered(){
-    return testAnswers.every(a=>a.most!==null && a.least!==null);
-  }
-
-  /* ========= CÁLCULO DISC (A, B, C) ========= */
-
-  function computeDISCFromAnswers(){
-    const A={D:0,I:0,S:0,C:0};
-    const B={D:0,I:0,S:0,C:0};
-    testAnswers.forEach((ans,idx)=>{
-      const g=TEST_GROUPS[idx];
-      const mDim=g.words[ans.most].dim;
-      const lDim=g.words[ans.least].dim;
-      A[mDim]++;B[lDim]++;
-    });
-    const C={
-      D:A.D-B.D,
-      I:A.I-B.I,
-      S:A.S-B.S,
-      C:A.C-B.C
-    };
-    return {A,B,C};
-  }
-
-  function determineMainProfile(scoresC){
-    const base={D:scoresC.D,I:scoresC.I,S:scoresC.S,C:scoresC.C};
-    let maxDim="D",maxVal=base.D;
-    ["I","S","C"].forEach(dim=>{
-      if(base[dim]>maxVal){maxVal=base[dim];maxDim=dim;}
-    });
-    return maxDim;
-  }
-
-  function interpretProfile(mainDim,scores){
-    const dimNames={D:"Dominancia (D)",I:"Influencia (I)",S:"Estabilidad (S)",C:"Cumplimiento (C)"};
-    const A=scores.A,B=scores.B,C=scores.C;
-    let mainDesc="",details="";
-
-    if(mainDim==="D"){
-      mainDesc="El resultado sugiere un estilo predominante de Dominancia. Esto indica una orientación fuerte hacia los resultados, la acción y la resolución directa de problemas, especialmente cuando la persona percibe demandas altas o situaciones de presión.";
-      details="<strong>Lectura combinada de las gráficas:</strong><br>"+
-      "• En la gráfica A (MÁS), un puntaje alto en D refleja cómo la persona tiende a verse a sí misma: con iniciativa, firmeza y gusto por los retos.<br>"+
-      "• En la gráfica B (MENOS), si D disminuye, es posible que en el entorno laboral la persona modere su estilo directo para ajustarse a normas, jerarquías o sensibilidad del equipo.<br>"+
-      "• En la gráfica C (A−B), una diferencia positiva en D sugiere que, cuando tiene mayor libertad, incrementa la toma de decisiones y la asunción de riesgos; si la diferencia es muy alta, puede haber sensación de que el entorno limita su impulso natural.<br><br>"+
-      "<strong>Fortalezas principales asociadas a este perfil:</strong><br>"+
-      "• Capacidad para impulsar proyectos y tomar decisiones sin paralizarse.<br>"+
-      "• Enfoque en objetivos concretos y resultados medibles.<br>"+
-      "• Habilidad para enfrentar situaciones complejas con rapidez y firmeza.<br><br>"+
-      "<strong>Posibles áreas de riesgo o tensión:</strong><br>"+
-      "• Puede percibirse como impaciente o poco sensible a los ritmos de otros.<br>"+
-      "• Tendencia a priorizar el logro del objetivo por encima del proceso o la relación interpersonal.<br>"+
-      "• Riesgo de conflicto con perfiles más cautelosos, estables o muy normativos.<br><br>"+
-      "<strong>Recomendaciones de manejo en el entorno laboral:</strong><br>"+
-      "• Ofrecerle objetivos claros, desafiantes y medibles, con márgenes definidos de autonomía.<br>"+
-      "• Acompañar la toma de decisiones con espacios de diálogo donde se consideren otros puntos de vista.<br>"+
-      "• Integrarlo en proyectos que requieran rapidez de respuesta, pero con retroalimentación periódica sobre el impacto en el equipo.";
-    } else if(mainDim==="I"){
-      mainDesc="El resultado sugiere un estilo predominante de Influencia. Esto implica una fuerte orientación a las relaciones, la comunicación y la persuasión, así como una tendencia a generar climas de trabajo positivos.";
-      details="<strong>Lectura combinada de las gráficas:</strong><br>"+
-      "• En la gráfica A (MÁS), un valor alto en I indica que la persona se percibe como sociable, expresiva y con facilidad para vincularse con otros.<br>"+
-      "• En la gráfica B (MENOS), si I desciende, puede estar controlando su espontaneidad en entornos formales o muy normados.<br>"+
-      "• En la gráfica C (A−B), una diferencia positiva en I sugiere que el entorno limita de algún modo su natural tendencia a la interacción; diferencias moderadas indican una buena adaptación.<br><br>"+
-      "<strong>Fortalezas principales asociadas a este perfil:</strong><br>"+
-      "• Capacidad para establecer puentes de comunicación y cohesionar al equipo.<br>"+
-      "• Habilidad para motivar, explicar cambios y contener emocionalmente a las personas usuarias o colegas.<br>"+
-      "• Flexibilidad social para adaptarse a distintos tipos de personas.<br><br>"+
-      "<strong>Posibles áreas de riesgo o tensión:</strong><br>"+
-      "• Puede dispersarse si las tareas son muy rutinarias o poco interactivas.<br>"+
-      "• Riesgo de subestimar tiempos, detalles técnicos o procedimientos por priorizar la relación.<br>"+
-      "• Tendencia a evitar la confrontación directa para mantener la armonía, postergando conversaciones necesarias.<br><br>"+
-      "<strong>Recomendaciones de manejo en el entorno laboral:</strong><br>"+
-      "• Involucrarla en actividades que requieran comunicación, acompañamiento y coordinación de grupos.<br>"+
-      "• Definir metas claras y tiempos específicos para equilibrar relación y tarea.<br>"+
-      "• Proporcionar lineamientos escritos que faciliten traducir su capacidad de influencia en acciones concretas y medibles.";
-    } else if(mainDim==="S"){
-      mainDesc="El resultado sugiere un estilo predominante de Estabilidad. Este perfil se asocia con constancia, paciencia, apoyo y preferencia por ambientes predecibles y colaborativos.";
-      details="<strong>Lectura combinada de las gráficas:</strong><br>"+
-      "• En la gráfica A (MÁS), un puntaje alto en S refleja una autoimagen de persona tranquila, perseverante y confiable.<br>"+
-      "• En la gráfica B (MENOS), si S baja, puede estar acelerando su ritmo o asumiendo más cambios de los que le resultan cómodos.<br>"+
-      "• En la gráfica C (A−B), una diferencia importante en S puede indicar tensión entre la necesidad de estabilidad y las exigencias de cambio del entorno.<br><br>"+
-      "<strong>Fortalezas principales asociadas a este perfil:</strong><br>"+
-      "• Perseverancia en el seguimiento de procedimientos y rutinas críticas para la operación diaria.<br>"+
-      "• Capacidad para escuchar, acompañar y brindar soporte emocional al equipo y a las personas usuarias.<br>"+
-      "• Tendencia a mantener la calma ante situaciones de presión, evitando reacciones impulsivas.<br><br>"+
-      "<strong>Posibles áreas de riesgo o tensión:</strong><br>"+
-      "• Puede resistirse a cambios bruscos, percibiéndolos como amenazantes o desorganizados.<br>"+
-      "• Riesgo de postergar decisiones difíciles o conversaciones incómodas.<br>"+
-      "• Puede experimentar sobrecarga cuando los cambios son frecuentes y mal explicados.<br><br>"+
-      "<strong>Recomendaciones de manejo en el entorno laboral:</strong><br>"+
-      "• Comunicar los cambios con anticipación, explicando el propósito y el beneficio para el servicio.<br>"+
-      "• Asegurar espacios de apoyo y acompañamiento en momentos de transición.<br>"+
-      "• Aprovechar su constancia en actividades que requieren continuidad y seguimiento de casos.";
-    } else if(mainDim==="C"){
-      mainDesc="El resultado sugiere un estilo predominante de Cumplimiento. Este enfoque se caracteriza por la atención al detalle, el respeto a normas y la búsqueda de exactitud en la información y los procedimientos.";
-      details="<strong>Lectura combinada de las gráficas:</strong><br>"+
-      "• En la gráfica A (MÁS), un puntaje alto en C indica que la persona se concibe como analítica, cuidadosa y apegada a normas.<br>"+
-      "• En la gráfica B (MENOS), si C disminuye, quizá está relajando algunos estándares para adaptarse a contextos prácticos o a presiones de tiempo.<br>"+
-      "• En la gráfica C (A−B), una diferencia elevada en C puede sugerir tensión entre su necesidad de exactitud y las condiciones reales del entorno (tiempo, recursos, carga de trabajo).<br><br>"+
-      "<strong>Fortalezas principales asociadas a este perfil:</strong><br>"+
-      "• Precisión en registros, informes y procedimientos de calidad o seguridad.<br>"+
-      "• Capacidad para detectar errores, omisiones o incoherencias en información y procesos.<br>"+
-      "• Respeto por las normativas institucionales, lo que favorece la trazabilidad y la seguridad en la atención.<br><br>"+
-      "<strong>Posibles áreas de riesgo o tensión:</strong><br>"+
-      "• Puede invertir demasiado tiempo en el análisis antes de actuar.<br>"+
-      "• Riesgo de ser muy autocrítico o exigente con otras personas, generando tensión en el equipo.<br>"+
-      "• Puede ser percibido como rígido cuando defiende criterios técnicos o normativos.<br><br>"+
-      "<strong>Recomendaciones de manejo en el entorno laboral:</strong><br>"+
-      "• Involucrarlo en tareas donde la precisión y el control sean claves (registros, indicadores, protocolos).<br>"+
-      "• Establecer prioridades claras para que distinga entre lo que requiere máxima exactitud y lo que puede resolverse con criterios de suficiencia.<br>"+
-      "• Reconocer explícitamente su aporte en la prevención de errores y riesgos.";
-    } else {
-      mainDesc="El perfil muestra una combinación relativamente equilibrada de las cuatro dimensiones DISC, sin un rasgo claramente predominante. Esto suele asociarse con flexibilidad para adaptarse a diferentes exigencias del contexto.";
-      details="<strong>Lectura combinada de las gráficas:</strong><br>"+
-      "• Ninguna dimensión destaca de manera extrema en la gráfica C, lo que indica que la persona puede adaptar su estilo según la situación y el tipo de tarea.<br>"+
-      "• Es importante revisar el contexto actual de trabajo para identificar qué dimensión está utilizando con mayor frecuencia y si esto genera desgaste.<br><br>"+
-      "<strong>Fortalezas generales:</strong><br>"+
-      "• Capacidad para moverse entre tareas analíticas, relacionales, de ejecución constante y de toma de decisiones, según lo que se requiera.<br>"+
-      "• Flexibilidad para integrarse a equipos con estilos muy diversos.<br><br>"+
-      "<strong>Posibles áreas de riesgo:</strong><br>"+
-      "• Puede experimentar dudas sobre cuál estilo usar en situaciones de alta presión.<br>"+
-      "• Riesgo de sobrecarga si se le asignan muchas funciones distintas sin claridad de prioridades.";
-    }
-
-    const dimResumen = 
-      "Gráfica A (MÁS): D="+A.D+", I="+A.I+
-      ", S="+A.S+", C="+A.C+"<br>"+
-      "Gráfica B (MENOS): D="+B.D+", I="+B.I+
-      ", S="+B.S+", C="+B.C+"<br>"+
-      "Gráfica C (A−B): D="+C.D+", I="+C.I+
-      ", S="+C.S+", C="+C.C;
-
-    return {
-      title:"Perfil predominante: "+(dimNames[mainDim]||mainDim),
-      mainDesc,
-      details:details+"<br><br><strong>Resumen numérico de las tres gráficas:</strong><br>"+dimResumen
-    };
-  }
-
-  function generateTrainingPlan(mainDim,scores){
-    let plan="";
-    if(mainDim==="D"){
-      plan="<strong>Objetivo general de capacitación:</strong><br>"+
-      "Canalizar la orientación a resultados hacia un liderazgo efectivo y sostenible, cuidando la comunicación y la integración del equipo.<br><br>"+
-      "<strong>Líneas de desarrollo recomendadas:</strong><br>"+
-      "1) <u>Liderazgo colaborativo y gestión de equipos</u><br>"+
-      "• Herramientas para integrar opiniones diversas antes de decidir.<br>"+
-      "• Estrategias para delegar de forma clara, definiendo metas y criterios de seguimiento.<br>"+
-      "• Desarrollo de habilidades para reconocer logros y brindar retroalimentación constructiva.<br><br>"+
-      "2) <u>Comunicación en contextos de presión</u><br>"+
-      "• Técnicas para expresar desacuerdos cuidando la relación interpersonal.<br>"+
-      "• Manejo del tono, lenguaje y tiempos para reducir la percepción de dureza o imposición.<br>"+
-      "• Ejercicios de escucha activa y validación de las emociones del equipo.<br><br>"+
-      "3) <u>Gestión de riesgos y toma de decisiones con base en evidencia</u><br>"+
-      "• Uso de datos e indicadores para priorizar acciones críticas.<br>"+
-      "• Análisis de casos donde se requiera equilibrar rapidez y seguridad.<br>"+
-      "• Diseño de planes de contingencia ante escenarios de alta presión.<br><br>"+
-      "<strong>Indicadores de avance:</strong><br>"+
-      "• Disminución de quejas relacionadas con el estilo de comunicación.<br>"+
-      "• Mayor participación del equipo en la definición de metas y estrategias.<br>"+
-      "• Mejora en la percepción de clima laboral sin perder resultados.";
-    } else if(mainDim==="I"){
-      plan="<strong>Objetivo general de capacitación:</strong><br>"+
-      "Aprovechar las habilidades interpersonales para favorecer la coordinación, la orientación a usuarios y el trabajo en equipo, incorporando disciplina en el manejo del tiempo y el seguimiento de tareas.<br><br>"+
-      "<strong>Líneas de desarrollo recomendadas:</strong><br>"+
-      "1) <u>Comunicación efectiva y trabajo colaborativo</u><br>"+
-      "• Técnicas para conducir reuniones breves y productivas.<br>"+
-      "• Estrategias para facilitar acuerdos y resolución de conflictos en equipo.<br>"+
-      "• Desarrollo de habilidades de comunicación escrita clara y concreta.<br><br>"+
-      "2) <u>Gestión del tiempo y priorización</u><br>"+
-      "• Uso de agendas, listas y tableros para organizar tareas y compromisos.<br>"+
-      "• Identificación de tareas críticas y agrupación de actividades similares.<br>"+
-      "• Estrategias para evitar la sobrecarga de reuniones o conversaciones informales.<br><br>"+
-      "3) <u>Manejo de límites y confrontación constructiva</u><br>"+
-      "• Entrenamiento en asertividad para decir “no” sin romper la relación.<br>"+
-      "• Herramientas para abordar conductas problemáticas de forma respetuosa.<br>"+
-      "• Modelos de retroalimentación centrados en conductas observables y acuerdos.<br><br>"+
-      "<strong>Indicadores de avance:</strong><br>"+
-      "• Mayor cumplimiento de plazos y compromisos adquiridos.<br>"+
-      "• Reducción de tareas inconclusas por falta de seguimiento.<br>"+
-      "• Incremento de conversaciones difíciles gestionadas de forma constructiva.";
-    } else if(mainDim==="S"){
-      plan="<strong>Objetivo general de capacitación:</strong><br>"+
-      "Fortalecer la estabilidad y la constancia como base para la calidad del servicio, incorporando recursos para gestionar el cambio, expresar necesidades y participar en la mejora de procesos.<br><br>"+
-      "<strong>Líneas de desarrollo recomendadas:</strong><br>"+
-      "1) <u>Manejo del cambio y resiliencia</u><br>"+
-      "• Comprender el ciclo emocional del cambio y su impacto en el trabajo.<br>"+
-      "• Técnicas para manejar la incertidumbre sin perder la estabilidad personal.<br>"+
-      "• Identificación de redes de apoyo internas y externas.<br><br>"+
-      "2) <u>Comunicación asertiva y expresión de necesidades</u><br>"+
-      "• Ejercicios para expresar desacuerdos y propuestas sin evitar el conflicto.<br>"+
-      "• Práctica de peticiones claras sobre recursos, tiempos y apoyo requerido.<br>"+
-      "• Desarrollo de frases modelo para dar retroalimentación respetuosa.<br><br>"+
-      "3) <u>Participación en mejora continua</u><br>"+
-      "• Involucramiento en comités o grupos de mejora de procesos.<br>"+
-      "• Uso de formatos sencillos para documentar problemas recurrentes y sugerencias.<br>"+
-      "• Trabajo guiado en pequeños proyectos de mejora en su área.<br><br>"+
-      "<strong>Indicadores de avance:</strong><br>"+
-      "• Incremento de aportaciones en reuniones y espacios de decisión.<br>"+
-      "• Disminución de la sensación de saturación frente a cambios.<br>"+
-      "• Mayor participación en iniciativas de mejora del servicio.";
-    } else if(mainDim==="C"){
-      plan="<strong>Objetivo general de capacitación:</strong><br>"+
-      "Aprovechar la orientación al detalle y al cumplimiento de normas para fortalecer la calidad, equilibrándola con flexibilidad, priorización y comunicación con otros estilos.<br><br>"+
-      "<strong>Líneas de desarrollo recomendadas:</strong><br>"+
-      "1) <u>Priorización y gestión de la carga de trabajo</u><br>"+
-      "• Herramientas para diferenciar entre tareas que requieren máxima exactitud y aquellas donde basta un estándar funcional.<br>"+
-      "• Organización de la jornada según niveles de criticidad y tiempos reales.<br>"+
-      "• Estrategias para prevenir el perfeccionismo paralizante.<br><br>"+
-      "2) <u>Comunicación interdisciplinaria</u><br>"+
-      "• Entrenamiento para explicar criterios técnicos en lenguaje accesible.<br>"+
-      "• Habilidades para negociar ajustes en procedimientos sin perder seguridad ni normatividad.<br>"+
-      "• Espacios para escuchar y comprender estilos más rápidos o más relacionales (D e I).<br><br>"+
-      "3) <u>Manejo de la autocrítica y del error</u><br>"+
-      "• Trabajo en la aceptación del error como parte del aprendizaje organizacional.<br>"+
-      "• Técnicas de autocuidado y regulación emocional ante fallas o imprevistos.<br>"+
-      "• Análisis de casos con enfoque en soluciones y lecciones aprendidas.<br><br>"+
-      "<strong>Indicadores de avance:</strong><br>"+
-      "• Mejor equilibrio entre calidad y tiempos de respuesta.<br>"+
-      "• Menor frustración ante errores inevitables o situaciones fuera de control.<br>"+
-      "• Mayor flexibilidad percibida por el equipo y las jefaturas.";
-    } else {
-      plan="<strong>Objetivo general de capacitación:</strong><br>"+
-      "Aprovechar la flexibilidad del perfil combinado para consolidar una identidad profesional clara, con criterios de decisión y prioridades bien definidos.<br><br>"+
-      "<strong>Líneas de desarrollo recomendadas:</strong><br>"+
-      "1) <u>Claridad de rol y objetivos</u><br>"+
-      "• Definición conjunta de funciones, límites de responsabilidad y metas anuales.<br>"+
-      "• Identificación de actividades donde se desea crecer más (liderazgo, comunicación, análisis, acompañamiento, etc.).<br><br>"+
-      "2) <u>Fortalecimiento de la toma de decisiones</u><br>"+
-      "• Ejercicios de análisis de casos donde deba elegir entre varias alternativas válidas.<br>"+
-      "• Construcción de criterios personales de prioridad (riesgo, impacto, urgencia).<br><br>"+
-      "3) <u>Integración de fortalezas múltiples</u><br>"+
-      "• Reconocimiento de en qué contextos conviene activar más cada dimensión DISC (D, I, S, C).<br>"+
-      "• Diseño de un plan personal de desarrollo, asignando acciones concretas a corto y mediano plazo.<br><br>"+
-      "<strong>Indicadores de avance:</strong><br>"+
-      "• Mayor claridad al describir su rol y su aporte al equipo.<br>"+
-      "• Sensación de control ante demandas diversas del entorno.<br>"+
-      "• Mejora en la percepción de eficacia personal y satisfacción con el trabajo.";
-    }
-    return plan;
-  }
-
-  /* ========= GRÁFICAS TIPO ROMBO/RADAR ========= */
-
-  function drawDiamondChart(svgId, values, options = {}) {
-    const svg = document.getElementById(svgId);
-    if (!svg) return;
-
-    svg.innerHTML = "";
-
-    const cx = 130;
-    const cy = 110;
-    const radius = 80;
-
-    const dims = ["D", "I", "S", "C"];
-    const labels = { D: "D", I: "I", S: "S", C: "C" };
-
-    const absVals = dims.map(d => Math.abs(values[d] || 0));
-    const maxVal = Math.max(...absVals, 1);
-
-    function pointFor(dim, factor) {
-      let x = cx;
-      let y = cy;
-      if (dim === "D") {
-        y = cy - radius * factor;
-      } else if (dim === "I") {
-        x = cx + radius * factor;
-      } else if (dim === "S") {
-        y = cy + radius * factor;
-      } else if (dim === "C") {
-        x = cx - radius * factor;
-      }
-      return { x, y };
-    }
-
-    const levels = [0.33, 0.66, 1];
-    levels.forEach(lvl => {
-      const pts = dims.map(dim => pointFor(dim, lvl));
-      const pathData = pts.map((p, i) => (i === 0 ? "M" : "L") + p.x + " " + p.y).join(" ") + " Z";
-      const ring = document.createElementNS("http://www.w3.org/2000/svg", "path");
-      ring.setAttribute("d", pathData);
-      ring.setAttribute("fill", "none");
-      ring.setAttribute("stroke", "#dde3df");
-      ring.setAttribute("stroke-width", "1");
+  /* ===== Charts: radar/rombo con escala G ===== */
+  function drawDiamondG(svgId, valuesG, opts={}){
+    const svg=document.getElementById(svgId);
+    if(!svg) return;
+    svg.innerHTML="";
+
+    const cx=130, cy=110, radius=80;
+    const dims=["D","I","S","C"];
+    const labelPosFactor=1.18;
+
+    function pointFor(dim, factor){
+      let x=cx,y=cy;
+      if(dim==="D") y=cy-radius*factor;
+      if(dim==="I") x=cx+radius*factor;
+      if(dim==="S") y=cy+radius*factor;
+      if(dim==="C") x=cx-radius*factor;
+      return {x,y};
+    }
+
+    // rings at G: 25, 50, 75, 100 => factors 0.25,0.5,0.75,1.0
+    const rings=[0.25,0.5,0.75,1.0];
+    rings.forEach((lvl,idx)=>{
+      const pts=dims.map(d=>pointFor(d,lvl));
+      const dPath=pts.map((p,i)=>(i===0?"M":"L")+p.x+" "+p.y).join(" ")+" Z";
+      const ring=document.createElementNS("http://www.w3.org/2000/svg","path");
+      ring.setAttribute("d",dPath);
+      ring.setAttribute("fill","none");
+      ring.setAttribute("stroke", idx===1 ? "#b9c4bf" : "#dde3df"); // nivel 50 un poco más marcado
+      ring.setAttribute("stroke-width", idx===1 ? "1.4" : "1");
       svg.appendChild(ring);
     });
 
-    dims.forEach(dim => {
-      const end = pointFor(dim, 1);
-      const axis = document.createElementNS("http://www.w3.org/2000/svg", "line");
-      axis.setAttribute("x1", cx);
-      axis.setAttribute("y1", cy);
-      axis.setAttribute("x2", end.x);
-      axis.setAttribute("y2", end.y);
-      axis.setAttribute("stroke", "#c0c7c3");
-      axis.setAttribute("stroke-width", "1");
+    // centerline (G=50 ring already drawn; draw a faint cross)
+    dims.forEach(dim=>{
+      const end=pointFor(dim,1);
+      const axis=document.createElementNS("http://www.w3.org/2000/svg","line");
+      axis.setAttribute("x1",cx); axis.setAttribute("y1",cy);
+      axis.setAttribute("x2",end.x); axis.setAttribute("y2",end.y);
+      axis.setAttribute("stroke","#c0c7c3"); axis.setAttribute("stroke-width","1");
       svg.appendChild(axis);
     });
 
-    dims.forEach(dim => {
-      const end = pointFor(dim, 1.15);
-      const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
-      text.setAttribute("x", end.x);
-      text.setAttribute("y", end.y);
-      text.setAttribute("text-anchor", "middle");
-      text.setAttribute("alignment-baseline", "middle");
-      text.setAttribute("class", "chart-axis-label");
-      text.textContent = labels[dim];
-      svg.appendChild(text);
+    // labels
+    dims.forEach(dim=>{
+      const p=pointFor(dim,labelPosFactor);
+      const t=document.createElementNS("http://www.w3.org/2000/svg","text");
+      t.setAttribute("x",p.x); t.setAttribute("y",p.y);
+      t.setAttribute("text-anchor","middle"); t.setAttribute("alignment-baseline","middle");
+      t.setAttribute("class","chart-axis-label");
+      t.textContent=dim;
+      svg.appendChild(t);
     });
 
-    const maxLabel = document.createElementNS("http://www.w3.org/2000/svg", "text");
-    maxLabel.setAttribute("x", cx);
-    maxLabel.setAttribute("y", cy + radius + 25);
-    maxLabel.setAttribute("text-anchor", "middle");
-    maxLabel.setAttribute("class", "chart-tick-label");
-    maxLabel.textContent = "Valores: " + dims.map(d => d + "=" + (values[d] || 0)).join("  ");
-    svg.appendChild(maxLabel);
+    // center marker text
+    const tick=document.createElementNS("http://www.w3.org/2000/svg","text");
+    tick.setAttribute("x",cx); tick.setAttribute("y",cy+radius+30);
+    tick.setAttribute("text-anchor","middle");
+    tick.setAttribute("class","chart-tick-label");
+    tick.textContent=`G: D=${valuesG.D} I=${valuesG.I} S=${valuesG.S} C=${valuesG.C}`;
+    svg.appendChild(tick);
 
-    const ptsValue = dims.map(dim => {
-      const v = values[dim] || 0;
-      const factor = Math.abs(v) / maxVal;
-      return pointFor(dim, factor);
+    // polygon
+    const ptsVal=dims.map(dim=>{
+      const g=clamp(valuesG[dim]??50,0,100);
+      const factor=g/100;
+      return pointFor(dim,factor);
     });
-    const pathDataVal = ptsValue.map((p, i) => (i === 0 ? "M" : "L") + p.x + " " + p.y).join(" ") + " Z";
-    const poly = document.createElementNS("http://www.w3.org/2000/svg", "path");
-    poly.setAttribute("d", pathDataVal);
-    poly.setAttribute("fill", options.fillColor || "rgba(0,102,87,0.25)");
-    poly.setAttribute("stroke", options.strokeColor || "#006657");
-    poly.setAttribute("stroke-width", "2");
+    const dVal=ptsVal.map((p,i)=>(i===0?"M":"L")+p.x+" "+p.y).join(" ")+" Z";
+    const poly=document.createElementNS("http://www.w3.org/2000/svg","path");
+    poly.setAttribute("d",dVal);
+    poly.setAttribute("fill", opts.fill ?? "rgba(0,102,87,0.22)");
+    poly.setAttribute("stroke", opts.stroke ?? "#006657");
+    poly.setAttribute("stroke-width","2");
     svg.appendChild(poly);
-  }
 
-  function updateCharts(scores){
-    const A = scores.A;
-    const B = scores.B;
-    const C = scores.C;
-
-    drawDiamondChart("chartA-svg", A, {
-      fillColor: "rgba(0,102,87,0.25)",
-      strokeColor: "#006657"
-    });
-
-    drawDiamondChart("chartB-svg", B, {
-      fillColor: "rgba(188,149,92,0.25)",
-      strokeColor: "#BC955C"
-    });
-
-    drawDiamondChart("chartC-svg", C, {
-      fillColor: "rgba(198,40,40,0.20)",
-      strokeColor: "#c62828"
+    // small dots
+    ptsVal.forEach(p=>{
+      const c=document.createElementNS("http://www.w3.org/2000/svg","circle");
+      c.setAttribute("cx",p.x); c.setAttribute("cy",p.y);
+      c.setAttribute("r","3.2");
+      c.setAttribute("fill", opts.stroke ?? "#006657");
+      svg.appendChild(c);
     });
   }
 
-  /* ========= FINALIZAR TEST ========= */
+  function updateChartsG(GM, GL, GT){
+    drawDiamondG("chartM-svg", GM, {fill:"rgba(0,102,87,0.22)", stroke:"#006657"});
+    drawDiamondG("chartL-svg", GL, {fill:"rgba(188,149,92,0.22)", stroke:"#BC955C"});
+    drawDiamondG("chartT-svg", GT, {fill:"rgba(198,40,40,0.18)", stroke:"#c62828"});
+  }
 
+  /* ===== Interpretación y capacitación (solo si válido) =====
+     Nota: El manual incluye reglas específicas. Aquí mantenemos texto amplio, pero la validez y la escala G están alineadas.
+  */
+  function interpretAndTrain(valid, GM, GL, GT){
+    if(!valid){
+      return {
+        interp: `<div class="warning-box"><strong>Prueba inválida:</strong> La suma de T no está dentro del rango aceptado. Se recomienda repetir la aplicación en condiciones adecuadas.</div>`,
+        train: `<div class="text-muted">No se emite plan de capacitación mientras la prueba sea inválida.</div>`
+      };
+    }
+    // Perfil principal se toma por T (conducta diaria) en G
+    const dims=["D","I","S","C"];
+    let top="D", max=GT.D;
+    dims.forEach(d=>{ if(GT[d]>max){max=GT[d]; top=d;} });
+    const names={D:"Dominancia",I:"Influencia",S:"Estabilidad",C:"Cumplimiento"};
+    const title=`<p><span class="badge">Perfil predominante (T): ${names[top]} (${top})</span></p>`;
+
+    const interp = `
+      ${title}
+      <p><strong>Lectura general:</strong> La gráfica <strong>T</strong> representa la conducta diaria. Valores más altos sugieren mayor presencia del rasgo en el comportamiento cotidiano.</p>
+      <p class="text-muted">
+        <strong>M (Motivación)</strong> refleja lo que la persona busca o desea expresar; 
+        <strong>L (Bajo presión)</strong> muestra cómo tiende a responder bajo tensión; 
+        <strong>T (Conducta diaria)</strong> es el balance (M − L) llevado a escala G.
+      </p>
+      <p class="text-muted"><strong>G (0–100):</strong> D=${GT.D}, I=${GT.I}, S=${GT.S}, C=${GT.C}</p>
+    `;
+
+    const train = `
+      <p><strong>Capacitación sugerida (orientativa):</strong></p>
+      <ul class="text-muted">
+        <li><strong>Si predomina D:</strong> liderazgo colaborativo, comunicación bajo presión, toma de decisiones con evidencia.</li>
+        <li><strong>Si predomina I:</strong> gestión del tiempo, seguimiento de compromisos, asertividad y límites.</li>
+        <li><strong>Si predomina S:</strong> adaptación al cambio, participación en mejora continua, comunicación asertiva.</li>
+        <li><strong>Si predomina C:</strong> priorización, flexibilidad operativa, comunicación técnica para equipos mixtos.</li>
+      </ul>
+    `;
+    return {interp, train};
+  }
+
+  /* ===== Finish test ===== */
   async function finishTest(){
     if(!captureCurrentGroupSelection()) return;
-
     if(!allGroupsAnswered()){
-      alert("Faltan uno o más bloques por contestar. Revise desde el bloque 1 y verifique que todos tengan una opción de MÁS (+) y una de MENOS (-).");
+      alert("Faltan bloques por contestar.");
       return;
     }
 
-    const disc = computeDISCFromAnswers();
-    const perfil=determineMainProfile(disc.C);
-    const interp=interpretProfile(perfil,disc);
-    const training=generateTrainingPlan(perfil,disc);
+    const mlt = computeMLT();
+    const {G:GM, normas:nM} = toG("M", mlt.M);
+    const {G:GL, normas:nL} = toG("L", mlt.L);
+    const {G:GT, normas:nT} = toG("T", mlt.T);
 
-    updateCharts(disc);
-    await saveResult(disc,perfil,interp,training);
-    renderResultView(disc,perfil,interp,training);
+    updateChartsG(GM,GL,GT);
+
+    const {interp, train} = interpretAndTrain(mlt.valid, GM,GL,GT);
+
+    renderResults(mlt, GM,GL,GT, (nM&&nL&&nT));
+    document.getElementById("result-interpretation").innerHTML = `<h3>Análisis</h3>${interp}`;
+    document.getElementById("result-training").innerHTML = `<h3>Capacitación</h3>${train}`;
+
+    await saveResult(mlt, GM,GL,GT);
     showSection("results");
   }
 
-  function renderResultView(disc,perfil,interp,training){
-    const w=currentWorkerData;
-    const p=document.getElementById("result-personal");
-    const s=document.getElementById("result-scores");
-    const i=document.getElementById("result-interpretation");
-    const t=document.getElementById("result-training");
-    if(p)p.innerHTML="<h3>Datos del trabajador</h3><div class='form-grid' style='margin-top:0.4rem;'>"+
-      "<div><strong>Nombre:</strong> "+w.nombre+"</div>"+
-      "<div><strong>Matrícula:</strong> "+w.matricula+"</div>"+
-      "<div><strong>Unidad:</strong> "+w.unidad+"</div>"+
-      "<div><strong>Categoría:</strong> "+w.categoria+"</div>"+
-      "<div><strong>Puesto:</strong> "+w.puesto+"</div>"+
-      "<div><strong>Edad:</strong> "+w.edad+" años</div>"+
-      "<div><strong>Fecha de nacimiento:</strong> "+w.fechaNacimiento+"</div>"+
-      "<div><strong>Lugar de nacimiento:</strong> "+w.lugarNacimiento+"</div>"+
-      "</div>";
-    if(s)s.innerHTML="<h3>Resumen cuantitativo DISC</h3>"+
-      "<div class='form-grid' style='margin-top:0.4rem;'>"+
-      "<div><strong>Gráfica A (MÁS):</strong> D="+disc.A.D+", I="+disc.A.I+", S="+disc.A.S+", C="+disc.A.C+"</div>"+
-      "<div><strong>Gráfica B (MENOS):</strong> D="+disc.B.D+", I="+disc.B.I+", S="+disc.B.S+", C="+disc.B.C+"</div>"+
-      "<div><strong>Gráfica C (A−B):</strong> D="+disc.C.D+", I="+disc.C.I+", S="+disc.C.S+", C="+disc.C.C+"</div>"+
-      "</div>";
-    if(i)i.innerHTML="<h3>Análisis interpretativo del perfil</h3>"+
-      "<p><span class='badge'>"+interp.title+"</span></p>"+
-      "<p>"+interp.mainDesc+"</p>"+
-      "<p class='text-muted'>"+interp.details+"</p>";
-    if(t)t.innerHTML="<h3>Sugerencias de desarrollo y capacitación</h3><p class='text-muted'>"+training+"</p>";
-  }
-
-  async function saveResult(disc,perfil,interp,training){
-    const existing=readLocal(STORAGE_KEYS.resultados,[]);
-    const now=new Date();
-    const fecha=now.toISOString().slice(0,10)+" "+now.toTimeString().slice(0,8);
-    const fechaEpoch=now.getTime();
+  function renderResults(mlt, GM,GL,GT, normasOk){
     const w=currentWorkerData;
 
-    const record={
-      fecha,fechaEpoch,...w,
-      scores:disc,
-      perfil,
-      interpTitle:interp.title,
-      interpMain:interp.mainDesc,
-      interpDetails:interp.details,
-      trainingPlan:training
-    };
+    document.getElementById("result-validity").innerHTML = mlt.valid
+      ? `<div class="warning-box" style="border-color:#cfe7df;background:#f4fffb;color:#0f5132;"><strong>Prueba válida.</strong> ΣT = ${mlt.sumT} (rango aceptado).</div>`
+      : `<div class="warning-box"><strong>Prueba inválida.</strong> ΣT = ${mlt.sumT}. Se recomienda repetir.</div>`;
 
-    // Primero guardamos en Firestore (si disponible) para obtener el id del documento
-    if(db){
-      try{
-        const docRef = await addDoc(collection(db,"pdl_resultados"),record);
-        record._id = docRef.id; // id de Firestore
-      }catch(e){
-        console.error("Error Firestore resultados:",e);
-      }
-    }
+    document.getElementById("result-personal").innerHTML = `
+      <h3>Datos del trabajador</h3>
+      <div class="form-grid" style="margin-top:.4rem;">
+        <div><strong>Nombre:</strong> ${escapeHtml(w.nombre)}</div>
+        <div><strong>Matrícula:</strong> ${escapeHtml(w.matricula)}</div>
+        <div><strong>Unidad:</strong> ${escapeHtml(w.unidad)}</div>
+        <div><strong>Categoría:</strong> ${escapeHtml(w.categoria)}</div>
+        <div><strong>Puesto:</strong> ${escapeHtml(w.puesto)}</div>
+        <div><strong>Edad:</strong> ${escapeHtml(w.edad)} años</div>
+        <div><strong>Fecha nac.:</strong> ${escapeHtml(w.fechaNacimiento)}</div>
+        <div><strong>Lugar nac.:</strong> ${escapeHtml(w.lugarNacimiento)}</div>
+      </div>
+    `;
 
-    // Agregamos el registro (con o sin _id) al localStorage
-    existing.push(record);
-    writeLocal(STORAGE_KEYS.resultados,existing);
+    document.getElementById("result-raw").innerHTML = `
+      <h3>Puntuaciones crudas</h3>
+      <p class="text-muted"><strong>M</strong> (Motivación): D=${mlt.M.D}, I=${mlt.M.I}, S=${mlt.M.S}, C=${mlt.M.C}</p>
+      <p class="text-muted"><strong>L</strong> (Bajo presión): D=${mlt.L.D}, I=${mlt.L.I}, S=${mlt.L.S}, C=${mlt.L.C}</p>
+      <p class="text-muted"><strong>T</strong> (Conducta diaria = M − L): D=${mlt.T.D}, I=${mlt.T.I}, S=${mlt.T.S}, C=${mlt.T.C} &nbsp; | &nbsp; <strong>ΣT=${mlt.sumT}</strong></p>
+    `;
 
-    await loadResults();
+    document.getElementById("result-g").innerHTML = `
+      <h3>Escala G (0–100)</h3>
+      ${normasOk ? "" : `<div class="warning-box"><strong>Normas no cargadas:</strong> La escala G se muestra en modo aproximado. Para alineación exacta, cargue tablas en Admin &gt; Normas.</div>`}
+      <p class="text-muted"><strong>G(M)</strong>: D=${GM.D}, I=${GM.I}, S=${GM.S}, C=${GM.C}</p>
+      <p class="text-muted"><strong>G(L)</strong>: D=${GL.D}, I=${GL.I}, S=${GL.S}, C=${GL.C}</p>
+      <p class="text-muted"><strong>G(T)</strong>: D=${GT.D}, I=${GT.I}, S=${GT.S}, C=${GT.C}</p>
+    `;
   }
 
   function resetForNewTest(){
     currentWorkerData=null;
     ["unidad","matricula","nombre","categoria","puesto","fechaNacimiento","edad","lugarNacimiento"].forEach(id=>{
       const el=document.getElementById(id);
-      if(!el)return;
-      if(el.tagName==="SELECT")el.value="";
-      else el.value="";
+      if(!el) return;
+      if(el.tagName==="SELECT") el.value=""; else el.value="";
     });
     testAnswers=TEST_GROUPS.map(()=>({most:null,least:null}));
     currentGroupIndex=0;
     showSection("worker");
   }
 
-  /* ========= ADMIN: TABS, UNIDADES, CATEGORÍAS ========= */
+  /* ===== Save / load results + delete + CSV (UTF-8 BOM) ===== */
+  async function saveResult(mlt, GM,GL,GT){
+    const now=new Date();
+    const fecha=now.toISOString().slice(0,10)+" "+now.toTimeString().slice(0,8);
+    const fechaEpoch=now.getTime();
 
-  function setAdminTab(tab){
-    const u=document.getElementById("admin-unidades");
-    const c=document.getElementById("admin-categorias");
-    const r=document.getElementById("admin-resultados");
-    const tu=document.getElementById("tab-unidades");
-    const tc=document.getElementById("tab-categorias");
-    const tr=document.getElementById("tab-resultados");
-    if(!u||!c||!r||!tu||!tc||!tr)return;
-    u.classList.add("hidden");c.classList.add("hidden");r.classList.add("hidden");
-    tu.classList.remove("active");tc.classList.remove("active");tr.classList.remove("active");
-    if(tab==="unidades"){u.classList.remove("hidden");tu.classList.add("active");}
-    else if(tab==="categorias"){c.classList.remove("hidden");tc.classList.add("active");}
-    else {r.classList.remove("hidden");tr.classList.add("active");}
-  }
+    const record={
+      fecha, fechaEpoch,
+      ...currentWorkerData,
+      M: mlt.M, L: mlt.L, T: mlt.T, sumT: mlt.sumT, valid: mlt.valid,
+      GM, GL, GT,
+      normasCargadas: normasLoaded(getNormas())
+    };
 
-  function refreshAdminTables(){
-    refreshUnidadesTable();
-    refreshCategoriasTable();
-    refreshResultadosTable();
-  }
-
-  async function syncUnitsToCloud(unidades){
-    if(!db)return;
-    try{
-      await setDoc(doc(db,"config","unidades"),{items:unidades});
-    }catch(e){console.error("Error Firestore unidades:",e);}
-  }
-  async function syncCategoriasToCloud(categorias){
-    if(!db)return;
-    try{
-      await setDoc(doc(db,"config","categorias"),{items:categorias});
-    }catch(e){console.error("Error Firestore categorias:",e);}
-  }
-
-  function refreshUnidadesTable(){
-    const arr=readLocal(STORAGE_KEYS.unidades,[]);
-    const tbody=document.getElementById("tablaUnidades");
-    if(!tbody)return;
-    tbody.innerHTML="";
-    arr.forEach((u,idx)=>{
-      const tr=document.createElement("tr");
-      tr.innerHTML="<td>"+u+"</td><td><button class='btn-danger' type='button' onclick='deleteUnidad("+idx+")'>Borrar</button></td>";
-      tbody.appendChild(tr);
-    });
-    populateWorkerSelects();
-  }
-  function addUnidad(){
-    const inp=document.getElementById("nuevaUnidad");
-    if(!inp)return;
-    const val=inp.value.trim();
-    if(!val)return;
-    const arr=readLocal(STORAGE_KEYS.unidades,[]);
-    arr.push(val);writeLocal(STORAGE_KEYS.unidades,arr);
-    inp.value="";refreshUnidadesTable();
-    syncUnitsToCloud(arr);
-  }
-  function deleteUnidad(i){
-    const arr=readLocal(STORAGE_KEYS.unidades,[]);
-    if(i>=0&&i<arr.length){
-      arr.splice(i,1);
-      writeLocal(STORAGE_KEYS.unidades,arr);
-      refreshUnidadesTable();
-      syncUnitsToCloud(arr);
+    if(db){
+      try{
+        const docRef=await addDoc(collection(db,"pdl_resultados"), record);
+        record._id=docRef.id;
+      }catch(e){
+        console.error("Error guardando Firestore:", e);
+      }
     }
-  }
 
-  function refreshCategoriasTable(){
-    const arr=readLocal(STORAGE_KEYS.categorias,[]);
-    const tbody=document.getElementById("tablaCategorias");
-    if(!tbody)return;
-    tbody.innerHTML="";
-    arr.forEach((c,idx)=>{
-      const tr=document.createElement("tr");
-      tr.innerHTML="<td>"+c+"</td><td><button class='btn-danger' type='button' onclick='deleteCategoria("+idx+")'>Borrar</button></td>";
-      tbody.appendChild(tr);
-    });
-    populateWorkerSelects();
+    const local=readLocal(STORAGE_KEYS.resultados,[]);
+    local.push(record);
+    writeLocal(STORAGE_KEYS.resultados, local);
+    await loadResults();
   }
-  function addCategoria(){
-    const inp=document.getElementById("nuevaCategoria");
-    if(!inp)return;
-    const val=inp.value.trim();
-    if(!val)return;
-    const arr=readLocal(STORAGE_KEYS.categorias,[]);
-    arr.push(val);writeLocal(STORAGE_KEYS.categorias,arr);
-    inp.value="";refreshCategoriasTable();
-    syncCategoriasToCloud(arr);
-  }
-  function deleteCategoria(i){
-    const arr=readLocal(STORAGE_KEYS.categorias,[]);
-    if(i>=0&&i<arr.length){
-      arr.splice(i,1);
-      writeLocal(STORAGE_KEYS.categorias,arr);
-      refreshCategoriasTable();
-      syncCategoriasToCloud(arr);
-    }
-  }
-
-  /* ========= ADMIN: RESULTADOS + ELIMINAR + CSV ========= */
 
   async function loadResults(){
     let fromFS=[];
     if(db){
       try{
-        const qSnap=query(collection(db,"pdl_resultados"),orderBy("fechaEpoch","desc"));
+        const qSnap=query(collection(db,"pdl_resultados"), orderBy("fechaEpoch","desc"));
         const snap=await getDocs(qSnap);
         fromFS=snap.docs.map(d=>({ ...d.data(), _id:d.id }));
-      }catch(e){console.error("Error leyendo Firestore resultados:",e);}
+      }catch(e){ console.error("Error leyendo Firestore:", e); }
     }
-    // Si hay datos en Firestore, se usan como fuente principal
-    resultadosCache=fromFS.length?fromFS:readLocal(STORAGE_KEYS.resultados,[]);
+    resultadosCache = fromFS.length ? fromFS : readLocal(STORAGE_KEYS.resultados,[]);
     refreshResultadosTable();
   }
 
   function refreshResultadosTable(){
     const tbody=document.getElementById("tablaResultados");
-    if(!tbody)return;
+    if(!tbody) return;
     tbody.innerHTML="";
     resultadosCache.forEach((r,idx)=>{
+      const validTxt = r.valid ? "Válida" : "Inválida";
       const tr=document.createElement("tr");
-      const scoresC = r.scores && r.scores.C ? r.scores.C : {D:"",I:"",S:"",C:""};
-      const interpResumen=r.interpMain?(r.interpMain.slice(0,80)+(r.interpMain.length>80?"...":"")):"";
-      const planResumen=r.trainingPlan?(r.trainingPlan.slice(0,80)+(r.trainingPlan.length>80?"...":"")):"";
-      tr.innerHTML=
-        "<td>"+(r.fecha||"")+"</td>"+
-        "<td>"+(r.unidad||"")+"</td>"+
-        "<td>"+(r.matricula||"")+"</td>"+
-        "<td>"+(r.nombre||"")+"</td>"+
-        "<td>"+(r.categoria||"")+"</td>"+
-        "<td>"+(r.puesto||"")+"</td>"+
-        "<td>"+(r.edad||"")+"</td>"+
-        "<td>"+(r.lugarNacimiento||"")+"</td>"+
-        "<td>"+(scoresC.D)+"</td>"+
-        "<td>"+(scoresC.I)+"</td>"+
-        "<td>"+(scoresC.S)+"</td>"+
-        "<td>"+(scoresC.C)+"</td>"+
-        "<td>"+(r.perfil||"")+"</td>"+
-        "<td>"+interpResumen+"</td>"+
-        "<td>"+planResumen+"</td>"+
-        "<td><button class='btn-danger' type='button' onclick='deleteResultado("+idx+")'>Eliminar</button></td>";
+      tr.innerHTML=`
+        <td>${escapeHtml(r.fecha||"")}</td>
+        <td>${escapeHtml(r.unidad||"")}</td>
+        <td>${escapeHtml(r.matricula||"")}</td>
+        <td>${escapeHtml(r.nombre||"")}</td>
+        <td>${escapeHtml(r.categoria||"")}</td>
+        <td>${escapeHtml(r.puesto||"")}</td>
+        <td>${escapeHtml(r.edad||"")}</td>
+        <td>${escapeHtml(r.lugarNacimiento||"")}</td>
+
+        <td>${r.M?.D ?? ""}</td><td>${r.M?.I ?? ""}</td><td>${r.M?.S ?? ""}</td><td>${r.M?.C ?? ""}</td>
+        <td>${r.L?.D ?? ""}</td><td>${r.L?.I ?? ""}</td><td>${r.L?.S ?? ""}</td><td>${r.L?.C ?? ""}</td>
+        <td>${r.T?.D ?? ""}</td><td>${r.T?.I ?? ""}</td><td>${r.T?.S ?? ""}</td><td>${r.T?.C ?? ""}</td>
+
+        <td>${r.sumT ?? ""}</td>
+        <td>${validTxt}</td>
+
+        <td>${r.GM?.D ?? ""}</td><td>${r.GM?.I ?? ""}</td><td>${r.GM?.S ?? ""}</td><td>${r.GM?.C ?? ""}</td>
+        <td>${r.GL?.D ?? ""}</td><td>${r.GL?.I ?? ""}</td><td>${r.GL?.S ?? ""}</td><td>${r.GL?.C ?? ""}</td>
+        <td>${r.GT?.D ?? ""}</td><td>${r.GT?.I ?? ""}</td><td>${r.GT?.S ?? ""}</td><td>${r.GT?.C ?? ""}</td>
+
+        <td><button class="btn-danger" type="button" onclick="deleteResultado(${idx})">Eliminar</button></td>
+      `;
       tbody.appendChild(tr);
     });
   }
 
   async function deleteResultado(index){
-    if(index<0 || index>=resultadosCache.length)return;
-    const registro = resultadosCache[index];
-    if(!confirm("¿Eliminar este resultado de forma permanente?"))return;
+    if(index<0||index>=resultadosCache.length) return;
+    const registro=resultadosCache[index];
+    if(!confirm("¿Eliminar este resultado de forma permanente?")) return;
 
-    // Eliminar en Firestore si tiene _id y hay conexión
     if(db && registro._id){
-      try{
-        await deleteDoc(doc(db,"pdl_resultados",registro._id));
-      }catch(e){
-        console.error("Error eliminando en Firestore:", e);
-      }
+      try{ await deleteDoc(doc(db,"pdl_resultados", registro._id)); }
+      catch(e){ console.error("Error eliminando Firestore:", e); }
     }
 
-    // Eliminar de la caché en memoria
     resultadosCache.splice(index,1);
-
-    // Sincronizar localStorage con la lista actual
-    writeLocal(STORAGE_KEYS.resultados,resultadosCache);
-
-    // Refrescar tabla
+    writeLocal(STORAGE_KEYS.resultados, resultadosCache);
     refreshResultadosTable();
   }
 
   function downloadCSV(){
-    const data=resultadosCache.length?resultadosCache:readLocal(STORAGE_KEYS.resultados,[]);
-    if(!data.length){alert("No hay resultados para descargar.");return;}
+    const data = resultadosCache.length ? resultadosCache : readLocal(STORAGE_KEYS.resultados,[]);
+    if(!data.length){ alert("No hay resultados para descargar."); return; }
+
     const sep=",";
     const header=[
       "Fecha","Unidad","Matricula","Nombre","Categoria","Puesto","Edad","LugarNacimiento",
-      "A_D","A_I","A_S","A_C",
-      "B_D","B_I","B_S","B_C",
-      "C_D","C_I","C_S","C_C",
-      "Perfil","InterpretacionTitulo","InterpretacionPrincipal","InterpretacionDetalle","PlanCapacitacion"
+      "M_D","M_I","M_S","M_C",
+      "L_D","L_I","L_S","L_C",
+      "T_D","T_I","T_S","T_C",
+      "sumT","validez",
+      "G_M_D","G_M_I","G_M_S","G_M_C",
+      "G_L_D","G_L_I","G_L_S","G_L_C",
+      "G_T_D","G_T_I","G_T_S","G_T_C",
+      "NormasCargadas"
     ];
+
     const lines=[header.join(sep)];
     data.forEach(r=>{
-      const A = r.scores && r.scores.A ? r.scores.A : {D:"",I:"",S:"",C:""};
-      const B = r.scores && r.scores.B ? r.scores.B : {D:"",I:"",S:"",C:""};
-      const C = r.scores && r.scores.C ? r.scores.C : {D:"",I:"",S:"",C:""};
       const row=[
         r.fecha||"",r.unidad||"",r.matricula||"",r.nombre||"",r.categoria||"",r.puesto||"",
         r.edad||"",r.lugarNacimiento||"",
-        A.D,A.I,A.S,A.C,
-        B.D,B.I,B.S,B.C,
-        C.D,C.I,C.S,C.C,
-        r.perfil||"",r.interpTitle||"",r.interpMain||"",r.interpDetails||"",r.trainingPlan||""
+        r.M?.D??"",r.M?.I??"",r.M?.S??"",r.M?.C??"",
+        r.L?.D??"",r.L?.I??"",r.L?.S??"",r.L?.C??"",
+        r.T?.D??"",r.T?.I??"",r.T?.S??"",r.T?.C??"",
+        r.sumT??"", r.valid ? "Válida" : "Inválida",
+        r.GM?.D??"",r.GM?.I??"",r.GM?.S??"",r.GM?.C??"",
+        r.GL?.D??"",r.GL?.I??"",r.GL?.S??"",r.GL?.C??"",
+        r.GT?.D??"",r.GT?.I??"",r.GT?.S??"",r.GT?.C??"",
+        r.normasCargadas ? "Sí" : "No"
       ];
+
       const esc=row.map(v=>{
-        const val=v!=null?String(v):"";
-        if(val.includes('"')||val.includes(",")||val.includes("\n")||val.includes("\r"))return '"'+val.replace(/"/g,'""')+'"';
+        const val=(v==null)?"":String(v);
+        if(val.includes('"')||val.includes(",")||val.includes("\n")||val.includes("\r")) return '"'+val.replace(/"/g,'""')+'"';
         return val;
       });
       lines.push(esc.join(sep));
     });
+
     const csvContent=lines.join("\r\n");
-    // Agregar BOM para que Excel reconozca UTF-8 y no rompa los acentos
     const blob=new Blob(["\ufeff"+csvContent],{type:"text/csv;charset=utf-8;"});
     const url=URL.createObjectURL(blob);
     const a=document.createElement("a");
-    a.href=url;a.download="resultados_PDL.csv";
-    document.body.appendChild(a);a.click();document.body.removeChild(a);
+    a.href=url; a.download="resultados_PDL.csv";
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
     URL.revokeObjectURL(url);
   }
 
-  function clearAllResults(){
-    if(!confirm("¿Está seguro de borrar los resultados almacenados localmente?"))return;
-    writeLocal(STORAGE_KEYS.resultados,[]);
-    resultadosCache=[];refreshResultadosTable();
-  }
-
-  /* ========= INICIALIZACIÓN ========= */
-
+  /* ===== Init ===== */
   function initPDLApp(){
     ensureDefaultConfigLocal();
     populateWorkerSelects();
     initBirthDateListener();
-    resultadosCache=readLocal(STORAGE_KEYS.resultados,[]);
-    refreshResultadosTable();
+    loadNormasToEditor();
     showSection("worker");
     loadRemoteConfig();
+    loadResults();
+    // preparar botones iniciales
+    updateNavButtons();
   }
-  document.addEventListener("DOMContentLoaded",initPDLApp);
 
-  // Exponer funciones al HTML
+  document.addEventListener("DOMContentLoaded", initPDLApp);
+
+  /* ===== Expose to window (HTML handlers) ===== */
   window.showSection=showSection;
   window.requestAdminAccess=requestAdminAccess;
   window.closeAdminLogin=closeAdminLogin;
@@ -1850,14 +368,21 @@
   window.prevGroup=prevGroup;
   window.finishTest=finishTest;
   window.resetForNewTest=resetForNewTest;
+
   window.setAdminTab=setAdminTab;
   window.addUnidad=addUnidad;
   window.deleteUnidad=deleteUnidad;
   window.addCategoria=addCategoria;
   window.deleteCategoria=deleteCategoria;
-  window.downloadCSV=downloadCSV;
-  window.clearAllResults=clearAllResults;
+
+  window.saveNormas=saveNormas;
+  window.loadNormasToEditor=loadNormasToEditor;
+  window.resetNormasToDefault=resetNormasToDefault;
+
+  window.loadResults=loadResults;
   window.deleteResultado=deleteResultado;
+  window.downloadCSV=downloadCSV;
 </script>
 </body>
 </html>
+<!-- FIN -->
