@@ -1,62 +1,61 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
   <title>Perfil de Dinámicas Laborales (PDL)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
   <style>
     :root{
       --imss:#006657; --imss2:#134E39; --soft:#e6f2ef;
-      --gold:#BC955C; --bg:#f5f7f6; --text:#222; --muted:#777; --danger:#c62828;
-      --shadow:0 2px 6px rgba(0,0,0,.08); --r:10px;
+      --gold:#BC955C; --bg:#f5f7f6; --text:#222; --muted:#6b6f6d; --danger:#c62828;
+      --shadow:0 2px 8px rgba(0,0,0,.08); --r:12px;
     }
     *{box-sizing:border-box;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;}
     body{margin:0;background:var(--bg);color:var(--text);}
-    header{background:#fff;box-shadow:var(--shadow);padding:.75rem 1.5rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10;}
-    header h1{margin:0;font-size:1.1rem;font-weight:800;color:var(--imss2);}
-    header nav a{margin-left:1rem;text-decoration:none;font-size:.9rem;color:var(--imss);cursor:pointer;}
+    header{background:#fff;box-shadow:var(--shadow);padding:.8rem 1.2rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10;}
+    header h1{margin:0;font-size:1.05rem;font-weight:900;color:var(--imss2);}
+    header nav a{margin-left:1rem;text-decoration:none;font-size:.92rem;color:var(--imss);cursor:pointer;font-weight:700;}
     header nav a:hover{text-decoration:underline;}
-    main{max-width:1100px;margin:1.5rem auto 2.5rem;padding:0 1rem;}
-    .card{background:#fff;border-radius:var(--r);box-shadow:var(--shadow);padding:1.3rem 1.5rem;margin-bottom:1.25rem;}
-    h2{margin:0 0 .6rem;font-size:1.25rem;color:var(--imss2);}
-    h3{margin:.9rem 0 .4rem;font-size:1.05rem;color:var(--imss2);}
-    .subtitle{margin:.2rem 0 .9rem;color:var(--muted);font-size:.92rem;}
-    .pill{display:inline-block;padding:.15rem .6rem;border-radius:999px;font-size:.75rem;background:var(--soft);color:var(--imss2);margin-left:.4rem;font-weight:700;}
-    .badge{display:inline-block;padding:.16rem .55rem;border-radius:999px;background:var(--gold);color:#fff;font-size:.78rem;font-weight:800;}
-
+    main{max-width:1100px;margin:1.4rem auto 2.6rem;padding:0 1rem;}
+    .card{background:#fff;border-radius:var(--r);box-shadow:var(--shadow);padding:1.25rem 1.35rem;margin-bottom:1.25rem;}
+    h2{margin:0 0 .55rem;font-size:1.22rem;color:var(--imss2);}
+    h3{margin:1rem 0 .4rem;font-size:1.05rem;color:var(--imss2);}
+    .subtitle{margin:.2rem 0 .95rem;color:var(--muted);font-size:.92rem;}
+    .pill{display:inline-block;padding:.15rem .6rem;border-radius:999px;font-size:.75rem;background:var(--soft);color:var(--imss2);margin-left:.4rem;font-weight:800;}
+    .badge{display:inline-block;padding:.18rem .55rem;border-radius:999px;background:var(--gold);color:#fff;font-size:.78rem;font-weight:900;}
     .hidden{display:none!important;}
-    .text-muted{color:var(--muted);font-size:.84rem;}
-    .error{color:var(--danger);font-size:.82rem;margin-top:.25rem;}
+    .text-muted{color:var(--muted);font-size:.86rem;}
+    .error{color:var(--danger);font-size:.82rem;margin-top:.25rem;font-weight:700;}
+    .ok{border:1px solid #cfe7df;background:#f4fffb;color:#0f5132;border-radius:12px;padding:.65rem .8rem;margin:.65rem 0;}
+    .warn{border:1px solid #f0d3b2;background:#fff7ee;color:#7a4a12;border-radius:12px;padding:.65rem .8rem;margin:.65rem 0;}
 
-    .form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:.8rem 1rem;}
-    label{display:block;font-weight:700;font-size:.8rem;margin-bottom:.2rem;}
-    input,select,textarea{width:100%;padding:.48rem .58rem;border-radius:6px;border:1px solid #cfd4d1;font-size:.92rem;background:#fff;}
+    .form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:.85rem 1rem;}
+    label{display:block;font-weight:800;font-size:.8rem;margin-bottom:.2rem;color:#2b2e2d;}
+    input,select,textarea{width:100%;padding:.5rem .6rem;border-radius:8px;border:1px solid #cfd4d1;font-size:.94rem;background:#fff;}
     input:focus,select:focus,textarea:focus{outline:2px solid var(--soft);border-color:var(--imss);}
-    textarea{resize:vertical;min-height:90px;font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;}
 
     .btn-row{margin-top:1rem;display:flex;flex-wrap:wrap;gap:.6rem;}
-    button{border:none;border-radius:8px;padding:.5rem .95rem;font-size:.92rem;cursor:pointer;}
+    button{border:none;border-radius:10px;padding:.55rem .98rem;font-size:.93rem;cursor:pointer;font-weight:800;}
     .btn-primary{background:var(--imss);color:#fff;}
     .btn-secondary{background:#e0e4e2;color:#333;}
     .btn-danger{background:var(--danger);color:#fff;}
     .btn-success{background:var(--imss2);color:#fff;}
     .btn-link{background:transparent;color:var(--imss);padding-left:0;}
-    .btn-disabled{background:#cfd4d1!important;color:#888!important;cursor:default!important;opacity:.75;}
+    .btn-disabled{background:#cfd4d1!important;color:#888!important;cursor:default!important;opacity:.8;}
 
     /* Test UI */
-    .block-header{display:flex;justify-content:space-between;align-items:center;gap:.5rem;flex-wrap:wrap;color:var(--muted);font-size:.88rem;margin-bottom:.55rem;}
-    .progress-wrap{display:flex;align-items:center;gap:.45rem;min-width:180px;}
-    .bar{background:#dde3df;border-radius:999px;height:7px;flex:1;overflow:hidden;}
+    .block-header{display:flex;justify-content:space-between;align-items:center;gap:.6rem;flex-wrap:wrap;color:var(--muted);font-size:.9rem;margin-bottom:.55rem;}
+    .progress-wrap{display:flex;align-items:center;gap:.5rem;min-width:200px;}
+    .bar{background:#dde3df;border-radius:999px;height:8px;flex:1;overflow:hidden;}
     .bar>div{height:100%;width:0%;background:var(--imss);transition:width .2s ease;}
-    .pct{min-width:38px;text-align:right;font-size:.82rem;}
-    .test-title{text-align:center;font-weight:900;font-size:1.12rem;margin:.55rem 0 .25rem;}
-    .test-sub{text-align:center;color:var(--muted);font-size:.88rem;margin:0 0 .9rem;}
+    .pct{min-width:40px;text-align:right;font-size:.84rem;font-weight:800;}
+    .test-title{text-align:center;font-weight:1000;font-size:1.14rem;margin:.55rem 0 .25rem;color:#123d2f;}
+    .test-sub{text-align:center;color:var(--muted);font-size:.88rem;margin:0 0 .95rem;}
 
-    .table-like{border:1px solid #e0e4e2;border-radius:12px;overflow:hidden;}
-    .t-head,.t-row{display:grid;grid-template-columns:minmax(0,1.6fr) 90px 90px;align-items:center;padding:.6rem .85rem;}
-    .t-head{background:var(--soft);color:var(--imss2);font-weight:800;font-size:.82rem;}
-    .t-row{border-top:1px solid #edf1ee;font-size:.94rem;background:#fff;}
+    .table-like{border:1px solid #e0e4e2;border-radius:14px;overflow:hidden;}
+    .t-head,.t-row{display:grid;grid-template-columns:minmax(0,1.6fr) 92px 92px;align-items:center;padding:.62rem .9rem;}
+    .t-head{background:var(--soft);color:var(--imss2);font-weight:1000;font-size:.82rem;}
+    .t-row{border-top:1px solid #edf1ee;font-size:.95rem;background:#fff;}
     .t-row:nth-child(even){background:#fafcfb;}
     .cell-center{display:flex;justify-content:center;}
 
@@ -70,32 +69,31 @@
     .radio.minus:checked{border-color:var(--danger);background:var(--danger);}
     .radio.minus:checked::after{background:#fff;}
 
-    .footer{margin-top:1rem;display:flex;justify-content:space-between;align-items:center;gap:.6rem;flex-wrap:wrap;}
+    .footer{margin-top:1rem;display:flex;justify-content:space-between;align-items:center;gap:.7rem;flex-wrap:wrap;}
 
     /* Admin */
     .tabs{display:flex;flex-wrap:wrap;gap:.35rem;margin-bottom:.7rem;}
-    .tabs button{font-size:.84rem;padding:.4rem .75rem;}
+    .tabs button{font-size:.84rem;padding:.45rem .8rem;}
     .tabs button.active{background:var(--imss);color:#fff;}
     table{width:100%;border-collapse:collapse;font-size:.82rem;}
-    th,td{border:1px solid #dde2df;padding:.35rem .45rem;vertical-align:top;}
-    th{background:var(--soft);color:var(--imss2);font-weight:900;}
+    th,td{border:1px solid #dde2df;padding:.38rem .48rem;vertical-align:top;}
+    th{background:var(--soft);color:var(--imss2);font-weight:1000;}
     tbody tr:nth-child(even){background:#fafcfb;}
-    .scroll{max-height:380px;overflow:auto;border-radius:10px;border:1px solid #dde2df;}
+    .scroll{max-height:420px;overflow:auto;border-radius:12px;border:1px solid #dde2df;}
 
     /* Modal */
     .overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:100;}
-    .modal{background:#fff;border-radius:12px;box-shadow:0 10px 28px rgba(0,0,0,.28);padding:1.1rem 1.2rem;max-width:430px;width:100%;}
+    .modal{background:#fff;border-radius:14px;box-shadow:0 10px 28px rgba(0,0,0,.28);padding:1.1rem 1.2rem;max-width:440px;width:100%;}
     .modal h3{margin:0 0 .35rem;}
-    .modal .actions{display:flex;justify-content:flex-end;gap:.5rem;margin-top:.9rem;}
+    .modal .actions{display:flex;justify-content:flex-end;gap:.55rem;margin-top:.9rem;}
 
     /* Charts */
     .charts{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1rem;margin-top:.8rem;}
-    .chart-card{background:#fafcfb;border:1px solid #e0e4e2;border-radius:12px;padding:.75rem .85rem;}
-    .chart-title{font-weight:900;color:var(--imss2);font-size:.9rem;margin-bottom:.35rem;}
-    .warn{border:1px solid #f0d3b2;background:#fff7ee;color:#7a4a12;border-radius:10px;padding:.65rem .75rem;margin:.6rem 0;}
-    .ok{border:1px solid #cfe7df;background:#f4fffb;color:#0f5132;border-radius:10px;padding:.65rem .75rem;margin:.6rem 0;}
+    .chart-card{background:#fafcfb;border:1px solid #e0e4e2;border-radius:14px;padding:.8rem .9rem;}
+    .chart-title{font-weight:1000;color:var(--imss2);font-size:.9rem;margin-bottom:.35rem;}
+
     .mono{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;}
-    @media (max-width:680px){ .t-head,.t-row{grid-template-columns:minmax(0,1.5fr) 76px 76px;padding-inline:.6rem;} }
+    @media (max-width:680px){ .t-head,.t-row{grid-template-columns:minmax(0,1.5fr) 78px 78px;padding-inline:.65rem;} }
   </style>
 </head>
 <body>
@@ -162,8 +160,7 @@
     </div>
 
     <p class="text-muted">
-      Importante: para que los resultados queden 100% alineados al manual, en Administrador se cargan las <strong>Normas</strong>.
-      (Yo ya lo dejé listo para que solo pegues el bloque cuando te lo entregue).
+      Nota técnica: el sistema calcula automáticamente <strong>A</strong> (promedio = sumatoria/4) y selecciona el <strong>múltiplo</strong> según tabla.
     </p>
   </section>
 
@@ -197,12 +194,15 @@
   <section id="section-results" class="card hidden">
     <h2>Resultados del PDL <span class="pill">Paso 3 de 3</span></h2>
     <div id="validity"></div>
+
     <div id="res-personal"></div>
     <div id="res-raw"></div>
     <div id="res-g"></div>
 
     <h3>Gráficas (G 0–100)</h3>
-    <p class="text-muted">Gráfica <strong>M</strong> (Motivación), <strong>L</strong> (Bajo presión) y <strong>T</strong> (Conducta diaria = M − L).</p>
+    <p class="text-muted">
+      <strong>M</strong> (Motivación), <strong>L</strong> (Bajo presión) y <strong>T</strong> (Conducta diaria = M − L).
+    </p>
 
     <div class="charts">
       <div class="chart-card">
@@ -231,13 +231,13 @@
   <!-- Admin -->
   <section id="section-admin" class="card hidden">
     <h2>Panel de administración</h2>
-    <p class="subtitle">Unidades, categorías, normas y resultados (confidencial).</p>
+    <p class="subtitle">Unidades, categorías y resultados (confidencial).</p>
 
     <div class="tabs">
       <button id="tab-u" class="btn-secondary active" type="button" onclick="setTab('u')">Unidades</button>
       <button id="tab-c" class="btn-secondary" type="button" onclick="setTab('c')">Categorías</button>
-      <button id="tab-n" class="btn-secondary" type="button" onclick="setTab('n')">Normas</button>
       <button id="tab-r" class="btn-secondary" type="button" onclick="setTab('r')">Resultados</button>
+      <button id="tab-a" class="btn-secondary" type="button" onclick="setTab('a')">Ayuda técnica</button>
     </div>
 
     <div id="panel-u">
@@ -268,36 +268,22 @@
       </div>
     </div>
 
-    <div id="panel-n" class="hidden">
-      <h3>Normas (A y múltiplos) – pegar desde el manual</h3>
-      <div class="warn">
-        Aquí solo se pega un bloque de texto. No ocupas saber programar.
-        Yo te voy a preparar ese bloque cuando extraigamos la tabla exacta del manual.
-      </div>
-      <label>Normas (JSON)</label>
-      <textarea id="norms" spellcheck="false" class="mono"></textarea>
-      <div class="btn-row">
-        <button class="btn-primary" type="button" onclick="saveNorms()">Guardar normas</button>
-        <button class="btn-secondary" type="button" onclick="loadNorms()">Recargar</button>
-        <button class="btn-secondary" type="button" onclick="resetNorms()">Restaurar plantilla</button>
-      </div>
-      <p class="text-muted">Si las normas no están cargadas, la escala G se muestra aproximada solo para visualizar.</p>
-    </div>
-
     <div id="panel-r" class="hidden">
       <h3>Resultados</h3>
       <div class="btn-row" style="margin-top:0;">
         <button class="btn-success" type="button" onclick="downloadCSV()">Descargar CSV</button>
         <button class="btn-secondary" type="button" onclick="reloadResults()">Recargar</button>
+        <button class="btn-secondary" type="button" onclick="syncFromCloud()">Sincronizar nube</button>
       </div>
       <div class="scroll" style="margin-top:.6rem;">
         <table>
           <thead>
             <tr>
               <th>Fecha</th><th>Unidad</th><th>Matrícula</th><th>Nombre</th><th>Categoría</th>
-              <th>M D</th><th>M I</th><th>M S</th><th>M C</th>
-              <th>L D</th><th>L I</th><th>L S</th><th>L C</th>
-              <th>T D</th><th>T I</th><th>T S</th><th>T C</th>
+              <th>Edad</th><th>Puesto</th><th>Lugar</th>
+              <th>M G(D)</th><th>M G(I)</th><th>M G(S)</th><th>M G(C)</th>
+              <th>L G(D)</th><th>L G(I)</th><th>L G(S)</th><th>L G(C)</th>
+              <th>T G(D)</th><th>T G(I)</th><th>T G(S)</th><th>T G(C)</th>
               <th>ΣT</th><th>Validez</th>
               <th>Acciones</th>
             </tr>
@@ -308,8 +294,27 @@
       <p class="text-muted" style="margin-top:.55rem;">Eliminar borra local y, si existe, también en Firestore.</p>
     </div>
 
+    <div id="panel-a" class="hidden">
+      <h3>Ayuda técnica</h3>
+      <div class="ok">
+        <div><strong>Cálculo aplicado (automático):</strong></div>
+        <div class="mono">A = (D + I + S + C) / 4</div>
+        <div class="mono">DIF = R − A</div>
+        <div class="mono">F = DIF × múltiplo</div>
+        <div class="mono">G = F + 50</div>
+        <div class="text-muted" style="margin-top:.35rem;">
+          La tabla de múltiplos y la definición de R/A/D/F/G están en el manual. :contentReference[oaicite:3]{index=3}
+        </div>
+      </div>
+      <div class="warn">
+        Para aplicar la tabla de múltiplos (rango 12–28), el sistema convierte los conteos (0–24) a escala 0–28:
+        <div class="mono" style="margin-top:.35rem;">R = round(conteo × 28/24)</div>
+      </div>
+    </div>
+
     <div class="btn-row">
       <button class="btn-secondary" type="button" onclick="showSection('worker')">Volver</button>
+      <button class="btn-link" type="button" onclick="logoutAdmin()">Cerrar sesión admin</button>
     </div>
   </section>
 
@@ -327,31 +332,50 @@
       </div>
     </div>
   </div>
+</main>
+
+<!-- Firebase (compat) -->
+<script src="https://www.gstatic.com/firebasejs/12.6.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore-compat.js"></script>
+
 <script>
-/* ================= CONFIGURACIÓN GENERAL ================= */
+/* ===================== CONFIG ===================== */
 const ADMIN_PASSWORD = "PDL2025";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDJniFUuRh3mfjP40cAm2gJ2P3TGOyKqog",
+  authDomain: "perfil-de-dinamicas-laborales.firebaseapp.com",
+  projectId: "perfil-de-dinamicas-laborales",
+  storageBucket: "perfil-de-dinamicas-laborales.firebasestorage.app",
+  messagingSenderId: "231363532636",
+  appId: "1:231363532636:web:b610e5501cea73dce69399",
+  measurementId: "G-R1X0PZ3WYY"
+};
+
+let fs = null;
+let adminLogged = false;
+
+try{
+  firebase.initializeApp(firebaseConfig);
+  fs = firebase.firestore();
+  console.log("Firestore listo.");
+}catch(e){
+  console.warn("Firestore no disponible. Se usará solo localStorage.", e);
+}
 
 const KEYS = {
   units: "PDL_units",
   cats: "PDL_categories",
-  results: "PDL_results",
-  norms: "PDL_norms"
+  results: "PDL_results"
 };
 
-/* ================= UTILIDADES ================= */
 const $ = id => document.getElementById(id);
 const read = (k, d) => JSON.parse(localStorage.getItem(k) || JSON.stringify(d));
 const save = (k, v) => localStorage.setItem(k, JSON.stringify(v));
+const clamp = (n,min,max)=>Math.max(min,Math.min(max,n));
+const nowISO = ()=>new Date().toISOString();
 
-function showSection(id){
-  ["worker","test","results","admin"].forEach(s=>{
-    const el = $("section-"+s);
-    if(el) el.classList.toggle("hidden", s!==id);
-  });
-}
-
-/* ================= DATOS BASE ================= */
-// 24 bloques × 4 palabras (equivalentes DISC, NO texto propietario)
+/* ===================== TEST DATA (genérico DISC) ===================== */
 const BLOCKS = [
   [["Decidido","D"],["Sociable","I"],["Paciente","S"],["Preciso","C"]],
   [["Competitivo","D"],["Entusiasta","I"],["Constante","S"],["Cuidadoso","C"]],
@@ -366,8 +390,8 @@ const BLOCKS = [
   [["Seguro","D"],["Influyente","I"],["Empático","S"],["Estructurado","C"]],
   [["Determinado","D"],["Convincente","I"],["Constante","S"],["Controlado","C"]],
   [["Arriesgado","D"],["Animado","I"],["Paciente","S"],["Minucioso","C"]],
-  [["Competidor","D"],["Expansivo","I"],["Servicial","S"],["Exacto","C"]],
-  [["Autoritario","D"],["Alegre","I"],["Conservador","S"],["Cuidadoso","C"]],
+  [["Competidor","D"],["Alegre","I"],["Servicial","S"],["Exacto","C"]],
+  [["Autoritario","D"],["Cordial","I"],["Conservador","S"],["Cuidadoso","C"]],
   [["Práctico","D"],["Conversador","I"],["Reservado","S"],["Perfeccionista","C"]],
   [["Enérgico","D"],["Optimista","I"],["Tranquilo","S"],["Sistemático","C"]],
   [["Decisor","D"],["Inspirador","I"],["Leal","S"],["Formal","C"]],
@@ -379,14 +403,28 @@ const BLOCKS = [
   [["Decisivo","D"],["Motivador","I"],["Constante","S"],["Analítico","C"]],
 ];
 
-/* ================= ESTADO ================= */
 let idx = 0;
 let answers = Array(BLOCKS.length).fill(null);
 
-/* ================= INICIALIZACIÓN ================= */
+/* ===================== INIT ===================== */
 (function init(){
   ensureBase();
   loadSelects();
+
+  $("fechaNacimiento").addEventListener("change",()=>{
+    const f=new Date($("fechaNacimiento").value);
+    if(!isNaN(f)){
+      const diff=Date.now()-f.getTime();
+      $("edad").value=Math.abs(new Date(diff).getUTCFullYear()-1970);
+    }
+  });
+
+  document.addEventListener("keydown",(e)=>{
+    if(e.key==="Escape" && !$("overlay").classList.contains("hidden")) closeLogin();
+  });
+
+  // (opcional) intenta traer config nube al arrancar
+  syncConfigFromCloud().catch(()=>{});
 })();
 
 function ensureBase(){
@@ -398,15 +436,6 @@ function ensureBase(){
     save(KEYS.results,[]);
 }
 
-/* ================= CARÁTULA ================= */
-$("fechaNacimiento").addEventListener("change",()=>{
-  const f=new Date($("fechaNacimiento").value);
-  if(!isNaN(f)){
-    const diff=Date.now()-f.getTime();
-    $("edad").value=Math.abs(new Date(diff).getUTCFullYear()-1970);
-  }
-});
-
 function loadSelects(){
   const u=$("unidad"), c=$("categoria");
   u.innerHTML=""; c.innerHTML="";
@@ -414,6 +443,15 @@ function loadSelects(){
   read(KEYS.cats,[]).forEach(v=>c.add(new Option(v,v)));
 }
 
+/* ===================== NAV ===================== */
+function showSection(id){
+  ["worker","test","results","admin"].forEach(s=>{
+    const el = $("section-"+s);
+    if(el) el.classList.toggle("hidden", s!==id);
+  });
+}
+
+/* ===================== START TEST ===================== */
 function startTest(){
   let ok=true;
   ["unidad","matricula","nombre","categoria","puesto","fechaNacimiento","lugarNacimiento"]
@@ -422,13 +460,14 @@ function startTest(){
     else $(id+"-error")?.classList.add("hidden");
   });
   if(!ok) return;
+
   idx=0;
   answers=Array(BLOCKS.length).fill(null);
+
   renderGroup();
   showSection("test");
 }
 
-/* ================= TEST ================= */
 function renderGroup(){
   $("block-label").textContent=`Bloque ${idx+1} de ${BLOCKS.length}`;
   const pct=Math.round((idx/BLOCKS.length)*100);
@@ -437,11 +476,12 @@ function renderGroup(){
 
   const g=BLOCKS[idx];
   let html=`<div class="table-like">
-    <div class="t-head"><div>Palabra</div><div class="cell-center">MÁS</div><div class="cell-center">MENOS</div></div>`;
+    <div class="t-head"><div>Palabra / adjetivo</div><div class="cell-center">MÁS (+)</div><div class="cell-center">MENOS (-)</div></div>`;
+
   g.forEach((w,i)=>{
     html+=`
     <div class="t-row">
-      <div>${w[0]}</div>
+      <div>${escapeHtml(w[0])}</div>
       <div class="cell-center">
         <input type="radio" class="radio plus" name="p${idx}" onclick="pick(${i},'M')">
       </div>
@@ -450,6 +490,7 @@ function renderGroup(){
       </div>
     </div>`;
   });
+
   html+="</div>";
   $("group").innerHTML=html;
 
@@ -461,31 +502,40 @@ function renderGroup(){
   $("btn-prev").classList.toggle("hidden",idx===0);
   $("btn-next").classList.toggle("hidden",idx===BLOCKS.length-1);
   $("btn-finish").classList.toggle("hidden",idx!==BLOCKS.length-1);
+
+  // UX: al final, botón siguiente “apagado”
+  if(idx===BLOCKS.length-1){
+    $("btn-next").classList.add("btn-disabled");
+  }else{
+    $("btn-next").classList.remove("btn-disabled");
+  }
 }
 
-window.pick=function(i,t){
+function pick(i,t){
   answers[idx]=answers[idx]||{};
   answers[idx][t]=i;
+
   if(answers[idx].M===answers[idx].L){
     $("test-error").textContent="No puede elegir la misma palabra como MÁS y MENOS.";
     $("test-error").classList.remove("hidden");
     answers[idx][t]=null;
     renderGroup();
-  }else $("test-error").classList.add("hidden");
-};
+    return;
+  }
+  $("test-error").classList.add("hidden");
+}
 
-window.nextGroup=function(){
+function nextGroup(){
   if(!answers[idx]||answers[idx].M==null||answers[idx].L==null){
     $("test-error").textContent="Seleccione una opción en ambas columnas.";
     $("test-error").classList.remove("hidden"); return;
   }
   idx++; renderGroup();
-};
+}
+function prevGroup(){ idx--; renderGroup(); }
 
-window.prevGroup=function(){ idx--; renderGroup(); };
-
-/* ================= CÁLCULO M / L / T ================= */
-function computeRaw(){
+/* ===================== CALIFICACIÓN (M, L, T) ===================== */
+function computeRawCounts(){
   const M={D:0,I:0,S:0,C:0}, L={D:0,I:0,S:0,C:0};
   answers.forEach((a,i)=>{
     const g=BLOCKS[i];
@@ -496,67 +546,369 @@ function computeRaw(){
   return {M,L,T};
 }
 
-window.finishTest=function(){
-  const raw=computeRaw();
-  const sumT=raw.T.D+raw.T.I+raw.T.S+raw.T.C;
-  const valid = sumT>=-3 && sumT<=3;
+/* ===================== CONVERSIÓN A R (0–28) =====================
+   Para poder usar la tabla de múltiplos (12–28), convertimos conteos 0–24 a 0–28.
+   Esto permite que A caiga en el rango esperado del manual. */
+function countToR(count){
+  return Math.round((count * 28) / 24);
+}
+function tToR(tval){
+  // T puede ser -24..+24. Lo llevamos a 0..28 centrado:
+  // primero a 0..48 con +24, luego escala a 0..28
+  return Math.round(((tval + 24) * 28) / 48);
+}
+
+/* ===================== MÚLTIPLO SEGÚN TABLA MANUAL ===================== */
+function multiplierForA(A){
+  // Tabla del manual (DE - HASTA -> MULTIPLIQUE POR) :contentReference[oaicite:4]{index=4}
+  if(A>=12 && A<=13) return 8;
+  if(A>=13.5 && A<=15) return 7;
+  if(A>=15.5 && A<=17) return 6;
+  if(A>=18 && A<=18.5) return 5.5;
+  if(A>=19 && A<=21.5) return 5;
+  if(A>=22 && A<=23) return 4.5;
+  if(A>=23.5 && A<=26.5) return 4;
+  if(A>=27 && A<=28) return 3.5;
+  // fuera de rango: aproximación segura
+  if(A<12) return 8;
+  return 3.5;
+}
+
+/* ===================== CÁLCULO G (manual) =====================
+   R=resultado, A=promedio(sum/4), D=R-A, F=D*multiplo, G=F+50 :contentReference[oaicite:5]{index=5} */
+function computeG(graphKey, rawCounts){
+  // rawCounts puede ser conteo (M/L) o T (diferencias)
+  let R = {D:0,I:0,S:0,C:0};
+
+  if(graphKey==="T"){
+    ["D","I","S","C"].forEach(k=> R[k]=tToR(rawCounts[k] ?? 0));
+  }else{
+    ["D","I","S","C"].forEach(k=> R[k]=countToR(rawCounts[k] ?? 0));
+  }
+
+  const A = (R.D + R.I + R.S + R.C) / 4;
+  const mult = multiplierForA(A);
+
+  const G = {};
+  ["D","I","S","C"].forEach(k=>{
+    const Df = (R[k] - A);
+    const F = Df * mult;
+    const g = F + 50;
+    G[k] = Math.round(clamp(g, 0, 100));
+  });
+
+  return {R, A: Number(A.toFixed(2)), mult, G};
+}
+
+/* ===================== GRÁFICA ROMBO G ===================== */
+function drawDiamondG(svgId, valuesG, fill, stroke){
+  const svg = document.getElementById(svgId);
+  if(!svg) return;
+  svg.innerHTML = "";
+
+  const cx=130, cy=110, radius=80;
+  const dims=["D","I","S","C"];
+
+  function pt(dim, factor){
+    if(dim==="D") return {x:cx, y:cy-radius*factor};
+    if(dim==="I") return {x:cx+radius*factor, y:cy};
+    if(dim==="S") return {x:cx, y:cy+radius*factor};
+    return {x:cx-radius*factor, y:cy}; // C
+  }
+
+  [0.25,0.5,0.75,1].forEach((lvl,i)=>{
+    const p = dims.map(d=>pt(d,lvl));
+    const dPath = `M ${p[0].x} ${p[0].y} L ${p[1].x} ${p[1].y} L ${p[2].x} ${p[2].y} L ${p[3].x} ${p[3].y} Z`;
+    const path = document.createElementNS("http://www.w3.org/2000/svg","path");
+    path.setAttribute("d", dPath);
+    path.setAttribute("fill","none");
+    path.setAttribute("stroke", i===1 ? "#b9c4bf" : "#dde3df");
+    path.setAttribute("stroke-width", i===1 ? "1.4" : "1");
+    svg.appendChild(path);
+  });
+
+  dims.forEach(dim=>{
+    const end = pt(dim,1);
+    const axis = document.createElementNS("http://www.w3.org/2000/svg","line");
+    axis.setAttribute("x1",cx); axis.setAttribute("y1",cy);
+    axis.setAttribute("x2",end.x); axis.setAttribute("y2",end.y);
+    axis.setAttribute("stroke","#c0c7c3");
+    svg.appendChild(axis);
+
+    const lab = pt(dim,1.18);
+    const t = document.createElementNS("http://www.w3.org/2000/svg","text");
+    t.setAttribute("x",lab.x); t.setAttribute("y",lab.y);
+    t.setAttribute("text-anchor","middle");
+    t.setAttribute("alignment-baseline","middle");
+    t.setAttribute("fill","#134E39");
+    t.setAttribute("font-weight","1000");
+    t.textContent = dim;
+    svg.appendChild(t);
+  });
+
+  const pts = dims.map(dim=>{
+    const g = clamp(valuesG[dim] ?? 50, 0, 100);
+    return pt(dim, g/100);
+  });
+
+  const polyD = `M ${pts[0].x} ${pts[0].y} L ${pts[1].x} ${pts[1].y} L ${pts[2].x} ${pts[2].y} L ${pts[3].x} ${pts[3].y} Z`;
+  const poly = document.createElementNS("http://www.w3.org/2000/svg","path");
+  poly.setAttribute("d", polyD);
+  poly.setAttribute("fill", fill);
+  poly.setAttribute("stroke", stroke);
+  poly.setAttribute("stroke-width","2");
+  svg.appendChild(poly);
+
+  pts.forEach(p=>{
+    const c = document.createElementNS("http://www.w3.org/2000/svg","circle");
+    c.setAttribute("cx",p.x); c.setAttribute("cy",p.y);
+    c.setAttribute("r","3.2");
+    c.setAttribute("fill", stroke);
+    svg.appendChild(c);
+  });
+
+  const tick = document.createElementNS("http://www.w3.org/2000/svg","text");
+  tick.setAttribute("x",cx); tick.setAttribute("y",cy+radius+28);
+  tick.setAttribute("text-anchor","middle");
+  tick.setAttribute("fill","#777");
+  tick.setAttribute("font-size","12");
+  tick.textContent = `G: D=${valuesG.D} I=${valuesG.I} S=${valuesG.S} C=${valuesG.C}`;
+  svg.appendChild(tick);
+}
+
+/* ===================== REPORTE PROFUNDO (ANÁLISIS + CAPACITACIÓN) ===================== */
+function deepReport(valid, GM, GL, GT, sumT){
+  if(!valid){
+    return {
+      analysis: `<div class="warn"><strong>Prueba inválida.</strong> ΣT=${sumT}. El manual indica que si la sumatoria de T no está entre -3 y +3, no deben considerarse válidos los resultados. Recomienda reaplicar asegurando comprensión de instrucciones y palabras.</div>`,
+      training: `<p class="text-muted">No se recomienda plan de capacitación con un perfil inválido. Reaplicar el test en mejores condiciones.</p>`
+    };
+  }
+
+  const names = {D:"Dominancia", I:"Influencia", S:"Constancia", C:"Apego"};
+  const dims = ["D","I","S","C"];
+  let top="D", topVal=GT.D;
+  dims.forEach(d=>{ if(GT[d]>topVal){ top=d; topVal=GT[d]; } });
+
+  function band(g){
+    if(g>=70) return "alto";
+    if(g<=30) return "bajo";
+    return "medio";
+  }
+
+  const analysis = `
+    <h3>Análisis del perfil</h3>
+    <p><span class="badge">Predominante en T: ${names[top]} (${top})</span></p>
+
+    <div class="ok">
+      <div><strong>Lectura rápida:</strong></div>
+      <ul class="text-muted">
+        <li><strong>M (Motivación):</strong> lo que busca expresar o le gustaría mostrar.</li>
+        <li><strong>L (Bajo presión):</strong> reacción probable ante tensión/exigencia.</li>
+        <li><strong>T (Conducta diaria):</strong> patrón cotidiano (M − L) convertido a G.</li>
+      </ul>
+      <div class="mono">G(T): D ${GT.D} | I ${GT.I} | S ${GT.S} | C ${GT.C}</div>
+    </div>
+
+    <p><strong>Interpretación por dimensiones (T):</strong></p>
+    <ul class="text-muted">
+      <li><strong>D (${band(GT.D)}):</strong> ritmo, decisión, orientación a resultados, manejo del conflicto.</li>
+      <li><strong>I (${band(GT.I)}):</strong> comunicación, influencia social, persuasión, energía interpersonal.</li>
+      <li><strong>S (${band(GT.S)}):</strong> estabilidad, paciencia, constancia, tolerancia al cambio.</li>
+      <li><strong>C (${band(GT.C)}):</strong> apego a normas, precisión, orden, control de calidad.</li>
+    </ul>
+
+    <p><strong>Lectura integrada:</strong></p>
+    ${top==="D" ? `
+      <p>Perfil orientado a metas y decisión. Se beneficia de objetivos claros, autonomía y retos. Bajo presión puede volverse más directo y exigir rapidez; conviene cuidar la forma de comunicar para evitar fricción.</p>
+    `:""}
+    ${top==="I" ? `
+      <p>Perfil social e influyente. Suele coordinar, motivar y conectar equipos. Bajo presión puede buscar más interacción o negociación; conviene reforzar el seguimiento y la estructuración de tareas.</p>
+    `:""}
+    ${top==="S" ? `
+      <p>Perfil estable y constante. Mantiene continuidad en servicio y es confiable en rutinas. Bajo presión puede buscar mantener orden y calma; conviene apoyar en adaptación al cambio y asertividad.</p>
+    `:""}
+    ${top==="C" ? `
+      <p>Perfil apegado a normas y precisión. Reduce errores, cuida calidad y detalle. Bajo presión puede aumentar control o rigidez; conviene fortalecer priorización y tolerancia a la ambigüedad.</p>
+    `:""}
+
+    <p><strong>Indicadores útiles para supervisión:</strong></p>
+    <ul class="text-muted">
+      <li>Si L baja mucho respecto a M, puede indicar sensación de presión (cambio de conducta bajo tensión).</li>
+      <li>Si los valores se concentran cerca de 50, podría ser perfil aplanado (baja diferenciación conductual).</li>
+      <li>Use el resultado como apoyo: combine con observación del desempeño real y feedback de jefatura.</li>
+    </ul>
+  `;
+
+  const training = `
+    <h3>Capacitación sugerida (según perfil)</h3>
+    ${top==="D" ? `
+      <ul class="text-muted">
+        <li><strong>Liderazgo y coordinación operativa:</strong> delegación, acuerdos, seguimiento por indicadores.</li>
+        <li><strong>Comunicación bajo presión:</strong> escucha activa, retroalimentación sin confrontación, mensajes breves.</li>
+        <li><strong>Toma de decisiones con evidencia:</strong> priorización y análisis rápido de riesgos.</li>
+        <li><strong>Autocontrol:</strong> manejo de impulsividad e intolerancia a la lentitud.</li>
+      </ul>
+    `:""}
+    ${top==="I" ? `
+      <ul class="text-muted">
+        <li><strong>Organización y enfoque:</strong> priorización, cierre de compromisos, control de pendientes.</li>
+        <li><strong>Comunicación estructurada:</strong> reportes breves, formatos de pase/informe.</li>
+        <li><strong>Asertividad:</strong> límites, negociación, manejo de conversaciones difíciles.</li>
+        <li><strong>Seguimiento:</strong> evidencias de cumplimiento y hábitos de verificación.</li>
+      </ul>
+    `:""}
+    ${top==="S" ? `
+      <ul class="text-muted">
+        <li><strong>Gestión del cambio:</strong> adaptación gradual, flexibilidad, aprendizaje continuo.</li>
+        <li><strong>Comunicación asertiva:</strong> expresar necesidades, pedir apoyo, abordar conflictos.</li>
+        <li><strong>Resiliencia y autocuidado:</strong> prevención de desgaste, pausas, regulación emocional.</li>
+        <li><strong>Mejora continua:</strong> participación en propuestas pequeñas y estandarización.</li>
+      </ul>
+    `:""}
+    ${top==="C" ? `
+      <ul class="text-muted">
+        <li><strong>Priorización y rapidez con seguridad:</strong> umbrales de calidad, decidir con información incompleta.</li>
+        <li><strong>Comunicación técnica efectiva:</strong> traducir datos a acciones, reportes claros.</li>
+        <li><strong>Flexibilidad operativa:</strong> plan B, adaptación a cambios sin perder control.</li>
+        <li><strong>Manejo de estrés:</strong> reducir rumiación, técnicas de control del error.</li>
+      </ul>
+    `:""}
+    <p class="text-muted">Sugerencia: complementar con plan de desarrollo del puesto y retroalimentación de supervisión.</p>
+  `;
+
+  return {analysis, training};
+}
+
+/* ===================== FINISH TEST ===================== */
+async function finishTest(){
+  // validar último bloque
+  if(!answers[idx]||answers[idx].M==null||answers[idx].L==null){
+    $("test-error").textContent="Seleccione una opción en ambas columnas.";
+    $("test-error").classList.remove("hidden"); return;
+  }
+
+  const counts = computeRawCounts();
+  const sumT = counts.T.D + counts.T.I + counts.T.S + counts.T.C;
+  const valid = (sumT>=-3 && sumT<=3); // manual :contentReference[oaicite:6]{index=6}
+
+  // calcula G por gráfica con fórmula manual :contentReference[oaicite:7]{index=7}
+  const GM = computeG("M", counts.M);
+  const GL = computeG("L", counts.L);
+  const GT = computeG("T", counts.T);
 
   showSection("results");
+
   $("validity").innerHTML = valid
     ? `<div class="ok"><strong>Prueba válida.</strong> ΣT=${sumT}</div>`
     : `<div class="warn"><strong>Prueba inválida.</strong> ΣT=${sumT}</div>`;
 
+  $("res-personal").innerHTML = `
+    <h3>Datos del trabajador</h3>
+    <div class="text-muted">
+      <div><strong>Unidad:</strong> ${escapeHtml($("unidad").value)}</div>
+      <div><strong>Matrícula:</strong> ${escapeHtml($("matricula").value)}</div>
+      <div><strong>Nombre:</strong> ${escapeHtml($("nombre").value)}</div>
+      <div><strong>Categoría:</strong> ${escapeHtml($("categoria").value)}</div>
+      <div><strong>Puesto:</strong> ${escapeHtml($("puesto").value)}</div>
+      <div><strong>Edad:</strong> ${escapeHtml($("edad").value)}</div>
+      <div><strong>Lugar de nacimiento:</strong> ${escapeHtml($("lugarNacimiento").value)}</div>
+    </div>
+  `;
+
   $("res-raw").innerHTML=`
-    <h3>Resultados crudos</h3>
-    <p class="mono">M: D ${raw.M.D}, I ${raw.M.I}, S ${raw.M.S}, C ${raw.M.C}</p>
-    <p class="mono">L: D ${raw.L.D}, I ${raw.L.I}, S ${raw.L.S}, C ${raw.L.C}</p>
-    <p class="mono">T: D ${raw.T.D}, I ${raw.T.I}, S ${raw.T.S}, C ${raw.T.C}</p>`;
+    <h3>Conteos (M, L, T)</h3>
+    <p class="mono">M: D ${counts.M.D}, I ${counts.M.I}, S ${counts.M.S}, C ${counts.M.C}</p>
+    <p class="mono">L: D ${counts.L.D}, I ${counts.L.I}, S ${counts.L.S}, C ${counts.L.C}</p>
+    <p class="mono">T: D ${counts.T.D}, I ${counts.T.I}, S ${counts.T.S}, C ${counts.T.C}</p>
+  `;
 
-  saveResult(raw,valid);
-};
+  $("res-g").innerHTML = `
+    <h3>Escala G (0–100)</h3>
+    <div class="text-muted">Cálculo automático con tabla de múltiplos y fórmula del manual.</div>
+    <p class="mono">M: A=${GM.A} mult=${GM.mult} | G(D) ${GM.G.D}, G(I) ${GM.G.I}, G(S) ${GM.G.S}, G(C) ${GM.G.C}</p>
+    <p class="mono">L: A=${GL.A} mult=${GL.mult} | G(D) ${GL.G.D}, G(I) ${GL.G.I}, G(S) ${GL.G.S}, G(C) ${GL.G.C}</p>
+    <p class="mono">T: A=${GT.A} mult=${GT.mult} | G(D) ${GT.G.D}, G(I) ${GT.G.I}, G(S) ${GT.G.S}, G(C) ${GT.G.C}</p>
+  `;
 
-/* ================= GUARDAR ================= */
-function saveResult(raw,valid){
-  const arr=read(KEYS.results,[]);
-  arr.push({
-    date:new Date().toISOString(),
-    unidad:$("unidad").value,
-    matricula:$("matricula").value,
-    nombre:$("nombre").value,
-    categoria:$("categoria").value,
-    M:raw.M,L:raw.L,T:raw.T,sumT:raw.T.D+raw.T.I+raw.T.S+raw.T.C,valid
-  });
-  save(KEYS.results,arr);
+  drawDiamondG("svgM", GM.G, "rgba(0,102,87,0.22)", "#006657");
+  drawDiamondG("svgL", GL.G, "rgba(188,149,92,0.22)", "#BC955C");
+  drawDiamondG("svgT", GT.G, "rgba(198,40,40,0.18)", "#c62828");
+
+  const rep = deepReport(valid, GM.G, GL.G, GT.G, sumT);
+  $("analysis").innerHTML = rep.analysis;
+  $("training").innerHTML = rep.training;
+
+  // guardar resultado local + nube
+  const record = {
+    date: nowISO(),
+    unidad: $("unidad").value,
+    matricula: $("matricula").value,
+    nombre: $("nombre").value,
+    categoria: $("categoria").value,
+    puesto: $("puesto").value,
+    edad: $("edad").value,
+    lugarNacimiento: $("lugarNacimiento").value,
+    counts,
+    GM, GL, GT,
+    sumT,
+    valid
+  };
+
+  const arr = read(KEYS.results, []);
+  arr.push(record);
+  save(KEYS.results, arr);
+
+  await saveResultToCloud(record);
 }
 
-/* ================= ADMIN LOGIN ================= */
-window.requestAdminAccess=function(){ $("overlay").classList.remove("hidden"); };
-window.closeLogin=function(){ $("overlay").classList.add("hidden"); };
-window.login=function(){
-  if($("adminPass").value===ADMIN_PASSWORD){
-    $("overlay").classList.add("hidden");
+/* ===================== RESET ===================== */
+function resetForNewTest(){
+  showSection("worker");
+}
+
+/* ===================== ADMIN LOGIN ===================== */
+function requestAdminAccess(){
+  if(adminLogged){
     showSection("admin");
     loadAdmin();
-  }else $("passErr").classList.remove("hidden");
-};
+    return;
+  }
+  $("adminPass").value="";
+  $("passErr").classList.add("hidden");
+  $("overlay").classList.remove("hidden");
+}
+function closeLogin(){ $("overlay").classList.add("hidden"); }
+function login(){
+  if($("adminPass").value===ADMIN_PASSWORD){
+    adminLogged = true;
+    closeLogin();
+    showSection("admin");
+    loadAdmin();
+  }else{
+    $("passErr").classList.remove("hidden");
+  }
+}
+function logoutAdmin(){
+  adminLogged = false;
+  showSection("worker");
+}
 
-</script>
-<!-- ================= FIN PARTE 2/4 ================= -->
-  <script>
-/* ================== EXPONER FUNCIONES AL HTML ==================
-   (Esto SOLO funciona si en Parte 2 cambiaste <script type="module"> por <script>)
-*/
-window.showSection = showSection;
-window.startTest = startTest;
+/* ===================== ADMIN TABS ===================== */
+function setTab(t){
+  ["u","c","r","a"].forEach(x=>{
+    $("panel-"+x).classList.toggle("hidden", x!==t);
+    $("tab-"+x).classList.toggle("active", x===t);
+  });
+  if(t==="r") renderResults();
+}
 
-/* ================== ADMIN: CRUD UNIDADES / CATEGORÍAS ================== */
+/* ===================== ADMIN UNITS/CATS ===================== */
 function loadAdmin(){
-  // refresca selects por si se agregaron
   loadSelects();
   renderUnits();
   renderCats();
   renderResults();
-  loadNorms();
 }
 
 function renderUnits(){
@@ -583,7 +935,7 @@ function renderCats(){
   });
 }
 
-window.addUnit = function(){
+async function addUnit(){
   const val = $("newUnit").value.trim();
   if(!val) return;
   const arr = read(KEYS.units, []);
@@ -591,16 +943,18 @@ window.addUnit = function(){
   save(KEYS.units, arr);
   $("newUnit").value="";
   renderUnits(); loadSelects();
-};
+  await saveConfigToCloud();
+}
 
-window.delUnit = function(i){
+async function delUnit(i){
   const arr = read(KEYS.units, []);
   arr.splice(i,1);
   save(KEYS.units, arr);
   renderUnits(); loadSelects();
-};
+  await saveConfigToCloud();
+}
 
-window.addCat = function(){
+async function addCat(){
   const val = $("newCat").value.trim();
   if(!val) return;
   const arr = read(KEYS.cats, []);
@@ -608,26 +962,18 @@ window.addCat = function(){
   save(KEYS.cats, arr);
   $("newCat").value="";
   renderCats(); loadSelects();
-};
+  await saveConfigToCloud();
+}
 
-window.delCat = function(i){
+async function delCat(i){
   const arr = read(KEYS.cats, []);
   arr.splice(i,1);
   save(KEYS.cats, arr);
   renderCats(); loadSelects();
-};
+  await saveConfigToCloud();
+}
 
-/* ================== ADMIN: TABS ================== */
-window.setTab = function(t){
-  ["u","c","n","r"].forEach(x=>{
-    $("panel-"+x).classList.toggle("hidden", x!==t);
-    $("tab-"+x).classList.toggle("active", x===t);
-  });
-  if(t==="r") renderResults();
-  if(t==="n") loadNorms();
-};
-
-/* ================== RESULTADOS: LISTA + ELIMINAR ================== */
+/* ===================== ADMIN RESULTS + DELETE ===================== */
 function renderResults(){
   const tb = $("tbRes");
   tb.innerHTML = "";
@@ -641,51 +987,58 @@ function renderResults(){
       <td>${escapeHtml(r.matricula||"")}</td>
       <td>${escapeHtml(r.nombre||"")}</td>
       <td>${escapeHtml(r.categoria||"")}</td>
+      <td>${escapeHtml(r.edad||"")}</td>
+      <td>${escapeHtml(r.puesto||"")}</td>
+      <td>${escapeHtml(r.lugarNacimiento||"")}</td>
 
-      <td>${r.M?.D??""}</td><td>${r.M?.I??""}</td><td>${r.M?.S??""}</td><td>${r.M?.C??""}</td>
-      <td>${r.L?.D??""}</td><td>${r.L?.I??""}</td><td>${r.L?.S??""}</td><td>${r.L?.C??""}</td>
-      <td>${r.T?.D??""}</td><td>${r.T?.I??""}</td><td>${r.T?.S??""}</td><td>${r.T?.C??""}</td>
+      <td>${r.GM?.G?.D ?? ""}</td><td>${r.GM?.G?.I ?? ""}</td><td>${r.GM?.G?.S ?? ""}</td><td>${r.GM?.G?.C ?? ""}</td>
+      <td>${r.GL?.G?.D ?? ""}</td><td>${r.GL?.G?.I ?? ""}</td><td>${r.GL?.G?.S ?? ""}</td><td>${r.GL?.G?.C ?? ""}</td>
+      <td>${r.GT?.G?.D ?? ""}</td><td>${r.GT?.G?.I ?? ""}</td><td>${r.GT?.G?.S ?? ""}</td><td>${r.GT?.G?.C ?? ""}</td>
 
-      <td>${r.sumT??""}</td>
+      <td>${r.sumT ?? ""}</td>
       <td>${r.valid ? "Válida" : "Inválida"}</td>
       <td><button class="btn-danger" type="button" onclick="deleteResult(${realIdx})">Eliminar</button></td>
     `;
     tb.appendChild(tr);
   });
 }
+function reloadResults(){ renderResults(); }
 
-window.deleteResult = function(i){
+async function deleteResult(i){
   if(!confirm("¿Eliminar este resultado?")) return;
   const res = read(KEYS.results, []);
+  const rec = res[i];
   res.splice(i,1);
   save(KEYS.results, res);
   renderResults();
-};
 
-window.reloadResults = function(){ renderResults(); };
+  if(fs && rec && rec._id){
+    try{ await fs.collection("pdl_resultados").doc(rec._id).delete(); }
+    catch(e){ console.error("No se pudo borrar en Firestore:", e); }
+  }
+}
 
-/* ================== EXPORTAR CSV (UTF-8 BOM) ================== */
-window.downloadCSV = function(){
+/* ===================== CSV (UTF-8 BOM) ===================== */
+function downloadCSV(){
   const data = read(KEYS.results, []);
   if(!data.length){ alert("No hay resultados."); return; }
 
   const header = [
     "Fecha","Unidad","Matricula","Nombre","Categoria","Puesto","Edad","LugarNacimiento",
-    "M_D","M_I","M_S","M_C",
-    "L_D","L_I","L_S","L_C",
-    "T_D","T_I","T_S","T_C",
+    "M_G_D","M_G_I","M_G_S","M_G_C",
+    "L_G_D","L_G_I","L_G_S","L_G_C",
+    "T_G_D","T_G_I","T_G_S","T_G_C",
     "sumT","Validez"
   ];
-
   const lines = [header.join(",")];
 
   data.forEach(r=>{
     const row = [
       r.date||"", r.unidad||"", r.matricula||"", r.nombre||"", r.categoria||"",
       r.puesto||"", r.edad||"", r.lugarNacimiento||"",
-      r.M?.D??"", r.M?.I??"", r.M?.S??"", r.M?.C??"",
-      r.L?.D??"", r.L?.I??"", r.L?.S??"", r.L?.C??"",
-      r.T?.D??"", r.T?.I??"", r.T?.S??"", r.T?.C??"",
+      r.GM?.G?.D??"", r.GM?.G?.I??"", r.GM?.G?.S??"", r.GM?.G?.C??"",
+      r.GL?.G?.D??"", r.GL?.G?.I??"", r.GL?.G?.S??"", r.GL?.G?.C??"",
+      r.GT?.G?.D??"", r.GT?.G?.I??"", r.GT?.G?.S??"", r.GT?.G?.C??"",
       r.sumT??"", r.valid ? "Válida":"Inválida"
     ];
 
@@ -707,481 +1060,37 @@ window.downloadCSV = function(){
   a.click();
   a.remove();
   URL.revokeObjectURL(url);
-};
-
-/* ================== NORMAS (PLANTILLA POR AHORA) ==================
-   En la Parte 4/4 te dejo:
-   - conversión a G real (manual)
-   - y el pegado simple (sin que tú armes JSON)
-*/
-const DEFAULT_NORMS = {
-  version: 1,
-  A: { M:{D:0,I:0,S:0,C:0}, L:{D:0,I:0,S:0,C:0}, T:{D:0,I:0,S:0,C:0} },
-  mult: { M:{D:1,I:1,S:1,C:1}, L:{D:1,I:1,S:1,C:1}, T:{D:1,I:1,S:1,C:1} }
-};
-
-window.loadNorms = function(){
-  const n = read(KEYS.norms, DEFAULT_NORMS);
-  $("norms").value = JSON.stringify(n,null,2);
-};
-
-window.resetNorms = function(){
-  if(!confirm("¿Restaurar plantilla de normas?")) return;
-  save(KEYS.norms, DEFAULT_NORMS);
-  loadNorms();
-};
-
-window.saveNorms = function(){
-  try{
-    const obj = JSON.parse($("norms").value);
-    save(KEYS.norms, obj);
-    alert("Normas guardadas.");
-  }catch(e){
-    alert("El texto de normas no es válido. No se guardó.");
-  }
-};
-
-/* ================== GRÁFICAS ROMBO (placeholder) ==================
-   En Parte 4/4 conecto la conversión a G real y lo dibujo con M/L/T.
-*/
-function drawDiamond(svgId, values, fill, stroke){
-  const svg = document.getElementById(svgId);
-  if(!svg) return;
-  svg.innerHTML = "";
-
-  const cx=130, cy=110, r=80;
-  const dims=["D","I","S","C"];
-
-  function pt(dim, f){
-    if(dim==="D") return {x:cx, y:cy-r*f};
-    if(dim==="I") return {x:cx+r*f, y:cy};
-    if(dim==="S") return {x:cx, y:cy+r*f};
-    return {x:cx-r*f, y:cy}; // C
-  }
-
-  // rejilla
-  [0.25,0.5,0.75,1].forEach(lvl=>{
-    const p = dims.map(d=>pt(d,lvl));
-    const d = `M ${p[0].x} ${p[0].y} L ${p[1].x} ${p[1].y} L ${p[2].x} ${p[2].y} L ${p[3].x} ${p[3].y} Z`;
-    const path = document.createElementNS("http://www.w3.org/2000/svg","path");
-    path.setAttribute("d", d);
-    path.setAttribute("fill","none");
-    path.setAttribute("stroke","#dde3df");
-    svg.appendChild(path);
-  });
-
-  // ejes + letras
-  dims.forEach(dim=>{
-    const end = pt(dim,1);
-    const line = document.createElementNS("http://www.w3.org/2000/svg","line");
-    line.setAttribute("x1",cx); line.setAttribute("y1",cy);
-    line.setAttribute("x2",end.x); line.setAttribute("y2",end.y);
-    line.setAttribute("stroke","#c0c7c3");
-    svg.appendChild(line);
-
-    const lab = pt(dim,1.18);
-    const text = document.createElementNS("http://www.w3.org/2000/svg","text");
-    text.setAttribute("x",lab.x); text.setAttribute("y",lab.y);
-    text.setAttribute("text-anchor","middle");
-    text.setAttribute("alignment-baseline","middle");
-    text.setAttribute("fill","#134E39");
-    text.setAttribute("font-weight","800");
-    text.textContent = dim;
-    svg.appendChild(text);
-  });
-
-  // polígono
-  const max = Math.max(values.D,values.I,values.S,values.C,1);
-  const pts = dims.map(d=>pt(d, (values[d]/max)));
-  const polyD = `M ${pts[0].x} ${pts[0].y} L ${pts[1].x} ${pts[1].y} L ${pts[2].x} ${pts[2].y} L ${pts[3].x} ${pts[3].y} Z`;
-  const poly = document.createElementNS("http://www.w3.org/2000/svg","path");
-  poly.setAttribute("d", polyD);
-  poly.setAttribute("fill", fill);
-  poly.setAttribute("stroke", stroke);
-  poly.setAttribute("stroke-width","2");
-  svg.appendChild(poly);
 }
 
-/* cuando se termina el test, si existen valores crudos, dibuja algo */
-const _oldFinish = window.finishTest;
-window.finishTest = function(){
-  _oldFinish();
-  const raw = computeRaw();
-  drawDiamond("svgM", raw.M, "rgba(0,102,87,0.22)", "#006657");
-  drawDiamond("svgL", raw.L, "rgba(188,149,92,0.22)", "#BC955C");
-  drawDiamond("svgT", raw.T, "rgba(198,40,40,0.18)", "#c62828");
-};
-
-/* ================== SANITIZAR HTML ================== */
-function escapeHtml(str){
-  return String(str??"")
-    .replaceAll("&","&amp;").replaceAll("<","&lt;")
-    .replaceAll(">","&gt;").replaceAll('"',"&quot;")
-    .replaceAll("'","&#039;");
-}
-
-/* ================== AUTO: cerrar modal con ESC ================== */
-document.addEventListener("keydown",(e)=>{
-  if(e.key==="Escape" && !$("overlay").classList.contains("hidden")){
-    closeLogin();
-  }
-});
-</script>
-<!-- Firebase COMPAT (sin módulos) -->
-<script src="https://www.gstatic.com/firebasejs/12.6.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore-compat.js"></script>
-
-<script>
-/* ================== FIREBASE / FIRESTORE ==================
-   Importante: esto evita problemas de <script type="module">.
-*/
-const firebaseConfig = {
-  apiKey: "AIzaSyDJniFUuRh3mfjP40cAm2gJ2P3TGOyKqog",
-  authDomain: "perfil-de-dinamicas-laborales.firebaseapp.com",
-  projectId: "perfil-de-dinamicas-laborales",
-  storageBucket: "perfil-de-dinamicas-laborales.firebasestorage.app",
-  messagingSenderId: "231363532636",
-  appId: "1:231363532636:web:b610e5501cea73dce69399",
-  measurementId: "G-R1X0PZ3WYY"
-};
-
-let fs = null;
-try{
-  firebase.initializeApp(firebaseConfig);
-  fs = firebase.firestore();
-  console.log("Firestore listo.");
-}catch(e){
-  console.warn("Firestore no disponible, se usará solo localStorage.", e);
-}
-
-/* ================== HELPERS ================== */
-const clamp = (n,min,max)=>Math.max(min,Math.min(max,n));
-
-function normsLoaded(n){
-  try{
-    // si sigue en plantilla (A=0 y mult=1) lo consideramos NO cargado
-    const isDefault =
-      n?.A?.M?.D===0 && n?.A?.M?.I===0 && n?.A?.M?.S===0 && n?.A?.M?.C===0 &&
-      n?.mult?.M?.D===1 && n?.mult?.M?.I===1 && n?.mult?.M?.S===1 && n?.mult?.M?.C===1;
-    return !isDefault;
-  }catch{ return false; }
-}
-
-function getNormsSafe(){
-  return read(KEYS.norms, DEFAULT_NORMS);
-}
-
-/* ================== CONVERSIÓN A ESCALA G (manual) ==================
-   G = (R - A) * múltiplo + 50
-*/
-function toG(graphKey, raw){
-  const n = getNormsSafe();
-  const out = {D:50,I:50,S:50,C:50};
-  const has = normsLoaded(n);
-
-  if(!has){
-    // Modo aproximado SOLO visual (no psicométrico)
-    ["D","I","S","C"].forEach(dim=>{
-      const R = raw[dim] ?? 0;
-      let g;
-      if(graphKey==="T"){
-        // T va de -24..+24
-        g = 50 + (R/24)*35;
-      }else{
-        // M y L van 0..24
-        g = 15 + (R/24)*70;
-      }
-      out[dim] = Math.round(clamp(g,0,100));
-    });
-    return {G:out, normas:false};
-  }
-
-  ["D","I","S","C"].forEach(dim=>{
-    const R = raw[dim] ?? 0;
-    const A = n.A?.[graphKey]?.[dim] ?? 0;
-    const mult = n.mult?.[graphKey]?.[dim] ?? 1;
-    const g = ((R - A) * mult) + 50;
-    out[dim] = Math.round(clamp(g,0,100));
-  });
-  return {G:out, normas:true};
-}
-
-/* ================== GRÁFICA ROMBO REAL CON G (0-100) ================== */
-function drawDiamondG(svgId, valuesG, fill, stroke){
-  const svg = document.getElementById(svgId);
-  if(!svg) return;
-  svg.innerHTML = "";
-
-  const cx=130, cy=110, radius=80;
-  const dims=["D","I","S","C"];
-
-  function pt(dim, factor){
-    if(dim==="D") return {x:cx, y:cy-radius*factor};
-    if(dim==="I") return {x:cx+radius*factor, y:cy};
-    if(dim==="S") return {x:cx, y:cy+radius*factor};
-    return {x:cx-radius*factor, y:cy}; // C
-  }
-
-  // Rejilla (25,50,75,100)
-  [0.25,0.5,0.75,1].forEach((lvl,i)=>{
-    const p = dims.map(d=>pt(d,lvl));
-    const dPath = `M ${p[0].x} ${p[0].y} L ${p[1].x} ${p[1].y} L ${p[2].x} ${p[2].y} L ${p[3].x} ${p[3].y} Z`;
-    const path = document.createElementNS("http://www.w3.org/2000/svg","path");
-    path.setAttribute("d", dPath);
-    path.setAttribute("fill","none");
-    path.setAttribute("stroke", i===1 ? "#b9c4bf" : "#dde3df");
-    path.setAttribute("stroke-width", i===1 ? "1.4" : "1");
-    svg.appendChild(path);
-  });
-
-  // Ejes + letras
-  dims.forEach(dim=>{
-    const end = pt(dim,1);
-    const axis = document.createElementNS("http://www.w3.org/2000/svg","line");
-    axis.setAttribute("x1",cx); axis.setAttribute("y1",cy);
-    axis.setAttribute("x2",end.x); axis.setAttribute("y2",end.y);
-    axis.setAttribute("stroke","#c0c7c3");
-    svg.appendChild(axis);
-
-    const lab = pt(dim,1.18);
-    const t = document.createElementNS("http://www.w3.org/2000/svg","text");
-    t.setAttribute("x",lab.x); t.setAttribute("y",lab.y);
-    t.setAttribute("text-anchor","middle");
-    t.setAttribute("alignment-baseline","middle");
-    t.setAttribute("fill","#134E39");
-    t.setAttribute("font-weight","900");
-    t.textContent = dim;
-    svg.appendChild(t);
-  });
-
-  // Polígono con G/100
-  const pts = dims.map(dim=>{
-    const g = clamp(valuesG[dim] ?? 50, 0, 100);
-    return pt(dim, g/100);
-  });
-
-  const polyD = `M ${pts[0].x} ${pts[0].y} L ${pts[1].x} ${pts[1].y} L ${pts[2].x} ${pts[2].y} L ${pts[3].x} ${pts[3].y} Z`;
-  const poly = document.createElementNS("http://www.w3.org/2000/svg","path");
-  poly.setAttribute("d", polyD);
-  poly.setAttribute("fill", fill);
-  poly.setAttribute("stroke", stroke);
-  poly.setAttribute("stroke-width","2");
-  svg.appendChild(poly);
-
-  pts.forEach(p=>{
-    const c = document.createElementNS("http://www.w3.org/2000/svg","circle");
-    c.setAttribute("cx",p.x); c.setAttribute("cy",p.y);
-    c.setAttribute("r","3.2");
-    c.setAttribute("fill", stroke);
-    svg.appendChild(c);
-  });
-
-  // Texto abajo
-  const tick = document.createElementNS("http://www.w3.org/2000/svg","text");
-  tick.setAttribute("x",cx); tick.setAttribute("y",cy+radius+28);
-  tick.setAttribute("text-anchor","middle");
-  tick.setAttribute("fill","#777");
-  tick.setAttribute("font-size","12");
-  tick.textContent = `G: D=${valuesG.D} I=${valuesG.I} S=${valuesG.S} C=${valuesG.C}`;
-  svg.appendChild(tick);
-}
-
-/* ================== INTERPRETACIÓN Y CAPACITACIÓN (más profunda) ==================
-   Nota: ya con G real (normas cargadas) la interpretación es confiable.
-*/
-function deepReport(valid, GM, GL, GT){
-  if(!valid){
-    return {
-      analysis: `<div class="warn"><strong>Prueba inválida:</strong> ΣT fuera del rango aceptado. El manual recomienda repetir la aplicación en condiciones adecuadas (sin prisa, sin interrupciones, instrucciones claras).</div>`,
-      training: `<p class="text-muted">No se sugiere capacitación basada en un perfil inválido. Reaplique el test.</p>`
-    };
-  }
-
-  const names = {D:"Dominancia", I:"Influencia", S:"Estabilidad", C:"Cumplimiento"};
-  const dims = ["D","I","S","C"];
-  let top="D", topVal=GT.D;
-  dims.forEach(d=>{ if(GT[d]>topVal){ top=d; topVal=GT[d]; } });
-
-  const analysis = `
-    <h3>Análisis (M / L / T en escala G)</h3>
-    <p><span class="badge">Perfil predominante en T: ${names[top]} (${top})</span></p>
-
-    <p><strong>Cómo leer estas gráficas:</strong></p>
-    <ul class="text-muted">
-      <li><strong>M (Motivación):</strong> lo que la persona busca expresar o desea en el rol.</li>
-      <li><strong>L (Bajo presión):</strong> respuesta probable ante tensión, exigencia, urgencia o evaluación.</li>
-      <li><strong>T (Conducta diaria):</strong> balance cotidiano (M − L) convertido a G.</li>
-    </ul>
-
-    <p class="text-muted"><strong>Valores G en T:</strong> D=${GT.D}, I=${GT.I}, S=${GT.S}, C=${GT.C}</p>
-
-    <p><strong>Lectura del estilo predominante (${top}):</strong></p>
-    ${
-      top==="D" ? `
-      <p>En conducta diaria destaca una orientación a resultados, decisión y ritmo alto. Suele tomar control en situaciones ambiguas y priorizar objetivos.</p>
-      <p><strong>Riesgos típicos:</strong> impaciencia, comunicación muy directa, poca tolerancia a procesos lentos.</p>
-      <p><strong>Señales en M/L:</strong> si M(D) es alto y L(D) baja, puede mostrar “empuje” en calma pero moderarse bajo presión; si L(D) sube, tiende a imponer control bajo estrés.</p>
-      ` : ""
-    }
-    ${
-      top==="I" ? `
-      <p>Predomina un estilo social y comunicativo. Facilita coordinación, motivación del equipo y persuasión.</p>
-      <p><strong>Riesgos típicos:</strong> dispersión, exceso de optimismo, seguimiento irregular si no hay estructura.</p>
-      <p><strong>Señales en M/L:</strong> si L(I) cae, bajo presión puede retraerse o enfocarse menos en lo social; si L(I) sube, puede hablar más para influir o negociar.</p>
-      ` : ""
-    }
-    ${
-      top==="S" ? `
-      <p>Destaca un estilo estable, paciente y orientado a continuidad. Es confiable en rutinas y sostiene el servicio con calma.</p>
-      <p><strong>Riesgos típicos:</strong> resistencia al cambio, dificultad para confrontar o acelerar decisiones.</p>
-      <p><strong>Señales en M/L:</strong> si L(S) sube, bajo presión busca estabilidad; si L(S) baja, puede perder paciencia o sentirse presionado por el ritmo.</p>
-      ` : ""
-    }
-    ${
-      top==="C" ? `
-      <p>Predomina un estilo cuidadoso, analítico y orientado a normas/calidad. Tiende a reducir errores y a documentar.</p>
-      <p><strong>Riesgos típicos:</strong> perfeccionismo, lentitud por análisis excesivo, estrés ante ambigüedad.</p>
-      <p><strong>Señales en M/L:</strong> si L(C) sube, bajo presión controla más y exige precisión; si L(C) baja, podría simplificar o decidir con menos evidencia por urgencia.</p>
-      ` : ""
-    }
-
-    <p><strong>Balance práctico (para jefatura):</strong></p>
-    <ul class="text-muted">
-      <li><strong>Qué lo activa (M):</strong> lo que motiva y aumenta desempeño.</li>
-      <li><strong>Qué lo tensiona (L):</strong> condiciones donde cambia su conducta.</li>
-      <li><strong>Qué observar (T):</strong> patrón cotidiano real.</li>
-    </ul>
-  `;
-
-  const training = `
-    <h3>Capacitación sugerida (según perfil T)</h3>
-    ${
-      top==="D" ? `
-      <ul class="text-muted">
-        <li><strong>Comunicación efectiva bajo presión:</strong> técnicas de mensaje breve, escucha activa, retroalimentación sin confrontación.</li>
-        <li><strong>Toma de decisiones con evidencia:</strong> priorización clínica/operativa, matrices rápidas, control de sesgos.</li>
-        <li><strong>Liderazgo colaborativo:</strong> delegación, acuerdos claros, seguimiento por indicadores.</li>
-        <li><strong>Autogestión:</strong> manejo de impulsividad y tolerancia a ritmos distintos.</li>
-      </ul>` : ""
-    }
-    ${
-      top==="I" ? `
-      <ul class="text-muted">
-        <li><strong>Gestión del tiempo y foco:</strong> técnicas de priorización, listas operativas, cierres de compromisos.</li>
-        <li><strong>Comunicación clínica/operativa estructurada:</strong> SBAR o formatos de pase de guardia.</li>
-        <li><strong>Asertividad:</strong> límites, negociación y manejo de conversaciones difíciles.</li>
-        <li><strong>Seguimiento:</strong> control de tareas y evidencias de cumplimiento.</li>
-      </ul>` : ""
-    }
-    ${
-      top==="S" ? `
-      <ul class="text-muted">
-        <li><strong>Adaptación al cambio:</strong> micro-hábitos, manejo de transición y aprendizaje gradual.</li>
-        <li><strong>Comunicación asertiva:</strong> expresar necesidades, decir “no” con técnica, confrontación constructiva.</li>
-        <li><strong>Mejora continua:</strong> participación en procesos, propuestas pequeñas de optimización.</li>
-        <li><strong>Gestión emocional:</strong> resiliencia, autocuidado, prevención de desgaste.</li>
-      </ul>` : ""
-    }
-    ${
-      top==="C" ? `
-      <ul class="text-muted">
-        <li><strong>Priorización y rapidez con seguridad:</strong> distinguir “crítico vs perfecto”, umbrales de calidad.</li>
-        <li><strong>Comunicación técnica efectiva:</strong> traducir datos a acciones, reportes breves.</li>
-        <li><strong>Flexibilidad operativa:</strong> planes B, decisiones con información incompleta.</li>
-        <li><strong>Manejo de estrés:</strong> reducir rumiación, técnicas de control del error.</li>
-      </ul>` : ""
-    }
-    <p class="text-muted">Recomendación: combinar con observación del puesto y retroalimentación de supervisión.</p>
-  `;
-
-  return {analysis, training};
-}
-
-/* ================== REEMPLAZAR EL FINISH PARA CALCULAR G + GUARDAR MEJOR ================== */
-const __finish = window.finishTest;
-window.finishTest = function(){
-  // valida y muestra results (usa lógica anterior)
-  __finish();
-
-  // Recalcula y “mejora” resultados con G + gráficas reales
-  const raw = computeRaw();
-  const sumT = raw.T.D+raw.T.I+raw.T.S+raw.T.C;
-  const valid = sumT>=-3 && sumT<=3;
-
-  const {G:GM, normas:nM} = toG("M", raw.M);
-  const {G:GL, normas:nL} = toG("L", raw.L);
-  const {G:GT, normas:nT} = toG("T", raw.T);
-
-  // Dibuja rombo G real
-  drawDiamondG("svgM", GM, "rgba(0,102,87,0.22)", "#006657");
-  drawDiamondG("svgL", GL, "rgba(188,149,92,0.22)", "#BC955C");
-  drawDiamondG("svgT", GT, "rgba(198,40,40,0.18)", "#c62828");
-
-  // Mensaje de normas
-  $("res-g").innerHTML = `
-    <h3>Escala G (0–100)</h3>
-    ${ (nM&&nL&&nT) ? "" : `<div class="warn"><strong>Normas no cargadas:</strong> escala G en modo aproximado. Cargue Normas en Admin para alineación exacta.</div>`}
-    <p class="mono">G(M): D ${GM.D}, I ${GM.I}, S ${GM.S}, C ${GM.C}</p>
-    <p class="mono">G(L): D ${GL.D}, I ${GL.I}, S ${GL.S}, C ${GL.C}</p>
-    <p class="mono">G(T): D ${GT.D}, I ${GT.I}, S ${GT.S}, C ${GT.C}</p>
-  `;
-
-  // Reporte profundo
-  const rep = deepReport(valid, GM, GL, GT);
-  $("analysis").innerHTML = rep.analysis;
-  $("training").innerHTML = rep.training;
-
-  // Guardar “completo” en local (reemplaza el último registro para incluir G + datos faltantes)
-  const arr = read(KEYS.results, []);
-  if(arr.length){
-    arr[arr.length-1] = {
-      ...arr[arr.length-1],
-      puesto: $("puesto").value || "",
-      edad: $("edad").value || "",
-      lugarNacimiento: $("lugarNacimiento").value || "",
-      GM, GL, GT,
-      normasCargadas: (nM&&nL&&nT)
-    };
-    save(KEYS.results, arr);
-  }
-
-  // Guardar en Firestore
-  saveToCloudFull(arr[arr.length-1]);
-};
-
-/* ================== FIRESTORE: SINCRONIZACIÓN ================== */
-async function saveToCloudConfig(){
+/* ===================== FIRESTORE: GUARDADO/SYNC ===================== */
+async function saveConfigToCloud(){
   if(!fs) return;
   try{
     await fs.collection("config").doc("unidades").set({items: read(KEYS.units,[])});
     await fs.collection("config").doc("categorias").set({items: read(KEYS.cats,[])});
-    await fs.collection("config").doc("normas").set(read(KEYS.norms, DEFAULT_NORMS));
   }catch(e){
-    console.error("No se pudo guardar config en Firestore:", e);
+    console.error("No se pudo guardar config:", e);
   }
 }
 
-async function loadFromCloudConfig(){
+async function syncConfigFromCloud(){
   if(!fs) return;
   try{
     const u = await fs.collection("config").doc("unidades").get();
     const c = await fs.collection("config").doc("categorias").get();
-    const n = await fs.collection("config").doc("normas").get();
     if(u.exists && Array.isArray(u.data().items)) save(KEYS.units, u.data().items);
     if(c.exists && Array.isArray(c.data().items)) save(KEYS.cats, c.data().items);
-    if(n.exists) save(KEYS.norms, n.data());
     loadSelects();
-    if(!$("section-admin").classList.contains("hidden")) loadAdmin();
   }catch(e){
-    console.error("No se pudo cargar config de Firestore:", e);
+    console.warn("No se pudo cargar config nube:", e);
   }
 }
 
-async function saveToCloudFull(record){
-  if(!fs || !record) return;
+async function saveResultToCloud(record){
+  if(!fs) return;
   try{
     const ref = await fs.collection("pdl_resultados").add(record);
-    // guardar id también localmente para poder eliminar en nube
+    // agrega id al último guardado localmente
     const arr = read(KEYS.results, []);
     arr[arr.length-1]._id = ref.id;
     save(KEYS.results, arr);
@@ -1190,122 +1099,30 @@ async function saveToCloudFull(record){
   }
 }
 
-async function loadCloudResults(){
-  if(!fs) return null;
+async function syncFromCloud(){
+  if(!fs){ alert("Firestore no disponible."); return; }
   try{
     const snap = await fs.collection("pdl_resultados").orderBy("date","desc").get();
     const list = [];
     snap.forEach(doc=> list.push({_id:doc.id, ...doc.data()}));
-    return list;
+    // guardo en local en orden cronológico antiguo (para que el reverse en tabla funcione)
+    save(KEYS.results, list.slice().reverse());
+    renderResults();
+    alert("Sincronización completada.");
   }catch(e){
-    console.error("No se pudieron leer resultados en Firestore:", e);
-    return null;
+    console.error(e);
+    alert("No se pudo sincronizar. Revisa permisos/reglas.");
   }
 }
 
-/* Hook: cuando guardas unidades/categorías/normas, también a nube */
-const _addUnit = window.addUnit;
-window.addUnit = function(){ _addUnit(); saveToCloudConfig(); };
-
-const _delUnit = window.delUnit;
-window.delUnit = function(i){ _delUnit(i); saveToCloudConfig(); };
-
-const _addCat = window.addCat;
-window.addCat = function(){ _addCat(); saveToCloudConfig(); };
-
-const _delCat = window.delCat;
-window.delCat = function(i){ _delCat(i); saveToCloudConfig(); };
-
-const _saveNorms = window.saveNorms;
-window.saveNorms = function(){ _saveNorms(); saveToCloudConfig(); };
-
-/* ================== RESULTADOS ADMIN: CARGA DESDE NUBE SI EXISTE ================== */
-const _renderResults = renderResults;
-renderResults = async function(){
-  const cloud = await loadCloudResults();
-  if(cloud && cloud.length){
-    // reflejar en localStorage para exportar fácil
-    save(KEYS.results, cloud.slice().reverse()); // guardo en orden antiguo
-  }
-  _renderResults();
-};
-
-/* Eliminar: también en nube si tiene _id */
-const _deleteResult = window.deleteResult;
-window.deleteResult = async function(i){
-  const data = read(KEYS.results, []);
-  const rec = data[i];
-  _deleteResult(i);
-  if(fs && rec && rec._id){
-    try{ await fs.collection("pdl_resultados").doc(rec._id).delete(); }
-    catch(e){ console.error("No se pudo borrar en Firestore:", e); }
-  }
-};
-
-/* ================== NORMAS “FÁCIL” (SIN JSON) ==================
-   Agrego un botón “Capturar normas fácil” dentro del panel de Normas
-   para que pegues números por línea: D,I,S,C
-*/
-(function injectEasyNormsUI(){
-  const panel = $("panel-n");
-  if(!panel) return;
-
-  const box = document.createElement("div");
-  box.className = "warn";
-  box.innerHTML = `
-    <strong>Captura fácil (sin JSON):</strong><br>
-    Pega 4 números separados por coma en cada línea (D,I,S,C).<br>
-    <span class="text-muted">Ejemplo: 3,5,8,2</span><br><br>
-
-    <div class="text-muted"><strong>Promedios A</strong></div>
-    <div class="form-grid" style="margin-top:.4rem;">
-      <div><label>A M</label><input id="easyA_M" placeholder="D,I,S,C"></div>
-      <div><label>A L</label><input id="easyA_L" placeholder="D,I,S,C"></div>
-      <div><label>A T</label><input id="easyA_T" placeholder="D,I,S,C"></div>
-    </div>
-
-    <div class="text-muted" style="margin-top:.6rem;"><strong>Múltiplos</strong></div>
-    <div class="form-grid" style="margin-top:.4rem;">
-      <div><label>Mult M</label><input id="easyM_M" placeholder="D,I,S,C"></div>
-      <div><label>Mult L</label><input id="easyM_L" placeholder="D,I,S,C"></div>
-      <div><label>Mult T</label><input id="easyM_T" placeholder="D,I,S,C"></div>
-    </div>
-
-    <div class="btn-row">
-      <button class="btn-primary" type="button" onclick="applyEasyNorms()">Aplicar y guardar</button>
-    </div>
-  `;
-  panel.insertBefore(box, panel.firstChild);
-
-  window.applyEasyNorms = function(){
-    function parse4(id){
-      const s = (document.getElementById(id).value||"").trim();
-      const parts = s.split(",").map(x=>Number(x.trim()));
-      if(parts.length!==4 || parts.some(x=>Number.isNaN(x))) throw new Error("Formato inválido en "+id);
-      return {D:parts[0], I:parts[1], S:parts[2], C:parts[3]};
-    }
-    try{
-      const obj = {
-        version: 1,
-        A: { M: parse4("easyA_M"), L: parse4("easyA_L"), T: parse4("easyA_T") },
-        mult: { M: parse4("easyM_M"), L: parse4("easyM_L"), T: parse4("easyM_T") }
-      };
-      save(KEYS.norms, obj);
-      $("norms").value = JSON.stringify(obj,null,2);
-      alert("Normas aplicadas.");
-      saveToCloudConfig();
-    }catch(e){
-      alert(e.message);
-    }
-  };
-})();
-
-/* ================== ARRANQUE: TRAER CONFIG DE NUBE ================== */
-loadFromCloudConfig();
+/* ===================== HELPERS ===================== */
+function escapeHtml(str){
+  return String(str??"")
+    .replaceAll("&","&amp;").replaceAll("<","&lt;")
+    .replaceAll(">","&gt;").replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+}
 </script>
-
-</main>
 </body>
 </html>
-
-
+<!-- FIN -->
