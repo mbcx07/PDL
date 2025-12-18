@@ -93,7 +93,17 @@
     .chart-title{font-weight:1000;color:var(--imss2);font-size:.9rem;margin-bottom:.35rem;}
 
     .mono{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;}
-    .longtext{white-space:pre-wrap; line-height:1.45;}
+    .report{
+      background:#fafcfb;border:1px solid #e0e4e2;border-radius:14px;padding:1rem 1.05rem;margin-top:.8rem;
+    }
+    .report h4{margin:.2rem 0 .55rem;color:#123d2f;font-size:1rem;}
+    .report p{margin:.45rem 0;line-height:1.55;}
+    .report .small{font-size:.88rem;color:var(--muted);}
+    .report hr{border:none;border-top:1px solid #e2e6e4;margin:.8rem 0;}
+    .longtext{white-space:pre-wrap; line-height:1.55; font-size:.95rem;}
+    .viewTabs{display:flex;gap:.4rem;margin:.5rem 0 .8rem;flex-wrap:wrap;}
+    .viewTabs button{padding:.4rem .75rem;font-size:.82rem;border-radius:999px;}
+    .viewTabs button.active{background:var(--imss);color:#fff;}
     @media (max-width:680px){ .t-head,.t-row{grid-template-columns:minmax(0,1.5fr) 78px 78px;padding-inline:.65rem;} }
   </style>
 </head>
@@ -161,7 +171,7 @@
     </div>
 
     <p class="text-muted">
-      Nota: la interpretación se genera automáticamente al finalizar y queda guardada junto con el registro (local + nube).
+      Nota: El sistema genera un reporte en lenguaje claro para el trabajador y una versión técnica para el área administrativa.
     </p>
   </section>
 
@@ -220,8 +230,8 @@
       </div>
     </div>
 
-    <div id="analysis"></div>
-    <div id="training"></div>
+    <div id="analysisWorker"></div>
+    <div id="trainingWorker"></div>
 
     <div class="btn-row">
       <button class="btn-primary" type="button" onclick="resetForNewTest()">Aplicar a otro trabajador</button>
@@ -289,7 +299,7 @@
             <th>Edad</th>
             <th>Lugar nac.</th>
             <th>Puesto</th>
-            <th>T Perfil</th>
+            <th>Perfil</th>
             <th>ΣT</th>
             <th>Validez</th>
             <th>Acciones</th>
@@ -298,7 +308,10 @@
           <tbody id="tbRes"></tbody>
         </table>
       </div>
-      <p class="text-muted" style="margin-top:.55rem;">“Ver” abre el análisis y capacitación. “Eliminar” borra local y en Firestore (si existe).</p>
+
+      <p class="text-muted" style="margin-top:.55rem;">
+        “Ver” muestra el reporte para Trabajador y Administración. “Eliminar” borra local y en Firestore (si existe).
+      </p>
     </div>
 
     <div class="btn-row">
@@ -324,13 +337,29 @@
 
   <!-- Modal “Ver reporte” -->
   <div id="overlayView" class="overlay hidden">
-    <div class="modal" style="max-width:760px;">
+    <div class="modal" style="max-width:820px;">
       <h3>Detalle del resultado</h3>
       <div id="viewMeta" class="text-muted"></div>
-      <h3 style="margin-top:.8rem;">Análisis</h3>
-      <div id="viewAnalysis" class="longtext"></div>
-      <h3 style="margin-top:.8rem;">Capacitación sugerida</h3>
-      <div id="viewTraining" class="longtext"></div>
+
+      <div class="viewTabs">
+        <button id="vtab-worker" class="btn-secondary active" type="button" onclick="setViewTab('worker')">Trabajador</button>
+        <button id="vtab-admin" class="btn-secondary" type="button" onclick="setViewTab('admin')">Administración</button>
+      </div>
+
+      <div id="viewWorker">
+        <h3 style="margin-top:.2rem;">Interpretación para el trabajador</h3>
+        <div id="viewAnalysisW" class="longtext"></div>
+        <h3 style="margin-top:.8rem;">Capacitación sugerida para el trabajador</h3>
+        <div id="viewTrainingW" class="longtext"></div>
+      </div>
+
+      <div id="viewAdmin" class="hidden">
+        <h3 style="margin-top:.2rem;">Interpretación para administración</h3>
+        <div id="viewAnalysisA" class="longtext"></div>
+        <h3 style="margin-top:.8rem;">Capacitación sugerida para administración</h3>
+        <div id="viewTrainingA" class="longtext"></div>
+      </div>
+
       <div class="actions">
         <button class="btn-secondary" type="button" onclick="closeView()">Cerrar</button>
       </div>
@@ -668,14 +697,7 @@ function drawDiamondG(svgId, valuesG, fill, stroke){
   svg.appendChild(tick);
 }
 
-/* ===================== INTERPRETACIÓN EXTENSA ===================== */
-function band(g){
-  if(g>=75) return {name:"muy alto", code:"VH"};
-  if(g>=65) return {name:"alto", code:"H"};
-  if(g>=36) return {name:"medio", code:"M"};
-  if(g>=26) return {name:"bajo", code:"L"};
-  return {name:"muy bajo", code:"VL"};
-}
+/* ===================== INTERPRETACIÓN CLARA (2 VERSIONES) ===================== */
 function topDim(G){
   const dims=["D","I","S","C"];
   let t="D"; let m=G.D;
@@ -689,191 +711,236 @@ function secondDim(G, top){
   return t;
 }
 
-function longReport(valid, GM, GL, GT, sumT){
-  const names = {D:"Dominancia", I:"Influencia", S:"Constancia", C:"Apego"};
-  const dimDesc = {
-    D:{
-      core:"orientación a resultados, decisión, ritmo alto, manejo directo del conflicto",
-      strengths:["toma decisiones con rapidez","asume responsabilidad","impulsa el avance de tareas","actúa con seguridad ante urgencias"],
-      risks:["impaciencia con procesos lentos","comunicación percibida como dura","tendencia a controlar en exceso","menor tolerancia a errores ajenos"],
-      comm:"prefiere mensajes breves, directos y con objetivo; responde bien a metas claras y límites definidos",
-      motiv:"retos, autonomía, objetivos medibles, reconocimiento por logro y eficacia",
-      stress:"bajo presión puede acelerar, confrontar o imponer; requiere pausa táctica y priorización"
-    },
-    I:{
-      core:"comunicación, influencia social, energía interpersonal, persuasión",
-      strengths:["conecta con el equipo","facilita coordinación y clima","vende ideas y moviliza","aporta entusiasmo"],
-      risks:["dispersión por exceso de estímulos","subestimar riesgos por optimismo","seguimiento irregular si no hay estructura","evitar conversaciones difíciles"],
-      comm:"prefiere interacción, acuerdos por consenso y mensajes positivos; necesita claridad del “qué sigue”",
-      motiv:"participación, visibilidad, reconocimiento social, variedad y espacios para proponer",
-      stress:"bajo presión puede hablar de más, prometer sin cerrar o buscar aprobación; requiere checklist y cierre"
-    },
-    S:{
-      core:"estabilidad, paciencia, constancia, cooperación y ritmo sostenido",
-      strengths:["confiable en rutinas","sostiene continuidad del servicio","apoya y acompaña","minimiza conflictos con tacto"],
-      risks:["resistencia al cambio brusco","dificultad para confrontar","posponer decisiones","incomodidad con urgencias sostenidas"],
-      comm:"prefiere instrucciones claras, ritmo predecible y apoyo; valora acuerdos estables y tiempos razonables",
-      motiv:"seguridad, claridad de rol, relaciones armónicas, procesos estables y reconocimiento por constancia",
-      stress:"bajo presión puede cerrarse o ceder; requiere contención, priorizar y pasos pequeños"
-    },
-    C:{
-      core:"apego a normas, precisión, análisis, calidad y control",
-      strengths:["reduce errores","documenta y ordena","detecta riesgos","mantiene estándares"],
-      risks:["perfeccionismo","análisis excesivo ante ambigüedad","rigidez con cambios","estrés cuando falta información"],
-      comm:"prefiere datos, evidencia y criterios; necesita claridad de estándares y de “qué es suficiente”",
-      motiv:"calidad, reglas claras, trabajo técnico, control del error, autonomía para analizar",
-      stress:"bajo presión puede volverse más rígido o crítico; requiere priorización y umbrales"
-    }
+function perfilNombre(dim){
+  return ({D:"Impulso a la Acción", I:"Influencia Social", S:"Estabilidad Operativa", C:"Cuidado y Normas"})[dim] || dim;
+}
+function dimSimple(dim){
+  const map = {
+    D:"Decisión y ritmo de trabajo",
+    I:"Comunicación y trato con personas",
+    S:"Paciencia y constancia",
+    C:"Orden, reglas y detalle"
   };
+  return map[dim] || dim;
+}
 
-  if(!valid){
-    const analysis = `PRUEBA INVÁLIDA (ΣT=${sumT}).\n
-Interpretación: La sumatoria de T está fuera del rango esperado. En este escenario no se recomienda concluir un perfil conductual.\n
-Recomendación operativa:\n- Reaplicar en un momento sin interrupciones.\n- Confirmar que el evaluado comprendió “MÁS” y “MENOS”.\n- Evitar que responda con prisa o por “imagen ideal”.`;
-    const training = `Capacitación sugerida: No aplica mientras la prueba sea inválida.\n
-Acción: Reaplicar y, si persiste invalidez, considerar entrevista breve para identificar dificultad con vocabulario o condiciones de aplicación.`;
-    return {profile:"INVÁLIDA", analysis, training};
-  }
-
+function reporteDual(valid, GM, GL, GT, sumT, datos){
+  // datos: {nombre, puesto, unidad...} solo para personalizar 1–2 frases sin exagerar
   const top = topDim(GT);
   const sec = secondDim(GT, top);
 
-  const bD=band(GT.D), bI=band(GT.I), bS=band(GT.S), bC=band(GT.C);
+  // Cambios bajo presión (M vs L) en lenguaje sencillo
+  const dD = (GM.D||50) - (GL.D||50);
+  const dI = (GM.I||50) - (GL.I||50);
+  const dS = (GM.S||50) - (GL.S||50);
+  const dC = (GM.C||50) - (GL.C||50);
 
-  const comboKey = `${top}${sec}`;
-  const comboTextMap = {
-    "DI":"Estilo de impacto: orientado a logro con capacidad de influir. Puede liderar y movilizar, cuidando no atropellar acuerdos.",
-    "DC":"Estilo de ejecución: orientado a resultados con alta exigencia de calidad. Excelente para control y mejora, cuidando rigidez.",
-    "DS":"Estilo de empuje estable: logra metas sosteniendo continuidad. Puede requerir apoyo en confrontación y priorización rápida.",
-    "ID":"Estilo persuasivo-competitivo: impulsa iniciativas con energía social. Requiere estructura para cumplir y controlar impulsividad.",
-    "IC":"Estilo comunicador-analítico: explica, convence y cuida detalle. Riesgo: análisis + social = demora en cierres si no hay límites.",
-    "IS":"Estilo integrador: mantiene buen clima y estabilidad. Riesgo: evitar conflictos y posponer decisiones difíciles.",
-    "SD":"Estilo resolutivo sereno: responde con calma y decide cuando es necesario. Riesgo: tensión interna ante urgencias sostenidas.",
-    "SI":"Estilo colaborativo social: crea armonía, facilita cooperación. Riesgo: decir sí a todo y saturarse.",
-    "SC":"Estilo metódico estable: consistencia con calidad. Riesgo: resistencia a cambios rápidos y estrés por interrupciones.",
-    "CD":"Estilo exigente resolutivo: decide con criterio y estándares. Riesgo: intolerancia a errores y comunicación dura.",
-    "CI":"Estilo técnico-influyente: combina precisión con persuasión. Riesgo: sobre-explicar y querer controlar narrativa.",
-    "CS":"Estilo cuidadoso constante: orden y continuidad. Riesgo: rigidez y lentitud si no se definen prioridades."
-  };
-  const comboText = comboTextMap[comboKey] || "Estilo mixto: combina rasgos del perfil principal con un secundario que matiza su conducta diaria.";
+  function pressureSentence(dim, delta){
+    const etiqueta = dimSimple(dim);
+    if(delta >= 12){
+      return `Cuando hay presión, es probable que ${etiqueta.toLowerCase()} se modere un poco. En otras palabras, puede “bajar el ritmo” o cuidarse más antes de actuar.`;
+    }
+    if(delta <= -12){
+      return `Cuando hay presión, es probable que ${etiqueta.toLowerCase()} se intensifique. Esto puede verse como más urgencia, más control o más necesidad de tener claridad.`;
+    }
+    return `En situaciones de presión, su forma de ${etiqueta.toLowerCase()} suele mantenerse parecida a la que muestra en el día a día.`;
+  }
 
-  // Diferencias M vs L
-  function delta(dim){ return (GM[dim]??50) - (GL[dim]??50); }
-  const deltas = {D:delta("D"), I:delta("I"), S:delta("S"), C:delta("C")};
-
-  const pressureNotes = [];
-  ["D","I","S","C"].forEach(dim=>{
-    const d = deltas[dim];
-    if(d>=12) pressureNotes.push(`En ${dim}, la Motivación está por encima de Bajo presión (+${d}). Tiende a “bajar” ese rasgo cuando hay tensión (se modera / se contiene).`);
-    else if(d<=-12) pressureNotes.push(`En ${dim}, Bajo presión está por encima de Motivación (${d}). Ese rasgo puede “subir” con tensión (se intensifica).`);
-  });
-  if(!pressureNotes.length) pressureNotes.push("Las diferencias M vs L no muestran cambios extremos; la respuesta bajo presión tiende a ser consistente con lo que expresa.");
-
-  const lines = [];
-  lines.push(`PERFIL PDL (conducta diaria T): ${names[top]} (${top}).`);
-  lines.push(`Segundo rasgo: ${names[sec]} (${sec}).`);
-  lines.push("");
-  lines.push("1) LECTURA GLOBAL");
-  lines.push(`- T representa el patrón cotidiano. Aquí destaca: ${dimDesc[top].core}.`);
-  lines.push(`- Matiz secundario: ${dimDesc[sec].core}.`);
-  lines.push(`- Síntesis de combinación: ${comboText}`);
-  lines.push("");
-  lines.push("2) FORTALEZAS PROBABLES");
-  dimDesc[top].strengths.forEach(s=>lines.push(`- ${s}.`));
-  lines.push("Fortalezas del rasgo secundario:");
-  dimDesc[sec].strengths.slice(0,3).forEach(s=>lines.push(`- ${s}.`));
-  lines.push("");
-  lines.push("3) ÁREAS DE RIESGO / VULNERABILIDADES");
-  dimDesc[top].risks.forEach(r=>lines.push(`- ${r}.`));
-  lines.push("Riesgos del rasgo secundario:");
-  dimDesc[sec].risks.slice(0,3).forEach(r=>lines.push(`- ${r}.`));
-  lines.push("");
-  lines.push("4) COMUNICACIÓN Y TRABAJO EN EQUIPO");
-  lines.push(`- Cómo comunicarse mejor con esta persona: ${dimDesc[top].comm}.`);
-  lines.push(`- En equipo, suele contribuir desde: ${names[top]} y ${names[sec]}. Conviene definir roles, acuerdos y expectativas.`);
-  lines.push("");
-  lines.push("5) MOTIVADORES (lo que suele activar desempeño)");
-  lines.push(`- ${dimDesc[top].motiv}.`);
-  lines.push(`- Adicional: ${dimDesc[sec].motiv}.`);
-  lines.push("");
-  lines.push("6) RESPUESTA BAJO PRESIÓN (comparación M vs L)");
-  pressureNotes.forEach(p=>lines.push(`- ${p}`));
-  lines.push(`- Señal práctica: cuando la presión sube, observar calidad de comunicación, seguimiento de tareas y manejo emocional.`);
-  lines.push("");
-  lines.push("7) NIVEL POR DIMENSIÓN (T, escala G)");
-  lines.push(`- D: ${GT.D} (${bD.name}) | I: ${GT.I} (${bI.name}) | S: ${GT.S} (${bS.name}) | C: ${GT.C} (${bC.name})`);
-  lines.push("Interpretación breve por nivel:");
-  lines.push(`- D ${bD.name}: ${bD.code==="VH"||bD.code==="H" ? "toma la iniciativa y acelera decisiones" : bD.code==="M" ? "equilibra decisión con análisis" : "prefiere evitar confrontación y avanzar con cautela"}.`);
-  lines.push(`- I ${bI.name}: ${bI.code==="VH"||bI.code==="H" ? "influyente y expresivo" : bI.code==="M" ? "comunicación funcional" : "comunicación reservada y prudente"}.`);
-  lines.push(`- S ${bS.name}: ${bS.code==="VH"||bS.code==="H" ? "muy constante y paciente" : bS.code==="M" ? "balance entre cambio y estabilidad" : "busca cambio/ritmo o muestra baja tolerancia a rutina"}.`);
-  lines.push(`- C ${bC.name}: ${bC.code==="VH"||bC.code==="H" ? "muy apegado a normas y detalle" : bC.code==="M" ? "calidad adecuada sin rigidez" : "flexible, puede omitir detalle si no se controla"}.`);
-  lines.push("");
-  lines.push("8) RECOMENDACIONES OPERATIVAS PARA JEFATURA");
-  lines.push("- Definir metas y criterios: qué es “éxito”, qué es “suficiente”, plazos y prioridades.");
-  lines.push("- Establecer canal de comunicación: frecuencia de seguimiento, formato de reporte y responsables.");
-  lines.push("- Retroalimentación: concreta, con ejemplos y acuerdos de mejora (qué, cuándo, cómo se medirá).");
-  lines.push("- Considerar que el resultado apoya decisiones; combinar con desempeño real y contexto del puesto.");
-  lines.push("");
-  const analysis = lines.join("\n");
-
-  // Capacitación (más extensa y accionable)
-  const tlines = [];
-  tlines.push("PLAN DE CAPACITACIÓN SUGERIDO (orientativo y ajustable al puesto)");
-  tlines.push("");
-  tlines.push("A) OBJETIVOS DEL PLAN");
-  tlines.push("- Fortalecer habilidades clave del perfil predominante sin caer en excesos (equilibrio).");
-  tlines.push("- Reducir riesgos típicos bajo presión mediante herramientas prácticas.");
-  tlines.push("- Mejorar coordinación con equipo y calidad del servicio mediante hábitos y estándares.");
-  tlines.push("");
-
-  const topTrain = {
-    D:[
-      "Módulo 1: Comunicación efectiva bajo presión (mensajes breves, escucha activa, retroalimentación sin confrontación).",
-      "Módulo 2: Liderazgo colaborativo (delegación, acuerdos claros, seguimiento por indicadores).",
-      "Módulo 3: Priorización y toma de decisiones con evidencia (matriz urgencia-impacto, control de sesgos).",
-      "Módulo 4: Autogestión emocional (pausa táctica, control de impulsividad, manejo de frustración)."
-    ],
-    I:[
-      "Módulo 1: Gestión del tiempo y enfoque (priorización, cierre de compromisos, control de pendientes).",
-      "Módulo 2: Comunicación estructurada (reportes breves, formatos de entrega/pase de información).",
-      "Módulo 3: Asertividad y límites (negociación, decir no, conversaciones difíciles).",
-      "Módulo 4: Seguimiento y disciplina operativa (checklists, evidencias, control de calidad)."
-    ],
-    S:[
-      "Módulo 1: Adaptación al cambio (micro-hábitos, flexibilidad, manejo de transición).",
-      "Módulo 2: Asertividad y confrontación constructiva (pedir apoyo, expresar desacuerdo, acuerdos).",
-      "Módulo 3: Resiliencia y autocuidado (prevención de desgaste, regulación emocional, pausas activas).",
-      "Módulo 4: Mejora continua (propuestas pequeñas, estandarización, participación en indicadores)."
-    ],
-    C:[
-      "Módulo 1: Priorización y rapidez con seguridad (umbrales, diferenciar crítico vs perfecto).",
-      "Módulo 2: Comunicación técnica efectiva (traducir datos a acciones, reportes claros).",
-      "Módulo 3: Flexibilidad operativa (planes B, tolerancia a ambigüedad, decisiones con info incompleta).",
-      "Módulo 4: Manejo de estrés por control de error (rumiación, técnicas de control y enfoque)."
-    ]
+  // Diccionario de explicaciones (cotidiano)
+  const workerByTop = {
+    D: {
+      title: "Su forma de trabajar suele ser directa y orientada a resolver",
+      p1: "En el día a día, usted tiende a enfocarse en lo que se necesita lograr y en avanzar. Es común que, cuando algo urge, tome decisiones con rapidez y busque que las cosas se muevan. Esto es valioso en áreas donde se requiere respuesta oportuna y claridad para actuar.",
+      p2: "Cuando hablamos de “retos”, nos referimos a tareas exigentes o situaciones nuevas que requieren iniciativa. “Autonomía” significa que suele desempeñarse mejor cuando tiene margen para organizarse y decidir dentro de su responsabilidad, sin tener que estar esperando instrucciones a cada paso.",
+      p3: "Para usted, “objetivos claros” no son conceptos abstractos: significa saber qué se espera, en qué tiempo y con qué nivel de calidad. Y “reconocimiento por logro” se traduce en algo tan simple como que su esfuerzo sea notado y que se valore cuando cumple bien, a tiempo y con calidad.",
+      riesgos: "El punto a cuidar es que, cuando usted va rápido, otras personas pueden sentir que se les está presionando o que no se les escuchó suficiente. No significa que esté mal, solo que conviene confirmar acuerdos y asegurar que el equipo entendió el plan antes de avanzar."
+    },
+    I: {
+      title: "Su fortaleza principal está en el trato con personas y la comunicación",
+      p1: "En el día a día, usted suele relacionarse con facilidad y se le da bien influir de forma positiva en el ambiente. Tiende a explicar, motivar o convencer cuando hace falta. Esto puede ayudar mucho a coordinar equipo y a mantener buena colaboración.",
+      p2: "Cuando se habla de “reconocimiento”, en su caso suele ser importante saber que su trabajo se nota: que alguien le diga “se hizo bien”, que se valore su participación o que se le tome en cuenta para proponer mejoras.",
+      p3: "Para que su desempeño sea más estable, le ayuda tener claridad del siguiente paso: qué sigue, qué se espera hoy y cómo se cerrará una tarea. Eso evita que su energía se disperse en muchas cosas a la vez.",
+      riesgos: "El punto a cuidar es el seguimiento: a veces se avanza mucho en comunicación, pero se puede dejar pendiente cerrar por escrito, confirmar o revisar detalles. Con una rutina simple de verificación, su desempeño se fortalece bastante."
+    },
+    S: {
+      title: "Usted suele trabajar mejor con estabilidad, constancia y ritmo sostenido",
+      p1: "En el día a día, usted tiende a ser constante y a mantener el trabajo en orden. Suele cumplir con lo que se le asigna y prefiere avanzar paso a paso, con calma y claridad. Esto es muy valioso en tareas que requieren continuidad y confiabilidad.",
+      p2: "Cuando se habla de “cambio”, en su caso ayuda que sea gradual y explicado. No significa que no pueda adaptarse, sino que su mejor desempeño se da cuando entiende el motivo del cambio y se cuenta con un plan.",
+      p3: "Usted suele contribuir a que el ambiente sea más estable y menos conflictivo. Cuando hay presión, le beneficia tener prioridades claras para no sentirse saturado.",
+      riesgos: "El punto a cuidar es que, por buscar armonía, usted podría evitar decir lo que necesita o posponer una conversación importante. Aprender a expresar límites de forma respetuosa le ayuda mucho."
+    },
+    C: {
+      title: "Usted tiende a trabajar con precisión, cuidado y apego a reglas",
+      p1: "En el día a día, usted suele fijarse en los detalles y en la calidad. Le importa hacer las cosas bien, con orden y con base en normas. Esto es una fortaleza para prevenir errores y mantener estándares.",
+      p2: "Cuando se habla de “eficacia”, en su caso significa lograr el resultado sin fallas, con claridad y con evidencia. Usted suele rendir mejor cuando sabe exactamente cuál es el criterio: qué está permitido, qué no y cuál es el estándar esperado.",
+      p3: "Si algo no está claro o hay información incompleta, es normal que prefiera revisar antes de decidir. Eso es positivo, pero conviene balancearlo con prioridades para no retrasarse cuando urge.",
+      riesgos: "El punto a cuidar es el exceso de control o perfeccionismo. A veces no se necesita perfecto, sino seguro y suficiente. Definir qué es “suficiente” para la tarea ayuda a trabajar más rápido sin perder calidad."
+    }
   };
 
-  tlines.push(`B) RUTA PRINCIPAL (según T predominante: ${names[top]} - ${top})`);
-  topTrain[top].forEach(m=>tlines.push(`- ${m}`));
-  tlines.push("");
+  // Admin (más técnico pero coherente)
+  const adminByTop = {
+    D: {
+      title: "Perfil orientado a resultados y decisión (predominio D)",
+      desc: "Se observa un estilo de ejecución con ritmo alto, orientación al logro y toma de decisión directa. En contexto operativo puede asumir liderazgo espontáneo. Bajo presión puede intensificar control y urgencia; conviene observar la calidad de comunicación y el manejo de fricción interpersonal.",
+      palancas: "Palancas de desempeño: metas específicas, indicadores, autonomía operativa acotada, retroalimentación directa y oportuna, y roles claros.",
+      riesgos: "Riesgos: impaciencia, comunicación dura, baja tolerancia a errores ajenos o a procesos lentos. Recomendable reforzar escucha activa y verificación de acuerdos."
+    },
+    I: {
+      title: "Perfil comunicador e influyente (predominio I)",
+      desc: "Se observa un estilo social, persuasivo y con facilidad para generar clima. Puede ser clave en coordinación de equipo y comunicación de cambios. Bajo presión puede priorizar interacción o negociación; requiere estructura para asegurar cierres y seguimiento.",
+      palancas: "Palancas de desempeño: espacios de coordinación, roles definidos, mecanismos de seguimiento (checklists), y reconocimiento explícito de aportaciones.",
+      riesgos: "Riesgos: dispersión, promesas sin cierre, subestimación de riesgo. Recomendable entrenamiento en gestión del tiempo y disciplina de ejecución."
+    },
+    S: {
+      title: "Perfil estable y constante (predominio S)",
+      desc: "Se observa un estilo de estabilidad, paciencia y continuidad. Adecuado para rutinas críticas y sostén operativo. Bajo presión puede retraerse o buscar mantener la calma; requiere prioridades claras y apoyo en manejo de conflicto.",
+      palancas: "Palancas de desempeño: procesos definidos, cambios graduales, comunicación clara y soporte social. Mantiene desempeño con estructuras previsibles.",
+      riesgos: "Riesgos: resistencia a cambios bruscos, evitación de confrontación. Recomendable fortalecer asertividad y adaptación al cambio."
+    },
+    C: {
+      title: "Perfil apegado a normas y calidad (predominio C)",
+      desc: "Se observa un estilo analítico, cuidadoso y orientado a estándares. Fuerte para control de calidad y prevención de errores. Bajo presión puede aumentar rigidez o criticidad; requiere umbrales y priorización.",
+      palancas: "Palancas de desempeño: criterios claros, normas accesibles, tiempos para análisis y espacios de mejora continua.",
+      riesgos: "Riesgos: perfeccionismo, demora por análisis. Recomendable entrenamiento en priorización y toma de decisión con información incompleta."
+    }
+  };
 
-  tlines.push(`C) RUTA COMPLEMENTARIA (según rasgo secundario: ${names[sec]} - ${sec})`);
-  topTrain[sec].slice(0,2).forEach(m=>tlines.push(`- ${m}`));
-  tlines.push("");
+  // Perfiles (texto)
+  if(!valid){
+    const worker = {
+      interpretacion:
+`Resultado no válido para interpretación.
 
-  tlines.push("D) HÁBITOS SEMANALES (muy prácticos)");
-  tlines.push("- 1 checklist diario de prioridades (máximo 3 tareas críticas).");
-  tlines.push("- 1 retroalimentación breve por semana con evidencia (qué pasó / impacto / acuerdo).");
-  tlines.push("- 1 práctica de autocontrol: respiración 1 minuto antes de respuesta bajo tensión.");
-  tlines.push("- 1 revisión semanal de errores/éxitos: lección aprendida y acción correctiva.");
-  tlines.push("");
+En esta evaluación, la suma final de la gráfica T no quedó dentro del rango esperado. Esto puede ocurrir cuando la persona responde con prisa, con dudas sobre las instrucciones o tratando de dar una “imagen ideal”.
 
-  tlines.push("E) INDICADORES DE MEJORA (sugeridos)");
-  tlines.push("- Cumplimiento de tiempos (entregas), calidad (errores), coordinación (re-trabajo), clima (conflictos).");
-  tlines.push("- Seguimiento: 4–6 semanas con ajustes según supervisión.");
-  const training = tlines.join("\n");
+Recomendación: Reaplicar el test en un momento con calma, sin interrupciones, y confirmando que se comprendan bien las columnas de “MÁS” y “MENOS”.`,
+      capacitacion:
+`Por el momento, no se recomienda un plan de capacitación basado en este resultado.
 
-  return {profile:`${names[top]} (${top})`, analysis, training};
+Acción sugerida: Reaplicar el test. Si vuelve a salir inválido, conviene una entrevista breve para confirmar comprensión del vocabulario y condiciones de aplicación.`
+    };
+
+    const admin = {
+      interpretacion:
+`Prueba inválida (ΣT=${sumT}). No se recomienda concluir un perfil.
+
+Acción: Reaplicar asegurando condiciones de aplicación (instrucciones claras, sin interrupciones, comprensión del formato “MÁS/MENOS”).`,
+      capacitacion:
+`No aplica plan de capacitación mientras la prueba sea inválida. Reaplicar y validar primero.`
+    };
+
+    return {
+      perfil: "INVÁLIDA",
+      worker,
+      admin
+    };
+  }
+
+  const w = workerByTop[top];
+  const a = adminByTop[top];
+
+  const workerInterpretation =
+`Interpretación general (para usted)
+
+${w.title}
+
+${w.p1}
+
+${w.p2}
+
+${w.p3}
+
+Bajo presión:
+- ${pressureSentence("D", dD)}
+- ${pressureSentence("I", dI)}
+- ${pressureSentence("S", dS)}
+- ${pressureSentence("C", dC)}
+
+Punto a cuidar:
+${w.riesgos}
+
+Sugerencia práctica:
+Si usted siente que está bajo mucha presión, le ayudará detenerse un momento, priorizar (¿qué es lo más importante hoy?) y confirmar acuerdos con el equipo antes de avanzar.`;
+
+  const workerTraining =
+`Capacitación sugerida (para usted)
+
+Esta capacitación se propone para ayudarle a aprovechar sus fortalezas y, al mismo tiempo, evitar los excesos que a veces aparecen bajo presión.
+
+1) Comunicación clara y respetuosa
+Aprender técnicas para explicar lo que necesita de forma directa, sin que su mensaje se perciba como regaño o presión. Esto incluye escuchar, confirmar y cerrar acuerdos.
+
+2) Priorización y organización del trabajo
+Convertir “objetivos” en tareas concretas: qué se hará primero, qué puede esperar y qué no se debe dejar pasar. Esto le ayuda a trabajar con seguridad y sin saturarse.
+
+3) Manejo de presión y autocontrol
+Identificar señales de estrés (prisa, irritación, distracción o exceso de control) y aplicar herramientas simples para recuperar calma y enfoque.
+
+4) Trabajo en equipo y seguimiento
+Fortalecer hábitos de cierre: confirmar lo acordado, revisar avances y documentar lo necesario para evitar retrabajos.
+
+Recomendación:
+Un plan de 4 a 6 semanas con prácticas semanales cortas suele ser suficiente para notar mejoras reales.`;
+
+  const adminInterpretation =
+`Interpretación para administración
+
+${a.title}
+
+Descripción:
+${a.desc}
+
+Segundo rasgo (de apoyo): ${perfilNombre(sec)}. Esto matiza la conducta diaria y puede explicar variaciones en trato, ritmo o control.
+
+Lectura bajo presión (M vs L):
+- D: ${(dD>=12?"Se modera bajo presión.":(dD<=-12?"Se intensifica bajo presión.":"Se mantiene estable bajo presión."))}
+- I: ${(dI>=12?"Se modera bajo presión.":(dI<=-12?"Se intensifica bajo presión.":"Se mantiene estable bajo presión."))}
+- S: ${(dS>=12?"Se modera bajo presión.":(dS<=-12?"Se intensifica bajo presión.":"Se mantiene estable bajo presión."))}
+- C: ${(dC>=12?"Se modera bajo presión.":(dC<=-12?"Se intensifica bajo presión.":"Se mantiene estable bajo presión."))}
+
+Palancas de desempeño:
+${a.palancas}
+
+Riesgos y puntos de control:
+${a.riesgos}
+
+Recomendación:
+Usar el resultado como apoyo a la gestión (no como único criterio). Complementar con observación del desempeño y retroalimentación de jefatura.`;
+
+  const adminTraining =
+`Capacitación sugerida para administración
+
+Objetivo:
+Potenciar desempeño en el puesto y reducir riesgos conductuales bajo presión.
+
+Ruta sugerida (4–6 semanas):
+1) Comunicación efectiva y retroalimentación
+- Estándares de comunicación (mensaje breve + confirmación + cierre).
+- Retroalimentación basada en evidencia (conducta–impacto–acuerdo).
+
+2) Disciplina operativa y seguimiento
+- Checklists, bitácoras o formatos de cierre.
+- Indicadores simples: tiempo, calidad, retrabajo y cumplimiento.
+
+3) Manejo de presión y toma de decisiones
+- Priorización por riesgo/impacto.
+- Umbrales de “suficiente seguro” vs “perfecto”, según el proceso.
+
+4) Coordinación de equipo
+- Roles y responsabilidades visibles.
+- Reunión breve de coordinación (5–10 min) y cierre de turno cuando aplique.
+
+Indicadores de mejora:
+- Menos retrabajo, mejor claridad de acuerdos, mejor tiempo de respuesta y menor conflicto interpersonal.`;
+
+  const perfil = `${perfilNombre(top)} (Predominante)`;
+
+  return {
+    perfil,
+    worker: { interpretacion: workerInterpretation, capacitacion: workerTraining },
+    admin: { interpretacion: adminInterpretation, capacitacion: adminTraining }
+  };
 }
 
 /* ===================== FINISH TEST ===================== */
@@ -930,12 +997,33 @@ async function finishTest(){
   drawDiamondG("svgL", GL.G, "rgba(188,149,92,0.22)", "#BC955C");
   drawDiamondG("svgT", GT.G, "rgba(198,40,40,0.18)", "#c62828");
 
-  // Interpretación extensa y capacitación extensa
-  const rep = longReport(valid, GM.G, GL.G, GT.G, sumT);
-  $("analysis").innerHTML = `<h3>Análisis (extenso)</h3><div class="longtext">${escapeHtml(rep.analysis)}</div>`;
-  $("training").innerHTML = `<h3>Capacitación sugerida (extensa)</h3><div class="longtext">${escapeHtml(rep.training)}</div>`;
+  const datos = {
+    nombre: $("nombre").value,
+    puesto: $("puesto").value,
+    unidad: $("unidad").value
+  };
 
-  // Guardar resultado (incluye interpretación + capacitación + fecha nac.)
+  const dual = reporteDual(valid, GM.G, GL.G, GT.G, sumT, datos);
+
+  // Presentación formal (trabajador) en tarjetas
+  $("analysisWorker").innerHTML = `
+    <div class="report">
+      <h4>Interpretación (Para el trabajador)</h4>
+      <p class="small">Este texto está escrito en lenguaje claro para que usted pueda entender lo que significa su resultado.</p>
+      <hr>
+      <div class="longtext">${escapeHtml(dual.worker.interpretacion)}</div>
+    </div>
+  `;
+  $("trainingWorker").innerHTML = `
+    <div class="report">
+      <h4>Recomendación de desarrollo (Para el trabajador)</h4>
+      <p class="small">Estas sugerencias pueden ayudarle a fortalecer su desempeño y manejar mejor situaciones de presión.</p>
+      <hr>
+      <div class="longtext">${escapeHtml(dual.worker.capacitacion)}</div>
+    </div>
+  `;
+
+  // Guardar (con ambas versiones)
   const record = {
     date: nowISO(),
     unidad: $("unidad").value,
@@ -950,9 +1038,11 @@ async function finishTest(){
     GM, GL, GT,
     sumT,
     valid,
-    perfil: rep.profile,
-    interpretacion: rep.analysis,
-    capacitacion: rep.training
+    perfil: dual.perfil,
+    interpretacionTrabajador: dual.worker.interpretacion,
+    capacitacionTrabajador: dual.worker.capacitacion,
+    interpretacionAdmin: dual.admin.interpretacion,
+    capacitacionAdmin: dual.admin.capacitacion
   };
 
   const arr = read(KEYS.results, []);
@@ -1093,14 +1183,28 @@ function renderResults(){
 }
 function reloadResults(){ renderResults(); }
 
+function setViewTab(tab){
+  $("viewWorker").classList.toggle("hidden", tab!=="worker");
+  $("viewAdmin").classList.toggle("hidden", tab!=="admin");
+  $("vtab-worker").classList.toggle("active", tab==="worker");
+  $("vtab-admin").classList.toggle("active", tab==="admin");
+}
+
 function viewResult(i){
   const res = read(KEYS.results, []);
   const r = res[i];
   if(!r){ alert("No encontrado."); return; }
+
   $("viewMeta").textContent =
-    `Fecha: ${r.date||""} | ${r.nombre||""} | ${r.matricula||""} | ${r.unidad||""} | Perfil: ${r.perfil||""}`;
-  $("viewAnalysis").textContent = r.interpretacion || "(Sin interpretación guardada)";
-  $("viewTraining").textContent = r.capacitacion || "(Sin capacitación guardada)";
+    `Fecha: ${r.date||""} | Nombre: ${r.nombre||""} | Matrícula: ${r.matricula||""} | Unidad: ${r.unidad||""} | Perfil: ${r.perfil||""}`;
+
+  $("viewAnalysisW").textContent = r.interpretacionTrabajador || "(Sin interpretación para trabajador)";
+  $("viewTrainingW").textContent = r.capacitacionTrabajador || "(Sin capacitación para trabajador)";
+
+  $("viewAnalysisA").textContent = r.interpretacionAdmin || "(Sin interpretación para administración)";
+  $("viewTrainingA").textContent = r.capacitacionAdmin || "(Sin capacitación para administración)";
+
+  setViewTab("worker");
   $("overlayView").classList.remove("hidden");
 }
 function closeView(){ $("overlayView").classList.add("hidden"); }
@@ -1119,7 +1223,7 @@ async function deleteResult(i){
   }
 }
 
-/* ===================== CSV (UTF-8 BOM) + incluye interpretación/capacitación ===================== */
+/* ===================== CSV (UTF-8 BOM) + incluye ambas interpretaciones/capacitaciones ===================== */
 function downloadCSV(){
   const data = read(KEYS.results, []);
   if(!data.length){ alert("No hay resultados."); return; }
@@ -1131,7 +1235,8 @@ function downloadCSV(){
     "M_G_D","M_G_I","M_G_S","M_G_C",
     "L_G_D","L_G_I","L_G_S","L_G_C",
     "T_G_D","T_G_I","T_G_S","T_G_C",
-    "Interpretacion","Capacitacion"
+    "InterpretacionTrabajador","CapacitacionTrabajador",
+    "InterpretacionAdmin","CapacitacionAdmin"
   ];
 
   const lines = [header.join(",")];
@@ -1144,8 +1249,10 @@ function downloadCSV(){
       r.GM?.G?.D??"", r.GM?.G?.I??"", r.GM?.G?.S??"", r.GM?.G?.C??"",
       r.GL?.G?.D??"", r.GL?.G?.I??"", r.GL?.G?.S??"", r.GL?.G?.C??"",
       r.GT?.G?.D??"", r.GT?.G?.I??"", r.GT?.G?.S??"", r.GT?.G?.C??"",
-      (r.interpretacion||"").replace(/\r?\n/g," | "),
-      (r.capacitacion||"").replace(/\r?\n/g," | ")
+      (r.interpretacionTrabajador||"").replace(/\r?\n/g," | "),
+      (r.capacitacionTrabajador||"").replace(/\r?\n/g," | "),
+      (r.interpretacionAdmin||"").replace(/\r?\n/g," | "),
+      (r.capacitacionAdmin||"").replace(/\r?\n/g," | ")
     ];
 
     const esc = row.map(v=>{
