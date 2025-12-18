@@ -83,7 +83,7 @@
 
     /* Modal */
     .overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:100;}
-    .modal{background:#fff;border-radius:14px;box-shadow:0 10px 28px rgba(0,0,0,.28);padding:1.1rem 1.2rem;max-width:440px;width:100%;}
+    .modal{background:#fff;border-radius:14px;box-shadow:0 10px 28px rgba(0,0,0,.28);padding:1.1rem 1.2rem;max-width:520px;width:100%;}
     .modal h3{margin:0 0 .35rem;}
     .modal .actions{display:flex;justify-content:flex-end;gap:.55rem;margin-top:.9rem;}
 
@@ -93,6 +93,7 @@
     .chart-title{font-weight:1000;color:var(--imss2);font-size:.9rem;margin-bottom:.35rem;}
 
     .mono{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;}
+    .longtext{white-space:pre-wrap; line-height:1.45;}
     @media (max-width:680px){ .t-head,.t-row{grid-template-columns:minmax(0,1.5fr) 78px 78px;padding-inline:.65rem;} }
   </style>
 </head>
@@ -160,7 +161,7 @@
     </div>
 
     <p class="text-muted">
-      Nota técnica: el sistema calcula automáticamente <strong>A</strong> (promedio = sumatoria/4) y selecciona el <strong>múltiplo</strong> según tabla.
+      Nota: la interpretación se genera automáticamente al finalizar y queda guardada junto con el registro (local + nube).
     </p>
   </section>
 
@@ -237,7 +238,6 @@
       <button id="tab-u" class="btn-secondary active" type="button" onclick="setTab('u')">Unidades</button>
       <button id="tab-c" class="btn-secondary" type="button" onclick="setTab('c')">Categorías</button>
       <button id="tab-r" class="btn-secondary" type="button" onclick="setTab('r')">Resultados</button>
-      <button id="tab-a" class="btn-secondary" type="button" onclick="setTab('a')">Ayuda técnica</button>
     </div>
 
     <div id="panel-u">
@@ -275,41 +275,30 @@
         <button class="btn-secondary" type="button" onclick="reloadResults()">Recargar</button>
         <button class="btn-secondary" type="button" onclick="syncFromCloud()">Sincronizar nube</button>
       </div>
+
       <div class="scroll" style="margin-top:.6rem;">
         <table>
           <thead>
-            <tr>
-              <th>Fecha</th><th>Unidad</th><th>Matrícula</th><th>Nombre</th><th>Categoría</th>
-              <th>Edad</th><th>Puesto</th><th>Lugar</th>
-              <th>M G(D)</th><th>M G(I)</th><th>M G(S)</th><th>M G(C)</th>
-              <th>L G(D)</th><th>L G(I)</th><th>L G(S)</th><th>L G(C)</th>
-              <th>T G(D)</th><th>T G(I)</th><th>T G(S)</th><th>T G(C)</th>
-              <th>ΣT</th><th>Validez</th>
-              <th>Acciones</th>
-            </tr>
+          <tr>
+            <th>Fecha registro</th>
+            <th>Unidad</th>
+            <th>Matrícula</th>
+            <th>Nombre</th>
+            <th>Categoría</th>
+            <th>F. nac.</th>
+            <th>Edad</th>
+            <th>Lugar nac.</th>
+            <th>Puesto</th>
+            <th>T Perfil</th>
+            <th>ΣT</th>
+            <th>Validez</th>
+            <th>Acciones</th>
+          </tr>
           </thead>
           <tbody id="tbRes"></tbody>
         </table>
       </div>
-      <p class="text-muted" style="margin-top:.55rem;">Eliminar borra local y, si existe, también en Firestore.</p>
-    </div>
-
-    <div id="panel-a" class="hidden">
-      <h3>Ayuda técnica</h3>
-      <div class="ok">
-        <div><strong>Cálculo aplicado (automático):</strong></div>
-        <div class="mono">A = (D + I + S + C) / 4</div>
-        <div class="mono">DIF = R − A</div>
-        <div class="mono">F = DIF × múltiplo</div>
-        <div class="mono">G = F + 50</div>
-        <div class="text-muted" style="margin-top:.35rem;">
-          La tabla de múltiplos y la definición de R/A/D/F/G están en el manual. :contentReference[oaicite:3]{index=3}
-        </div>
-      </div>
-      <div class="warn">
-        Para aplicar la tabla de múltiplos (rango 12–28), el sistema convierte los conteos (0–24) a escala 0–28:
-        <div class="mono" style="margin-top:.35rem;">R = round(conteo × 28/24)</div>
-      </div>
+      <p class="text-muted" style="margin-top:.55rem;">“Ver” abre el análisis y capacitación. “Eliminar” borra local y en Firestore (si existe).</p>
     </div>
 
     <div class="btn-row">
@@ -318,7 +307,7 @@
     </div>
   </section>
 
-  <!-- Modal admin -->
+  <!-- Modal admin login -->
   <div id="overlay" class="overlay hidden">
     <div class="modal">
       <h3>Acceso a administrador</h3>
@@ -332,6 +321,22 @@
       </div>
     </div>
   </div>
+
+  <!-- Modal “Ver reporte” -->
+  <div id="overlayView" class="overlay hidden">
+    <div class="modal" style="max-width:760px;">
+      <h3>Detalle del resultado</h3>
+      <div id="viewMeta" class="text-muted"></div>
+      <h3 style="margin-top:.8rem;">Análisis</h3>
+      <div id="viewAnalysis" class="longtext"></div>
+      <h3 style="margin-top:.8rem;">Capacitación sugerida</h3>
+      <div id="viewTraining" class="longtext"></div>
+      <div class="actions">
+        <button class="btn-secondary" type="button" onclick="closeView()">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
 </main>
 
 <!-- Firebase (compat) -->
@@ -416,14 +421,18 @@ let answers = Array(BLOCKS.length).fill(null);
     if(!isNaN(f)){
       const diff=Date.now()-f.getTime();
       $("edad").value=Math.abs(new Date(diff).getUTCFullYear()-1970);
+    } else {
+      $("edad").value="";
     }
   });
 
   document.addEventListener("keydown",(e)=>{
-    if(e.key==="Escape" && !$("overlay").classList.contains("hidden")) closeLogin();
+    if(e.key==="Escape"){
+      if(!$("overlay").classList.contains("hidden")) closeLogin();
+      if(!$("overlayView").classList.contains("hidden")) closeView();
+    }
   });
 
-  // (opcional) intenta traer config nube al arrancar
   syncConfigFromCloud().catch(()=>{});
 })();
 
@@ -503,7 +512,6 @@ function renderGroup(){
   $("btn-next").classList.toggle("hidden",idx===BLOCKS.length-1);
   $("btn-finish").classList.toggle("hidden",idx!==BLOCKS.length-1);
 
-  // UX: al final, botón siguiente “apagado”
   if(idx===BLOCKS.length-1){
     $("btn-next").classList.add("btn-disabled");
   }else{
@@ -546,21 +554,10 @@ function computeRawCounts(){
   return {M,L,T};
 }
 
-/* ===================== CONVERSIÓN A R (0–28) =====================
-   Para poder usar la tabla de múltiplos (12–28), convertimos conteos 0–24 a 0–28.
-   Esto permite que A caiga en el rango esperado del manual. */
-function countToR(count){
-  return Math.round((count * 28) / 24);
-}
-function tToR(tval){
-  // T puede ser -24..+24. Lo llevamos a 0..28 centrado:
-  // primero a 0..48 con +24, luego escala a 0..28
-  return Math.round(((tval + 24) * 28) / 48);
-}
+function countToR(count){ return Math.round((count * 28) / 24); }
+function tToR(tval){ return Math.round(((tval + 24) * 28) / 48); }
 
-/* ===================== MÚLTIPLO SEGÚN TABLA MANUAL ===================== */
 function multiplierForA(A){
-  // Tabla del manual (DE - HASTA -> MULTIPLIQUE POR) :contentReference[oaicite:4]{index=4}
   if(A>=12 && A<=13) return 8;
   if(A>=13.5 && A<=15) return 7;
   if(A>=15.5 && A<=17) return 6;
@@ -569,15 +566,11 @@ function multiplierForA(A){
   if(A>=22 && A<=23) return 4.5;
   if(A>=23.5 && A<=26.5) return 4;
   if(A>=27 && A<=28) return 3.5;
-  // fuera de rango: aproximación segura
   if(A<12) return 8;
   return 3.5;
 }
 
-/* ===================== CÁLCULO G (manual) =====================
-   R=resultado, A=promedio(sum/4), D=R-A, F=D*multiplo, G=F+50 :contentReference[oaicite:5]{index=5} */
 function computeG(graphKey, rawCounts){
-  // rawCounts puede ser conteo (M/L) o T (diferencias)
   let R = {D:0,I:0,S:0,C:0};
 
   if(graphKey==="T"){
@@ -600,7 +593,6 @@ function computeG(graphKey, rawCounts){
   return {R, A: Number(A.toFixed(2)), mult, G};
 }
 
-/* ===================== GRÁFICA ROMBO G ===================== */
 function drawDiamondG(svgId, valuesG, fill, stroke){
   const svg = document.getElementById(svgId);
   if(!svg) return;
@@ -613,7 +605,7 @@ function drawDiamondG(svgId, valuesG, fill, stroke){
     if(dim==="D") return {x:cx, y:cy-radius*factor};
     if(dim==="I") return {x:cx+radius*factor, y:cy};
     if(dim==="S") return {x:cx, y:cy+radius*factor};
-    return {x:cx-radius*factor, y:cy}; // C
+    return {x:cx-radius*factor, y:cy};
   }
 
   [0.25,0.5,0.75,1].forEach((lvl,i)=>{
@@ -676,113 +668,216 @@ function drawDiamondG(svgId, valuesG, fill, stroke){
   svg.appendChild(tick);
 }
 
-/* ===================== REPORTE PROFUNDO (ANÁLISIS + CAPACITACIÓN) ===================== */
-function deepReport(valid, GM, GL, GT, sumT){
-  if(!valid){
-    return {
-      analysis: `<div class="warn"><strong>Prueba inválida.</strong> ΣT=${sumT}. El manual indica que si la sumatoria de T no está entre -3 y +3, no deben considerarse válidos los resultados. Recomienda reaplicar asegurando comprensión de instrucciones y palabras.</div>`,
-      training: `<p class="text-muted">No se recomienda plan de capacitación con un perfil inválido. Reaplicar el test en mejores condiciones.</p>`
-    };
-  }
+/* ===================== INTERPRETACIÓN EXTENSA ===================== */
+function band(g){
+  if(g>=75) return {name:"muy alto", code:"VH"};
+  if(g>=65) return {name:"alto", code:"H"};
+  if(g>=36) return {name:"medio", code:"M"};
+  if(g>=26) return {name:"bajo", code:"L"};
+  return {name:"muy bajo", code:"VL"};
+}
+function topDim(G){
+  const dims=["D","I","S","C"];
+  let t="D"; let m=G.D;
+  dims.forEach(d=>{ if(G[d]>m){ m=G[d]; t=d; }});
+  return t;
+}
+function secondDim(G, top){
+  const dims=["D","I","S","C"].filter(d=>d!==top);
+  let t=dims[0]; let m=G[t];
+  dims.forEach(d=>{ if(G[d]>m){ m=G[d]; t=d; }});
+  return t;
+}
 
+function longReport(valid, GM, GL, GT, sumT){
   const names = {D:"Dominancia", I:"Influencia", S:"Constancia", C:"Apego"};
-  const dims = ["D","I","S","C"];
-  let top="D", topVal=GT.D;
-  dims.forEach(d=>{ if(GT[d]>topVal){ top=d; topVal=GT[d]; } });
+  const dimDesc = {
+    D:{
+      core:"orientación a resultados, decisión, ritmo alto, manejo directo del conflicto",
+      strengths:["toma decisiones con rapidez","asume responsabilidad","impulsa el avance de tareas","actúa con seguridad ante urgencias"],
+      risks:["impaciencia con procesos lentos","comunicación percibida como dura","tendencia a controlar en exceso","menor tolerancia a errores ajenos"],
+      comm:"prefiere mensajes breves, directos y con objetivo; responde bien a metas claras y límites definidos",
+      motiv:"retos, autonomía, objetivos medibles, reconocimiento por logro y eficacia",
+      stress:"bajo presión puede acelerar, confrontar o imponer; requiere pausa táctica y priorización"
+    },
+    I:{
+      core:"comunicación, influencia social, energía interpersonal, persuasión",
+      strengths:["conecta con el equipo","facilita coordinación y clima","vende ideas y moviliza","aporta entusiasmo"],
+      risks:["dispersión por exceso de estímulos","subestimar riesgos por optimismo","seguimiento irregular si no hay estructura","evitar conversaciones difíciles"],
+      comm:"prefiere interacción, acuerdos por consenso y mensajes positivos; necesita claridad del “qué sigue”",
+      motiv:"participación, visibilidad, reconocimiento social, variedad y espacios para proponer",
+      stress:"bajo presión puede hablar de más, prometer sin cerrar o buscar aprobación; requiere checklist y cierre"
+    },
+    S:{
+      core:"estabilidad, paciencia, constancia, cooperación y ritmo sostenido",
+      strengths:["confiable en rutinas","sostiene continuidad del servicio","apoya y acompaña","minimiza conflictos con tacto"],
+      risks:["resistencia al cambio brusco","dificultad para confrontar","posponer decisiones","incomodidad con urgencias sostenidas"],
+      comm:"prefiere instrucciones claras, ritmo predecible y apoyo; valora acuerdos estables y tiempos razonables",
+      motiv:"seguridad, claridad de rol, relaciones armónicas, procesos estables y reconocimiento por constancia",
+      stress:"bajo presión puede cerrarse o ceder; requiere contención, priorizar y pasos pequeños"
+    },
+    C:{
+      core:"apego a normas, precisión, análisis, calidad y control",
+      strengths:["reduce errores","documenta y ordena","detecta riesgos","mantiene estándares"],
+      risks:["perfeccionismo","análisis excesivo ante ambigüedad","rigidez con cambios","estrés cuando falta información"],
+      comm:"prefiere datos, evidencia y criterios; necesita claridad de estándares y de “qué es suficiente”",
+      motiv:"calidad, reglas claras, trabajo técnico, control del error, autonomía para analizar",
+      stress:"bajo presión puede volverse más rígido o crítico; requiere priorización y umbrales"
+    }
+  };
 
-  function band(g){
-    if(g>=70) return "alto";
-    if(g<=30) return "bajo";
-    return "medio";
+  if(!valid){
+    const analysis = `PRUEBA INVÁLIDA (ΣT=${sumT}).\n
+Interpretación: La sumatoria de T está fuera del rango esperado. En este escenario no se recomienda concluir un perfil conductual.\n
+Recomendación operativa:\n- Reaplicar en un momento sin interrupciones.\n- Confirmar que el evaluado comprendió “MÁS” y “MENOS”.\n- Evitar que responda con prisa o por “imagen ideal”.`;
+    const training = `Capacitación sugerida: No aplica mientras la prueba sea inválida.\n
+Acción: Reaplicar y, si persiste invalidez, considerar entrevista breve para identificar dificultad con vocabulario o condiciones de aplicación.`;
+    return {profile:"INVÁLIDA", analysis, training};
   }
 
-  const analysis = `
-    <h3>Análisis del perfil</h3>
-    <p><span class="badge">Predominante en T: ${names[top]} (${top})</span></p>
+  const top = topDim(GT);
+  const sec = secondDim(GT, top);
 
-    <div class="ok">
-      <div><strong>Lectura rápida:</strong></div>
-      <ul class="text-muted">
-        <li><strong>M (Motivación):</strong> lo que busca expresar o le gustaría mostrar.</li>
-        <li><strong>L (Bajo presión):</strong> reacción probable ante tensión/exigencia.</li>
-        <li><strong>T (Conducta diaria):</strong> patrón cotidiano (M − L) convertido a G.</li>
-      </ul>
-      <div class="mono">G(T): D ${GT.D} | I ${GT.I} | S ${GT.S} | C ${GT.C}</div>
-    </div>
+  const bD=band(GT.D), bI=band(GT.I), bS=band(GT.S), bC=band(GT.C);
 
-    <p><strong>Interpretación por dimensiones (T):</strong></p>
-    <ul class="text-muted">
-      <li><strong>D (${band(GT.D)}):</strong> ritmo, decisión, orientación a resultados, manejo del conflicto.</li>
-      <li><strong>I (${band(GT.I)}):</strong> comunicación, influencia social, persuasión, energía interpersonal.</li>
-      <li><strong>S (${band(GT.S)}):</strong> estabilidad, paciencia, constancia, tolerancia al cambio.</li>
-      <li><strong>C (${band(GT.C)}):</strong> apego a normas, precisión, orden, control de calidad.</li>
-    </ul>
+  const comboKey = `${top}${sec}`;
+  const comboTextMap = {
+    "DI":"Estilo de impacto: orientado a logro con capacidad de influir. Puede liderar y movilizar, cuidando no atropellar acuerdos.",
+    "DC":"Estilo de ejecución: orientado a resultados con alta exigencia de calidad. Excelente para control y mejora, cuidando rigidez.",
+    "DS":"Estilo de empuje estable: logra metas sosteniendo continuidad. Puede requerir apoyo en confrontación y priorización rápida.",
+    "ID":"Estilo persuasivo-competitivo: impulsa iniciativas con energía social. Requiere estructura para cumplir y controlar impulsividad.",
+    "IC":"Estilo comunicador-analítico: explica, convence y cuida detalle. Riesgo: análisis + social = demora en cierres si no hay límites.",
+    "IS":"Estilo integrador: mantiene buen clima y estabilidad. Riesgo: evitar conflictos y posponer decisiones difíciles.",
+    "SD":"Estilo resolutivo sereno: responde con calma y decide cuando es necesario. Riesgo: tensión interna ante urgencias sostenidas.",
+    "SI":"Estilo colaborativo social: crea armonía, facilita cooperación. Riesgo: decir sí a todo y saturarse.",
+    "SC":"Estilo metódico estable: consistencia con calidad. Riesgo: resistencia a cambios rápidos y estrés por interrupciones.",
+    "CD":"Estilo exigente resolutivo: decide con criterio y estándares. Riesgo: intolerancia a errores y comunicación dura.",
+    "CI":"Estilo técnico-influyente: combina precisión con persuasión. Riesgo: sobre-explicar y querer controlar narrativa.",
+    "CS":"Estilo cuidadoso constante: orden y continuidad. Riesgo: rigidez y lentitud si no se definen prioridades."
+  };
+  const comboText = comboTextMap[comboKey] || "Estilo mixto: combina rasgos del perfil principal con un secundario que matiza su conducta diaria.";
 
-    <p><strong>Lectura integrada:</strong></p>
-    ${top==="D" ? `
-      <p>Perfil orientado a metas y decisión. Se beneficia de objetivos claros, autonomía y retos. Bajo presión puede volverse más directo y exigir rapidez; conviene cuidar la forma de comunicar para evitar fricción.</p>
-    `:""}
-    ${top==="I" ? `
-      <p>Perfil social e influyente. Suele coordinar, motivar y conectar equipos. Bajo presión puede buscar más interacción o negociación; conviene reforzar el seguimiento y la estructuración de tareas.</p>
-    `:""}
-    ${top==="S" ? `
-      <p>Perfil estable y constante. Mantiene continuidad en servicio y es confiable en rutinas. Bajo presión puede buscar mantener orden y calma; conviene apoyar en adaptación al cambio y asertividad.</p>
-    `:""}
-    ${top==="C" ? `
-      <p>Perfil apegado a normas y precisión. Reduce errores, cuida calidad y detalle. Bajo presión puede aumentar control o rigidez; conviene fortalecer priorización y tolerancia a la ambigüedad.</p>
-    `:""}
+  // Diferencias M vs L
+  function delta(dim){ return (GM[dim]??50) - (GL[dim]??50); }
+  const deltas = {D:delta("D"), I:delta("I"), S:delta("S"), C:delta("C")};
 
-    <p><strong>Indicadores útiles para supervisión:</strong></p>
-    <ul class="text-muted">
-      <li>Si L baja mucho respecto a M, puede indicar sensación de presión (cambio de conducta bajo tensión).</li>
-      <li>Si los valores se concentran cerca de 50, podría ser perfil aplanado (baja diferenciación conductual).</li>
-      <li>Use el resultado como apoyo: combine con observación del desempeño real y feedback de jefatura.</li>
-    </ul>
-  `;
+  const pressureNotes = [];
+  ["D","I","S","C"].forEach(dim=>{
+    const d = deltas[dim];
+    if(d>=12) pressureNotes.push(`En ${dim}, la Motivación está por encima de Bajo presión (+${d}). Tiende a “bajar” ese rasgo cuando hay tensión (se modera / se contiene).`);
+    else if(d<=-12) pressureNotes.push(`En ${dim}, Bajo presión está por encima de Motivación (${d}). Ese rasgo puede “subir” con tensión (se intensifica).`);
+  });
+  if(!pressureNotes.length) pressureNotes.push("Las diferencias M vs L no muestran cambios extremos; la respuesta bajo presión tiende a ser consistente con lo que expresa.");
 
-  const training = `
-    <h3>Capacitación sugerida (según perfil)</h3>
-    ${top==="D" ? `
-      <ul class="text-muted">
-        <li><strong>Liderazgo y coordinación operativa:</strong> delegación, acuerdos, seguimiento por indicadores.</li>
-        <li><strong>Comunicación bajo presión:</strong> escucha activa, retroalimentación sin confrontación, mensajes breves.</li>
-        <li><strong>Toma de decisiones con evidencia:</strong> priorización y análisis rápido de riesgos.</li>
-        <li><strong>Autocontrol:</strong> manejo de impulsividad e intolerancia a la lentitud.</li>
-      </ul>
-    `:""}
-    ${top==="I" ? `
-      <ul class="text-muted">
-        <li><strong>Organización y enfoque:</strong> priorización, cierre de compromisos, control de pendientes.</li>
-        <li><strong>Comunicación estructurada:</strong> reportes breves, formatos de pase/informe.</li>
-        <li><strong>Asertividad:</strong> límites, negociación, manejo de conversaciones difíciles.</li>
-        <li><strong>Seguimiento:</strong> evidencias de cumplimiento y hábitos de verificación.</li>
-      </ul>
-    `:""}
-    ${top==="S" ? `
-      <ul class="text-muted">
-        <li><strong>Gestión del cambio:</strong> adaptación gradual, flexibilidad, aprendizaje continuo.</li>
-        <li><strong>Comunicación asertiva:</strong> expresar necesidades, pedir apoyo, abordar conflictos.</li>
-        <li><strong>Resiliencia y autocuidado:</strong> prevención de desgaste, pausas, regulación emocional.</li>
-        <li><strong>Mejora continua:</strong> participación en propuestas pequeñas y estandarización.</li>
-      </ul>
-    `:""}
-    ${top==="C" ? `
-      <ul class="text-muted">
-        <li><strong>Priorización y rapidez con seguridad:</strong> umbrales de calidad, decidir con información incompleta.</li>
-        <li><strong>Comunicación técnica efectiva:</strong> traducir datos a acciones, reportes claros.</li>
-        <li><strong>Flexibilidad operativa:</strong> plan B, adaptación a cambios sin perder control.</li>
-        <li><strong>Manejo de estrés:</strong> reducir rumiación, técnicas de control del error.</li>
-      </ul>
-    `:""}
-    <p class="text-muted">Sugerencia: complementar con plan de desarrollo del puesto y retroalimentación de supervisión.</p>
-  `;
+  const lines = [];
+  lines.push(`PERFIL PDL (conducta diaria T): ${names[top]} (${top}).`);
+  lines.push(`Segundo rasgo: ${names[sec]} (${sec}).`);
+  lines.push("");
+  lines.push("1) LECTURA GLOBAL");
+  lines.push(`- T representa el patrón cotidiano. Aquí destaca: ${dimDesc[top].core}.`);
+  lines.push(`- Matiz secundario: ${dimDesc[sec].core}.`);
+  lines.push(`- Síntesis de combinación: ${comboText}`);
+  lines.push("");
+  lines.push("2) FORTALEZAS PROBABLES");
+  dimDesc[top].strengths.forEach(s=>lines.push(`- ${s}.`));
+  lines.push("Fortalezas del rasgo secundario:");
+  dimDesc[sec].strengths.slice(0,3).forEach(s=>lines.push(`- ${s}.`));
+  lines.push("");
+  lines.push("3) ÁREAS DE RIESGO / VULNERABILIDADES");
+  dimDesc[top].risks.forEach(r=>lines.push(`- ${r}.`));
+  lines.push("Riesgos del rasgo secundario:");
+  dimDesc[sec].risks.slice(0,3).forEach(r=>lines.push(`- ${r}.`));
+  lines.push("");
+  lines.push("4) COMUNICACIÓN Y TRABAJO EN EQUIPO");
+  lines.push(`- Cómo comunicarse mejor con esta persona: ${dimDesc[top].comm}.`);
+  lines.push(`- En equipo, suele contribuir desde: ${names[top]} y ${names[sec]}. Conviene definir roles, acuerdos y expectativas.`);
+  lines.push("");
+  lines.push("5) MOTIVADORES (lo que suele activar desempeño)");
+  lines.push(`- ${dimDesc[top].motiv}.`);
+  lines.push(`- Adicional: ${dimDesc[sec].motiv}.`);
+  lines.push("");
+  lines.push("6) RESPUESTA BAJO PRESIÓN (comparación M vs L)");
+  pressureNotes.forEach(p=>lines.push(`- ${p}`));
+  lines.push(`- Señal práctica: cuando la presión sube, observar calidad de comunicación, seguimiento de tareas y manejo emocional.`);
+  lines.push("");
+  lines.push("7) NIVEL POR DIMENSIÓN (T, escala G)");
+  lines.push(`- D: ${GT.D} (${bD.name}) | I: ${GT.I} (${bI.name}) | S: ${GT.S} (${bS.name}) | C: ${GT.C} (${bC.name})`);
+  lines.push("Interpretación breve por nivel:");
+  lines.push(`- D ${bD.name}: ${bD.code==="VH"||bD.code==="H" ? "toma la iniciativa y acelera decisiones" : bD.code==="M" ? "equilibra decisión con análisis" : "prefiere evitar confrontación y avanzar con cautela"}.`);
+  lines.push(`- I ${bI.name}: ${bI.code==="VH"||bI.code==="H" ? "influyente y expresivo" : bI.code==="M" ? "comunicación funcional" : "comunicación reservada y prudente"}.`);
+  lines.push(`- S ${bS.name}: ${bS.code==="VH"||bS.code==="H" ? "muy constante y paciente" : bS.code==="M" ? "balance entre cambio y estabilidad" : "busca cambio/ritmo o muestra baja tolerancia a rutina"}.`);
+  lines.push(`- C ${bC.name}: ${bC.code==="VH"||bC.code==="H" ? "muy apegado a normas y detalle" : bC.code==="M" ? "calidad adecuada sin rigidez" : "flexible, puede omitir detalle si no se controla"}.`);
+  lines.push("");
+  lines.push("8) RECOMENDACIONES OPERATIVAS PARA JEFATURA");
+  lines.push("- Definir metas y criterios: qué es “éxito”, qué es “suficiente”, plazos y prioridades.");
+  lines.push("- Establecer canal de comunicación: frecuencia de seguimiento, formato de reporte y responsables.");
+  lines.push("- Retroalimentación: concreta, con ejemplos y acuerdos de mejora (qué, cuándo, cómo se medirá).");
+  lines.push("- Considerar que el resultado apoya decisiones; combinar con desempeño real y contexto del puesto.");
+  lines.push("");
+  const analysis = lines.join("\n");
 
-  return {analysis, training};
+  // Capacitación (más extensa y accionable)
+  const tlines = [];
+  tlines.push("PLAN DE CAPACITACIÓN SUGERIDO (orientativo y ajustable al puesto)");
+  tlines.push("");
+  tlines.push("A) OBJETIVOS DEL PLAN");
+  tlines.push("- Fortalecer habilidades clave del perfil predominante sin caer en excesos (equilibrio).");
+  tlines.push("- Reducir riesgos típicos bajo presión mediante herramientas prácticas.");
+  tlines.push("- Mejorar coordinación con equipo y calidad del servicio mediante hábitos y estándares.");
+  tlines.push("");
+
+  const topTrain = {
+    D:[
+      "Módulo 1: Comunicación efectiva bajo presión (mensajes breves, escucha activa, retroalimentación sin confrontación).",
+      "Módulo 2: Liderazgo colaborativo (delegación, acuerdos claros, seguimiento por indicadores).",
+      "Módulo 3: Priorización y toma de decisiones con evidencia (matriz urgencia-impacto, control de sesgos).",
+      "Módulo 4: Autogestión emocional (pausa táctica, control de impulsividad, manejo de frustración)."
+    ],
+    I:[
+      "Módulo 1: Gestión del tiempo y enfoque (priorización, cierre de compromisos, control de pendientes).",
+      "Módulo 2: Comunicación estructurada (reportes breves, formatos de entrega/pase de información).",
+      "Módulo 3: Asertividad y límites (negociación, decir no, conversaciones difíciles).",
+      "Módulo 4: Seguimiento y disciplina operativa (checklists, evidencias, control de calidad)."
+    ],
+    S:[
+      "Módulo 1: Adaptación al cambio (micro-hábitos, flexibilidad, manejo de transición).",
+      "Módulo 2: Asertividad y confrontación constructiva (pedir apoyo, expresar desacuerdo, acuerdos).",
+      "Módulo 3: Resiliencia y autocuidado (prevención de desgaste, regulación emocional, pausas activas).",
+      "Módulo 4: Mejora continua (propuestas pequeñas, estandarización, participación en indicadores)."
+    ],
+    C:[
+      "Módulo 1: Priorización y rapidez con seguridad (umbrales, diferenciar crítico vs perfecto).",
+      "Módulo 2: Comunicación técnica efectiva (traducir datos a acciones, reportes claros).",
+      "Módulo 3: Flexibilidad operativa (planes B, tolerancia a ambigüedad, decisiones con info incompleta).",
+      "Módulo 4: Manejo de estrés por control de error (rumiación, técnicas de control y enfoque)."
+    ]
+  };
+
+  tlines.push(`B) RUTA PRINCIPAL (según T predominante: ${names[top]} - ${top})`);
+  topTrain[top].forEach(m=>tlines.push(`- ${m}`));
+  tlines.push("");
+
+  tlines.push(`C) RUTA COMPLEMENTARIA (según rasgo secundario: ${names[sec]} - ${sec})`);
+  topTrain[sec].slice(0,2).forEach(m=>tlines.push(`- ${m}`));
+  tlines.push("");
+
+  tlines.push("D) HÁBITOS SEMANALES (muy prácticos)");
+  tlines.push("- 1 checklist diario de prioridades (máximo 3 tareas críticas).");
+  tlines.push("- 1 retroalimentación breve por semana con evidencia (qué pasó / impacto / acuerdo).");
+  tlines.push("- 1 práctica de autocontrol: respiración 1 minuto antes de respuesta bajo tensión.");
+  tlines.push("- 1 revisión semanal de errores/éxitos: lección aprendida y acción correctiva.");
+  tlines.push("");
+
+  tlines.push("E) INDICADORES DE MEJORA (sugeridos)");
+  tlines.push("- Cumplimiento de tiempos (entregas), calidad (errores), coordinación (re-trabajo), clima (conflictos).");
+  tlines.push("- Seguimiento: 4–6 semanas con ajustes según supervisión.");
+  const training = tlines.join("\n");
+
+  return {profile:`${names[top]} (${top})`, analysis, training};
 }
 
 /* ===================== FINISH TEST ===================== */
 async function finishTest(){
-  // validar último bloque
   if(!answers[idx]||answers[idx].M==null||answers[idx].L==null){
     $("test-error").textContent="Seleccione una opción en ambas columnas.";
     $("test-error").classList.remove("hidden"); return;
@@ -790,9 +885,8 @@ async function finishTest(){
 
   const counts = computeRawCounts();
   const sumT = counts.T.D + counts.T.I + counts.T.S + counts.T.C;
-  const valid = (sumT>=-3 && sumT<=3); // manual :contentReference[oaicite:6]{index=6}
+  const valid = (sumT>=-3 && sumT<=3);
 
-  // calcula G por gráfica con fórmula manual :contentReference[oaicite:7]{index=7}
   const GM = computeG("M", counts.M);
   const GL = computeG("L", counts.L);
   const GT = computeG("T", counts.T);
@@ -811,6 +905,7 @@ async function finishTest(){
       <div><strong>Nombre:</strong> ${escapeHtml($("nombre").value)}</div>
       <div><strong>Categoría:</strong> ${escapeHtml($("categoria").value)}</div>
       <div><strong>Puesto:</strong> ${escapeHtml($("puesto").value)}</div>
+      <div><strong>Fecha de nacimiento:</strong> ${escapeHtml($("fechaNacimiento").value)}</div>
       <div><strong>Edad:</strong> ${escapeHtml($("edad").value)}</div>
       <div><strong>Lugar de nacimiento:</strong> ${escapeHtml($("lugarNacimiento").value)}</div>
     </div>
@@ -825,7 +920,7 @@ async function finishTest(){
 
   $("res-g").innerHTML = `
     <h3>Escala G (0–100)</h3>
-    <div class="text-muted">Cálculo automático con tabla de múltiplos y fórmula del manual.</div>
+    <div class="text-muted">Cálculo automático con tabla de múltiplos y fórmula estándar.</div>
     <p class="mono">M: A=${GM.A} mult=${GM.mult} | G(D) ${GM.G.D}, G(I) ${GM.G.I}, G(S) ${GM.G.S}, G(C) ${GM.G.C}</p>
     <p class="mono">L: A=${GL.A} mult=${GL.mult} | G(D) ${GL.G.D}, G(I) ${GL.G.I}, G(S) ${GL.G.S}, G(C) ${GL.G.C}</p>
     <p class="mono">T: A=${GT.A} mult=${GT.mult} | G(D) ${GT.G.D}, G(I) ${GT.G.I}, G(S) ${GT.G.S}, G(C) ${GT.G.C}</p>
@@ -835,11 +930,12 @@ async function finishTest(){
   drawDiamondG("svgL", GL.G, "rgba(188,149,92,0.22)", "#BC955C");
   drawDiamondG("svgT", GT.G, "rgba(198,40,40,0.18)", "#c62828");
 
-  const rep = deepReport(valid, GM.G, GL.G, GT.G, sumT);
-  $("analysis").innerHTML = rep.analysis;
-  $("training").innerHTML = rep.training;
+  // Interpretación extensa y capacitación extensa
+  const rep = longReport(valid, GM.G, GL.G, GT.G, sumT);
+  $("analysis").innerHTML = `<h3>Análisis (extenso)</h3><div class="longtext">${escapeHtml(rep.analysis)}</div>`;
+  $("training").innerHTML = `<h3>Capacitación sugerida (extensa)</h3><div class="longtext">${escapeHtml(rep.training)}</div>`;
 
-  // guardar resultado local + nube
+  // Guardar resultado (incluye interpretación + capacitación + fecha nac.)
   const record = {
     date: nowISO(),
     unidad: $("unidad").value,
@@ -847,12 +943,16 @@ async function finishTest(){
     nombre: $("nombre").value,
     categoria: $("categoria").value,
     puesto: $("puesto").value,
+    fechaNacimiento: $("fechaNacimiento").value,
     edad: $("edad").value,
     lugarNacimiento: $("lugarNacimiento").value,
     counts,
     GM, GL, GT,
     sumT,
-    valid
+    valid,
+    perfil: rep.profile,
+    interpretacion: rep.analysis,
+    capacitacion: rep.training
   };
 
   const arr = read(KEYS.results, []);
@@ -863,17 +963,11 @@ async function finishTest(){
 }
 
 /* ===================== RESET ===================== */
-function resetForNewTest(){
-  showSection("worker");
-}
+function resetForNewTest(){ showSection("worker"); }
 
 /* ===================== ADMIN LOGIN ===================== */
 function requestAdminAccess(){
-  if(adminLogged){
-    showSection("admin");
-    loadAdmin();
-    return;
-  }
+  if(adminLogged){ showSection("admin"); loadAdmin(); return; }
   $("adminPass").value="";
   $("passErr").classList.add("hidden");
   $("overlay").classList.remove("hidden");
@@ -885,18 +979,13 @@ function login(){
     closeLogin();
     showSection("admin");
     loadAdmin();
-  }else{
-    $("passErr").classList.remove("hidden");
-  }
+  }else $("passErr").classList.remove("hidden");
 }
-function logoutAdmin(){
-  adminLogged = false;
-  showSection("worker");
-}
+function logoutAdmin(){ adminLogged = false; showSection("worker"); }
 
 /* ===================== ADMIN TABS ===================== */
 function setTab(t){
-  ["u","c","r","a"].forEach(x=>{
+  ["u","c","r"].forEach(x=>{
     $("panel-"+x).classList.toggle("hidden", x!==t);
     $("tab-"+x).classList.toggle("active", x===t);
   });
@@ -973,7 +1062,7 @@ async function delCat(i){
   await saveConfigToCloud();
 }
 
-/* ===================== ADMIN RESULTS + DELETE ===================== */
+/* ===================== ADMIN RESULTS + VIEW + DELETE ===================== */
 function renderResults(){
   const tb = $("tbRes");
   tb.innerHTML = "";
@@ -987,22 +1076,34 @@ function renderResults(){
       <td>${escapeHtml(r.matricula||"")}</td>
       <td>${escapeHtml(r.nombre||"")}</td>
       <td>${escapeHtml(r.categoria||"")}</td>
+      <td>${escapeHtml(r.fechaNacimiento||"")}</td>
       <td>${escapeHtml(r.edad||"")}</td>
-      <td>${escapeHtml(r.puesto||"")}</td>
       <td>${escapeHtml(r.lugarNacimiento||"")}</td>
-
-      <td>${r.GM?.G?.D ?? ""}</td><td>${r.GM?.G?.I ?? ""}</td><td>${r.GM?.G?.S ?? ""}</td><td>${r.GM?.G?.C ?? ""}</td>
-      <td>${r.GL?.G?.D ?? ""}</td><td>${r.GL?.G?.I ?? ""}</td><td>${r.GL?.G?.S ?? ""}</td><td>${r.GL?.G?.C ?? ""}</td>
-      <td>${r.GT?.G?.D ?? ""}</td><td>${r.GT?.G?.I ?? ""}</td><td>${r.GT?.G?.S ?? ""}</td><td>${r.GT?.G?.C ?? ""}</td>
-
+      <td>${escapeHtml(r.puesto||"")}</td>
+      <td>${escapeHtml(r.perfil||"")}</td>
       <td>${r.sumT ?? ""}</td>
       <td>${r.valid ? "Válida" : "Inválida"}</td>
-      <td><button class="btn-danger" type="button" onclick="deleteResult(${realIdx})">Eliminar</button></td>
+      <td style="white-space:nowrap;">
+        <button class="btn-secondary" type="button" onclick="viewResult(${realIdx})">Ver</button>
+        <button class="btn-danger" type="button" onclick="deleteResult(${realIdx})">Eliminar</button>
+      </td>
     `;
     tb.appendChild(tr);
   });
 }
 function reloadResults(){ renderResults(); }
+
+function viewResult(i){
+  const res = read(KEYS.results, []);
+  const r = res[i];
+  if(!r){ alert("No encontrado."); return; }
+  $("viewMeta").textContent =
+    `Fecha: ${r.date||""} | ${r.nombre||""} | ${r.matricula||""} | ${r.unidad||""} | Perfil: ${r.perfil||""}`;
+  $("viewAnalysis").textContent = r.interpretacion || "(Sin interpretación guardada)";
+  $("viewTraining").textContent = r.capacitacion || "(Sin capacitación guardada)";
+  $("overlayView").classList.remove("hidden");
+}
+function closeView(){ $("overlayView").classList.add("hidden"); }
 
 async function deleteResult(i){
   if(!confirm("¿Eliminar este resultado?")) return;
@@ -1018,28 +1119,33 @@ async function deleteResult(i){
   }
 }
 
-/* ===================== CSV (UTF-8 BOM) ===================== */
+/* ===================== CSV (UTF-8 BOM) + incluye interpretación/capacitación ===================== */
 function downloadCSV(){
   const data = read(KEYS.results, []);
   if(!data.length){ alert("No hay resultados."); return; }
 
   const header = [
-    "Fecha","Unidad","Matricula","Nombre","Categoria","Puesto","Edad","LugarNacimiento",
+    "FechaRegistro","Unidad","Matricula","Nombre","Categoria","Puesto",
+    "FechaNacimiento","Edad","LugarNacimiento",
+    "Perfil","sumT","Validez",
     "M_G_D","M_G_I","M_G_S","M_G_C",
     "L_G_D","L_G_I","L_G_S","L_G_C",
     "T_G_D","T_G_I","T_G_S","T_G_C",
-    "sumT","Validez"
+    "Interpretacion","Capacitacion"
   ];
+
   const lines = [header.join(",")];
 
   data.forEach(r=>{
     const row = [
-      r.date||"", r.unidad||"", r.matricula||"", r.nombre||"", r.categoria||"",
-      r.puesto||"", r.edad||"", r.lugarNacimiento||"",
+      r.date||"", r.unidad||"", r.matricula||"", r.nombre||"", r.categoria||"", r.puesto||"",
+      r.fechaNacimiento||"", r.edad||"", r.lugarNacimiento||"",
+      r.perfil||"", r.sumT??"", (r.valid ? "Válida":"Inválida"),
       r.GM?.G?.D??"", r.GM?.G?.I??"", r.GM?.G?.S??"", r.GM?.G?.C??"",
       r.GL?.G?.D??"", r.GL?.G?.I??"", r.GL?.G?.S??"", r.GL?.G?.C??"",
       r.GT?.G?.D??"", r.GT?.G?.I??"", r.GT?.G?.S??"", r.GT?.G?.C??"",
-      r.sumT??"", r.valid ? "Válida":"Inválida"
+      (r.interpretacion||"").replace(/\r?\n/g," | "),
+      (r.capacitacion||"").replace(/\r?\n/g," | ")
     ];
 
     const esc = row.map(v=>{
@@ -1090,7 +1196,6 @@ async function saveResultToCloud(record){
   if(!fs) return;
   try{
     const ref = await fs.collection("pdl_resultados").add(record);
-    // agrega id al último guardado localmente
     const arr = read(KEYS.results, []);
     arr[arr.length-1]._id = ref.id;
     save(KEYS.results, arr);
@@ -1105,7 +1210,6 @@ async function syncFromCloud(){
     const snap = await fs.collection("pdl_resultados").orderBy("date","desc").get();
     const list = [];
     snap.forEach(doc=> list.push({_id:doc.id, ...doc.data()}));
-    // guardo en local en orden cronológico antiguo (para que el reverse en tabla funcione)
     save(KEYS.results, list.slice().reverse());
     renderResults();
     alert("Sincronización completada.");
